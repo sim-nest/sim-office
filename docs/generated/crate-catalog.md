@@ -7,4 +7,5 @@ Generated from Cargo metadata by `xtask crate-catalog v1`.
 | Package | Publish | Targets | Description |
 | --- | --- | --- | --- |
 | `sim-lib-doc-core` | `false` | `custom-build, lib` | Core document records and shape hooks for SIM office documents. |
+| `sim-lib-doc-site` | `false` | `custom-build, lib` | Document site registration and modeled realize spine for SIM office documents. |
 | `xtask` | `false` | `bin` | SIM workspace package for xtask. |
