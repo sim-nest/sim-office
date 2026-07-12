@@ -1,15 +1,17 @@
 # sim-office
 
-`sim-office` is the office document family for SIM. This repository contains the
-document core: open document kind strings, stable document ids, external
-references, and a kernel shape object that lets callers reason about document
-records without turning office files into kernel enums.
+`sim-office` is the office document family for SIM. This repository contains
+open document records, placement descriptors, local read projections, and the
+site boundary used by office integrations. The kernel carries document values
+without learning office-file enums.
 
 ## Crates
 
 | Crate | Role |
 | --- | --- |
 | `sim-lib-doc-core` | Ring-0 document records, document kind shapes, and embedded descriptor recipes. |
+| `sim-lib-doc-site` | Opaque site registration and modeled/live document placement calls. |
+| `sim-lib-doc-store` | Local SQLite document snapshots and ledger-sequenced edit projections. |
 
 ## Documentation
 

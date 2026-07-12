@@ -1,0 +1,8 @@
+id = "doc-store-projection"
+title = "Document store projection"
+codec = "lisp"
+setup = "setup.siml"
+purpose = "purpose.md"
+order = 10
+tags = ["office", "document", "store", "projection", "sandbox-descriptor"]
+requires = ["office/doc-store", "codec/lisp"]

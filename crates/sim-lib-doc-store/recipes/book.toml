@@ -1,0 +1,5 @@
+book = "office/doc-store"
+title = "Document Store"
+summary = "Local document snapshots and ledger-sequenced edit projections."
+order = 412
+chapters = ["01-basics"]

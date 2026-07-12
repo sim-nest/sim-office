@@ -8,3 +8,8 @@
 {"kind":"recipe","path":"crates/sim-lib-doc-site/recipes/01-basics/doc-site-descriptor/recipe.toml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-site/recipes/01-basics/doc-site-descriptor/setup.siml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-site/recipes/book.toml"}
+{"kind":"recipe","path":"crates/sim-lib-doc-store/recipes/01-basics/chapter.toml"}
+{"kind":"recipe","path":"crates/sim-lib-doc-store/recipes/01-basics/doc-store-projection/purpose.md"}
+{"kind":"recipe","path":"crates/sim-lib-doc-store/recipes/01-basics/doc-store-projection/recipe.toml"}
+{"kind":"recipe","path":"crates/sim-lib-doc-store/recipes/01-basics/doc-store-projection/setup.siml"}
+{"kind":"recipe","path":"crates/sim-lib-doc-store/recipes/book.toml"}

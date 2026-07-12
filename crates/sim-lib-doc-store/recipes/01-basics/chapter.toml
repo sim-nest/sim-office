@@ -1,0 +1,3 @@
+title = "Basics"
+order = 10
+summary = "Local projection recipes for document snapshots and edit undo."
