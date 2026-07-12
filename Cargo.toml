@@ -1,0 +1,15 @@
+[workspace]
+resolver = "3"
+members = [
+  "crates/sim-lib-doc-core",
+  "xtask",
+]
+
+[workspace.package]
+edition = "2024"
+license = "MPL-2.0"
+repository = "https://github.com/sim-nest/sim-office"
+homepage = "https://github.com/sim-nest/sim-office"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"

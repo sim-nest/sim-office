@@ -1,0 +1,8 @@
+id = "doc-core-descriptor"
+title = "Document core descriptor"
+codec = "lisp"
+setup = "setup.siml"
+purpose = "purpose.md"
+order = 10
+tags = ["office", "document", "shape", "sandbox-descriptor"]
+requires = ["office/doc-core", "codec/lisp"]

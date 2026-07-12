@@ -1,0 +1,5 @@
+book = "office/doc-core"
+title = "Document Core"
+summary = "Office document model and kind-shape descriptors."
+order = 410
+chapters = ["01-basics"]
