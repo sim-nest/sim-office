@@ -9,6 +9,7 @@ pub mod error;
 pub mod fidelity;
 pub mod model;
 pub mod place;
+pub mod projection;
 pub mod shape;
 
 pub use caps::{
@@ -22,6 +23,7 @@ pub use model::{
     DOC_KIND_ARTICLE, DOC_KIND_README, DOC_KIND_REPORT, Doc, DocId, DocKind, ExternalRef,
 };
 pub use place::{DocCodec, DocCodecOptions, DocSite, Placement};
+pub use projection::{ProjectionCaps, ProjectionRequest, SurfaceCaps, project};
 pub use shape::{DocKindShape, doc_shape};
 
 /// Cookbook recipes for this lib, embedded at build time.
