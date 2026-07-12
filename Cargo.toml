@@ -2,6 +2,7 @@
 resolver = "3"
 members = [
   "crates/sim-lib-doc-core",
+  "crates/sim-lib-doc-site",
   "xtask",
 ]
 

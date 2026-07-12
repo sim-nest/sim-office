@@ -16,6 +16,8 @@ pub enum OfficeError {
     Kernel(String),
     /// A domain edit could not be applied.
     DomainEdit(String),
+    /// A document site could not be resolved or run.
+    Site(String),
 }
 
 impl fmt::Display for OfficeError {
@@ -25,6 +27,7 @@ impl fmt::Display for OfficeError {
             Self::CapabilityDenied(capability) => write!(f, "capability denied: {capability}"),
             Self::Kernel(message) => write!(f, "kernel error: {message}"),
             Self::DomainEdit(message) => write!(f, "domain edit failed: {message}"),
+            Self::Site(message) => write!(f, "document site error: {message}"),
         }
     }
 }

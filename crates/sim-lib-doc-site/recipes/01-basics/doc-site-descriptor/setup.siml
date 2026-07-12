@@ -1,0 +1,1 @@
+(quote (office/doc-site descriptor (site site/msgraph) (mode modeled) (write preview)))

@@ -5,6 +5,11 @@
     "crates/sim-lib-doc-core/recipes/01-basics/doc-core-descriptor/purpose.md",
     "crates/sim-lib-doc-core/recipes/01-basics/doc-core-descriptor/recipe.toml",
     "crates/sim-lib-doc-core/recipes/01-basics/doc-core-descriptor/setup.siml",
-    "crates/sim-lib-doc-core/recipes/book.toml"
+    "crates/sim-lib-doc-core/recipes/book.toml",
+    "crates/sim-lib-doc-site/recipes/01-basics/chapter.toml",
+    "crates/sim-lib-doc-site/recipes/01-basics/doc-site-descriptor/purpose.md",
+    "crates/sim-lib-doc-site/recipes/01-basics/doc-site-descriptor/recipe.toml",
+    "crates/sim-lib-doc-site/recipes/01-basics/doc-site-descriptor/setup.siml",
+    "crates/sim-lib-doc-site/recipes/book.toml"
   ]
 }
