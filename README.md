@@ -12,6 +12,7 @@ without learning office-file enums.
 | `sim-lib-doc-core` | Ring-0 document records, document kind shapes, and embedded descriptor recipes. |
 | `sim-lib-doc-site` | Opaque site registration and modeled/live document placement calls. |
 | `sim-lib-doc-store` | Local SQLite document snapshots and ledger-sequenced edit projections. |
+| `sim-lib-doc-surface` | Scene projection and intent decoding for suite document panes. |
 
 ## Documentation
 

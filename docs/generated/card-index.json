@@ -15,6 +15,11 @@
     "crates/sim-lib-doc-store/recipes/01-basics/doc-store-projection/purpose.md",
     "crates/sim-lib-doc-store/recipes/01-basics/doc-store-projection/recipe.toml",
     "crates/sim-lib-doc-store/recipes/01-basics/doc-store-projection/setup.siml",
-    "crates/sim-lib-doc-store/recipes/book.toml"
+    "crates/sim-lib-doc-store/recipes/book.toml",
+    "crates/sim-lib-doc-surface/recipes/01-basics/chapter.toml",
+    "crates/sim-lib-doc-surface/recipes/01-basics/suite-surface-descriptor/purpose.md",
+    "crates/sim-lib-doc-surface/recipes/01-basics/suite-surface-descriptor/recipe.toml",
+    "crates/sim-lib-doc-surface/recipes/01-basics/suite-surface-descriptor/setup.siml",
+    "crates/sim-lib-doc-surface/recipes/book.toml"
   ]
 }

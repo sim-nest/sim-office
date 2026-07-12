@@ -1,0 +1,8 @@
+id = "suite-surface-descriptor"
+title = "Suite surface descriptor"
+codec = "lisp"
+setup = "setup.siml"
+purpose = "purpose.md"
+order = 10
+tags = ["office", "document", "surface", "sandbox-descriptor"]
+requires = ["office/doc-surface", "codec/lisp"]

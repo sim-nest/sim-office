@@ -1,0 +1,26 @@
+[package]
+name = "sim-lib-doc-surface"
+version = "0.1.0"
+edition = "2024"
+license = "MPL-2.0"
+description = "Scene projection and intent decoding for SIM office document panes."
+readme = "README.md"
+publish = false
+repository = "https://github.com/sim-nest/sim-office"
+homepage = "https://github.com/sim-nest/sim-office"
+
+[dependencies]
+sim-cookbook = { version = "0.1.0" }
+sim-kernel = { version = "0.1.0" }
+sim-lib-doc-core = { version = "0.1.0", path = "../sim-lib-doc-core" }
+sim-lib-intent = { version = "0.1.0" }
+sim-lib-scene = { version = "0.1.0" }
+
+[build-dependencies]
+sim-cookbook = { version = "0.1.0" }
+
+[dev-dependencies]
+sim-lib-view-doc = { version = "0.1.0" }
+
+[lints]
+workspace = true

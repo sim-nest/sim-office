@@ -18,6 +18,8 @@ pub enum OfficeError {
     DomainEdit(String),
     /// A document site could not be resolved or run.
     Site(String),
+    /// A document surface scene or intent could not be projected or decoded.
+    Surface(String),
 }
 
 impl fmt::Display for OfficeError {
@@ -28,6 +30,7 @@ impl fmt::Display for OfficeError {
             Self::Kernel(message) => write!(f, "kernel error: {message}"),
             Self::DomainEdit(message) => write!(f, "domain edit failed: {message}"),
             Self::Site(message) => write!(f, "document site error: {message}"),
+            Self::Surface(message) => write!(f, "document surface error: {message}"),
         }
     }
 }

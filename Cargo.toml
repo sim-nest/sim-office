@@ -4,6 +4,7 @@ members = [
   "crates/sim-lib-doc-core",
   "crates/sim-lib-doc-site",
   "crates/sim-lib-doc-store",
+  "crates/sim-lib-doc-surface",
   "xtask",
 ]
 

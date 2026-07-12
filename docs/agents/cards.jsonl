@@ -13,3 +13,8 @@
 {"kind":"recipe","path":"crates/sim-lib-doc-store/recipes/01-basics/doc-store-projection/recipe.toml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-store/recipes/01-basics/doc-store-projection/setup.siml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-store/recipes/book.toml"}
+{"kind":"recipe","path":"crates/sim-lib-doc-surface/recipes/01-basics/chapter.toml"}
+{"kind":"recipe","path":"crates/sim-lib-doc-surface/recipes/01-basics/suite-surface-descriptor/purpose.md"}
+{"kind":"recipe","path":"crates/sim-lib-doc-surface/recipes/01-basics/suite-surface-descriptor/recipe.toml"}
+{"kind":"recipe","path":"crates/sim-lib-doc-surface/recipes/01-basics/suite-surface-descriptor/setup.siml"}
+{"kind":"recipe","path":"crates/sim-lib-doc-surface/recipes/book.toml"}
