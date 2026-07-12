@@ -1,6 +1,6 @@
 {
   "generator": "xtask crate-catalog v1",
-  "package_count": 4,
+  "package_count": 5,
   "packages": [
     {
       "description": "Core document records and shape hooks for SIM office documents.",
@@ -36,6 +36,19 @@
       "publish": "false",
       "readme": "crates/sim-lib-doc-store/README.md",
       "root": "crates/sim-lib-doc-store",
+      "target_kinds": [
+        "custom-build",
+        "lib"
+      ]
+    },
+    {
+      "description": "Scene projection and intent decoding for SIM office document panes.",
+      "generated_readme": false,
+      "manifest": "crates/sim-lib-doc-surface/Cargo.toml",
+      "name": "sim-lib-doc-surface",
+      "publish": "false",
+      "readme": "crates/sim-lib-doc-surface/README.md",
+      "root": "crates/sim-lib-doc-surface",
       "target_kinds": [
         "custom-build",
         "lib"
