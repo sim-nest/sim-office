@@ -1,30 +1,14 @@
 //! Shape values for open document kinds.
 
-use std::{fmt, sync::Arc};
+use std::sync::Arc;
 
 use sim_kernel::{
     Cx, DefaultFactory, Expr, Factory, ShapeRef, Symbol, Value,
     shape::{MatchScore, Shape, ShapeDoc, ShapeMatch},
 };
 
+use crate::OfficeError;
 use crate::model::{Doc, DocKind};
-
-/// Error reported by the office document core.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum OfficeError {
-    /// A kernel factory failed while building a shape value.
-    ShapeBuild(String),
-}
-
-impl fmt::Display for OfficeError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::ShapeBuild(message) => write!(f, "could not build document shape: {message}"),
-        }
-    }
-}
-
-impl std::error::Error for OfficeError {}
 
 /// A shape that accepts [`Doc`] values with one open [`DocKind`].
 #[derive(Clone, Debug, PartialEq, Eq)]
