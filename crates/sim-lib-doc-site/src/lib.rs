@@ -5,6 +5,9 @@
 
 pub mod register;
 
+#[cfg(test)]
+mod register_tests;
+
 pub use register::{
     DOC_SITE_DOMAIN, DocSiteRuntime, SiteOp, SiteReply, realize_site_op, register_site, site_symbol,
 };
