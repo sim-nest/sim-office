@@ -1,0 +1,31 @@
+{
+  "generator": "xtask crate-catalog v1",
+  "package_count": 2,
+  "packages": [
+    {
+      "description": "Core document records and shape hooks for SIM office documents.",
+      "generated_readme": false,
+      "manifest": "crates/sim-lib-doc-core/Cargo.toml",
+      "name": "sim-lib-doc-core",
+      "publish": "false",
+      "readme": "crates/sim-lib-doc-core/README.md",
+      "root": "crates/sim-lib-doc-core",
+      "target_kinds": [
+        "custom-build",
+        "lib"
+      ]
+    },
+    {
+      "description": "SIM workspace package for xtask.",
+      "generated_readme": true,
+      "manifest": "xtask/Cargo.toml",
+      "name": "xtask",
+      "publish": "false",
+      "readme": "xtask/README.md",
+      "root": "xtask",
+      "target_kinds": [
+        "bin"
+      ]
+    }
+  ]
+}
