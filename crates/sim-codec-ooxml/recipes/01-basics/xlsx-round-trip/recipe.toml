@@ -1,0 +1,8 @@
+id = "xlsx-round-trip"
+title = "XLSX round trip"
+codec = "lisp"
+setup = "setup.siml"
+purpose = "purpose.md"
+order = 10
+tags = ["office", "sheet", "xlsx", "codec", "sandbox-descriptor"]
+requires = ["office/sheet", "office/doc-core", "codec/ooxml-xlsx"]

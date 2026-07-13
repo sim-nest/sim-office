@@ -1,0 +1,5 @@
+book = "office/ooxml"
+title = "OOXML Spreadsheet Codec"
+summary = "Local .xlsx packages for exact sheet documents."
+order = 415
+chapters = ["01-basics"]

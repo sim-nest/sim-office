@@ -9,6 +9,7 @@ without learning office-file enums.
 
 | Crate | Role |
 | --- | --- |
+| `sim-codec-ooxml` | OOXML spreadsheet codec for exact local sheet documents. |
 | `sim-lib-doc-core` | Ring-0 document records, document kind shapes, and embedded descriptor recipes. |
 | `sim-lib-doc-markup` | Markup file codecs exposed as office `DocCodec` adapters for article documents. |
 | `sim-lib-doc-site` | Opaque site registration and modeled/live document placement calls. |

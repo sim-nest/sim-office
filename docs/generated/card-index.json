@@ -1,6 +1,11 @@
 {
   "schema": "sim.card-index.v1",
   "cards": [
+    "crates/sim-codec-ooxml/recipes/01-basics/chapter.toml",
+    "crates/sim-codec-ooxml/recipes/01-basics/xlsx-round-trip/purpose.md",
+    "crates/sim-codec-ooxml/recipes/01-basics/xlsx-round-trip/recipe.toml",
+    "crates/sim-codec-ooxml/recipes/01-basics/xlsx-round-trip/setup.siml",
+    "crates/sim-codec-ooxml/recipes/book.toml",
     "crates/sim-lib-doc-core/recipes/01-basics/chapter.toml",
     "crates/sim-lib-doc-core/recipes/01-basics/doc-core-descriptor/purpose.md",
     "crates/sim-lib-doc-core/recipes/01-basics/doc-core-descriptor/recipe.toml",

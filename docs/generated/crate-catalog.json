@@ -1,7 +1,20 @@
 {
   "generator": "xtask crate-catalog v1",
-  "package_count": 7,
+  "package_count": 8,
   "packages": [
+    {
+      "description": "OOXML spreadsheet codec for SIM office documents.",
+      "generated_readme": false,
+      "manifest": "crates/sim-codec-ooxml/Cargo.toml",
+      "name": "sim-codec-ooxml",
+      "publish": "false",
+      "readme": "crates/sim-codec-ooxml/README.md",
+      "root": "crates/sim-codec-ooxml",
+      "target_kinds": [
+        "custom-build",
+        "lib"
+      ]
+    },
     {
       "description": "Core document records and shape hooks for SIM office documents.",
       "generated_readme": false,

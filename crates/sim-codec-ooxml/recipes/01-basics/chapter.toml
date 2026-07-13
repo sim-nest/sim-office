@@ -1,0 +1,3 @@
+title = "Basics"
+order = 10
+summary = "Encode exact local sheets as spreadsheet files and decode them back."
