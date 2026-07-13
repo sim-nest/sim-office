@@ -43,6 +43,9 @@
 {"kind":"recipe","path":"crates/sim-lib-doc-store/recipes/01-basics/doc-store-projection/purpose.md"}
 {"kind":"recipe","path":"crates/sim-lib-doc-store/recipes/01-basics/doc-store-projection/recipe.toml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-store/recipes/01-basics/doc-store-projection/setup.siml"}
+{"kind":"recipe","path":"crates/sim-lib-doc-store/recipes/01-basics/evidence-fact-graph/purpose.md"}
+{"kind":"recipe","path":"crates/sim-lib-doc-store/recipes/01-basics/evidence-fact-graph/recipe.toml"}
+{"kind":"recipe","path":"crates/sim-lib-doc-store/recipes/01-basics/evidence-fact-graph/setup.siml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-store/recipes/book.toml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-surface/recipes/01-basics/chapter.toml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-surface/recipes/01-basics/suite-surface-descriptor/purpose.md"}
@@ -88,4 +91,7 @@
 {"kind":"recipe","path":"crates/sim-site-sharepoint/recipes/01-basics/sharepoint-graph-read/purpose.md"}
 {"kind":"recipe","path":"crates/sim-site-sharepoint/recipes/01-basics/sharepoint-graph-read/recipe.toml"}
 {"kind":"recipe","path":"crates/sim-site-sharepoint/recipes/01-basics/sharepoint-graph-read/setup.siml"}
+{"kind":"recipe","path":"crates/sim-site-sharepoint/recipes/01-basics/sharepoint-rest-fallback/purpose.md"}
+{"kind":"recipe","path":"crates/sim-site-sharepoint/recipes/01-basics/sharepoint-rest-fallback/recipe.toml"}
+{"kind":"recipe","path":"crates/sim-site-sharepoint/recipes/01-basics/sharepoint-rest-fallback/setup.siml"}
 {"kind":"recipe","path":"crates/sim-site-sharepoint/recipes/book.toml"}

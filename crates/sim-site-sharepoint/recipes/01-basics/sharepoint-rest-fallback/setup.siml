@@ -1,0 +1,1 @@
+(quote (office/sharepoint-rest (_api /_api/$batch) (method POST) (mode modeled) (precondition etag)))

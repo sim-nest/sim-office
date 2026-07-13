@@ -1,5 +1,5 @@
 book = "office/doc-store"
 title = "Document Store"
-summary = "Local document snapshots and ledger-sequenced edit projections."
+summary = "Local document snapshots, edit projections, and evidence fact links."
 order = 412
 chapters = ["01-basics"]
