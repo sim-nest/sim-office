@@ -14,9 +14,17 @@ sim-codec-doc = { version = "0.1.0" }
 sim-cookbook = { version = "0.1.0" }
 sim-kernel = { version = "0.1.0" }
 sim-lib-doc-core = { version = "0.1.0", path = "../sim-lib-doc-core" }
+sim-lib-doc-store = { version = "0.1.0", path = "../sim-lib-doc-store" }
+sim-lib-intent = { version = "0.1.0" }
+sim-lib-scene = { version = "0.1.0" }
+sim-lib-view-doc = { version = "0.1.0" }
 
 [build-dependencies]
 sim-cookbook = { version = "0.1.0" }
+
+[dev-dependencies]
+sim-lib-doc-surface = { version = "0.1.0", path = "../sim-lib-doc-surface" }
+tempfile = "3"
 
 [lints]
 workspace = true
