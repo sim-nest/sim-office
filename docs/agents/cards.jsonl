@@ -29,6 +29,11 @@
 {"kind":"recipe","path":"crates/sim-lib-doc-core/recipes/01-basics/doc-core-descriptor/recipe.toml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-core/recipes/01-basics/doc-core-descriptor/setup.siml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-core/recipes/book.toml"}
+{"kind":"recipe","path":"crates/sim-lib-doc-ledger/recipes/01-basics/chapter.toml"}
+{"kind":"recipe","path":"crates/sim-lib-doc-ledger/recipes/01-basics/ledger-draft-preview/purpose.md"}
+{"kind":"recipe","path":"crates/sim-lib-doc-ledger/recipes/01-basics/ledger-draft-preview/recipe.toml"}
+{"kind":"recipe","path":"crates/sim-lib-doc-ledger/recipes/01-basics/ledger-draft-preview/setup.siml"}
+{"kind":"recipe","path":"crates/sim-lib-doc-ledger/recipes/book.toml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-markup/recipes/01-basics/chapter.toml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-markup/recipes/01-basics/markup-doc-codec/purpose.md"}
 {"kind":"recipe","path":"crates/sim-lib-doc-markup/recipes/01-basics/markup-doc-codec/recipe.toml"}

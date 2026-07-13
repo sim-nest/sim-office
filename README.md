@@ -13,6 +13,7 @@ without learning office-file enums.
 | `sim-codec-ooxml` | OOXML spreadsheet and presentation codecs for local office documents. |
 | `sim-lib-deck` | Local presentation deck records, document projection, and slide content blocks. |
 | `sim-lib-doc-core` | Ring-0 document records, document kind shapes, and embedded descriptor recipes. |
+| `sim-lib-doc-ledger` | Ring-3 bridge from office evidence to ledger draft previews. |
 | `sim-lib-gantt` | Local schedule plans, dependency analysis, and SQLite Gantt snapshots. |
 | `sim-lib-doc-markup` | Markup file codecs exposed as office `DocCodec` adapters for article documents. |
 | `sim-lib-doc-site` | Opaque site registration and modeled/live document placement calls. |
