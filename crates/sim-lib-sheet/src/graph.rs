@@ -1,4 +1,9 @@
 //! Microsoft Graph workbook range bridge for exact sheet records.
+//!
+//! Microsoft Graph Excel REST works with `.xlsx` workbooks stored in Microsoft
+//! 365 business storage such as OneDrive for Business and SharePoint. Active
+//! workbook ranges use the Excel Office.js host bridge; this module handles the
+//! backend range JSON and write-plan shape shared with that host bridge.
 
 use num_bigint::BigInt;
 use serde::{Deserialize, Serialize};
