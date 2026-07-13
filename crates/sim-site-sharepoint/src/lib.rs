@@ -4,6 +4,8 @@
 //! sites, lists, list items, drives, and drive items. Graph v1 is not the
 //! site-provisioning backend; this crate keeps provisioning outside the
 //! SharePoint document placement and focuses on read/write-precondition data.
+//! SharePoint REST `_api` calls are available as explicit fallback operations
+//! for gaps in Graph coverage; they are not a second site frontend.
 
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
@@ -17,11 +19,16 @@ use sim_lib_doc_core::{
 use sim_lib_doc_site::register_site;
 use sim_lib_sheet::SHEET_DOC_KIND;
 
+pub mod batch;
 pub mod graph;
 pub mod model;
+pub mod permission;
+pub mod rest;
 
+pub use batch::{BATCH_API_PATH, RestBatchMethod, RestBatchOp, odata_batch_body};
 pub use graph::{MsGraphSite, drive_children, list_items};
 pub use model::{SharePointDriveTarget, SharePointListTarget};
+pub use rest::{SharePointRestSite, SharePointRestTokenSite};
 
 /// Stable office site id for SharePoint Graph placements.
 pub const SHAREPOINT_SITE_ID: &str = "site/sharepoint";
@@ -31,6 +38,8 @@ pub const SHAREPOINT_SITE_ID: &str = "site/sharepoint";
 pub enum SharePointError {
     /// A Microsoft Graph request failed.
     Graph(String),
+    /// A SharePoint REST fallback request failed.
+    Rest(String),
     /// A Graph response did not have the expected shape.
     WrongShape(String),
     /// A required field was absent or not a string.
@@ -57,6 +66,7 @@ impl fmt::Display for SharePointError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Graph(message) => write!(f, "SharePoint Graph request failed: {message}"),
+            Self::Rest(message) => write!(f, "SharePoint REST fallback failed: {message}"),
             Self::WrongShape(message) => write!(f, "SharePoint Graph shape failed: {message}"),
             Self::MissingField { path, field } => {
                 write!(f, "SharePoint Graph response at {path} missing {field}")
