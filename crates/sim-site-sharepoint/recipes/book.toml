@@ -1,0 +1,5 @@
+book = "office/sharepoint-site"
+title = "SharePoint Graph Site"
+summary = "Modeled SharePoint list and drive reads through Microsoft Graph."
+order = 421
+chapters = ["01-basics"]

@@ -16,6 +16,7 @@ members = [
   "crates/sim-site-libreoffice",
   "crates/sim-site-msgraph",
   "crates/sim-site-powerproject",
+  "crates/sim-site-sharepoint",
   "xtask",
 ]
 
