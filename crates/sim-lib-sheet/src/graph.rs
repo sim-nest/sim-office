@@ -383,7 +383,7 @@ mod tests {
 
         let edit = plan_write_graph_range(&mut cx, &sheet, &target).unwrap();
         let op = edit.op.object().as_expr(&mut cx).unwrap();
-        let Some(Expr::List(rows)) = expr_field(&op, FIELD_VALUES) else {
+        let Some(Expr::List(rows)) = lookup_expr_entry(&op, FIELD_VALUES) else {
             panic!("write op should carry rows");
         };
         let Expr::List(first_row) = &rows[0] else {
@@ -413,12 +413,12 @@ mod tests {
         assert_eq!(encoded["values"][0][1], "memo");
     }
 
-    fn expr_field<'a>(expr: &'a Expr, field_name: &str) -> Option<&'a Expr> {
+    fn lookup_expr_entry<'a>(expr: &'a Expr, name: &str) -> Option<&'a Expr> {
         let Expr::Map(entries) = expr else {
             return None;
         };
         entries.iter().find_map(|(key, value)| match key {
-            Expr::Symbol(symbol) if symbol == &Symbol::new(field_name) => Some(value),
+            Expr::Symbol(symbol) if symbol == &Symbol::new(name) => Some(value),
             _ => None,
         })
     }
