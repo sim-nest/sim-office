@@ -323,7 +323,7 @@ mod tests {
         }
     }
 
-    fn cx() -> Cx {
+    fn test_context() -> Cx {
         Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
     }
 
@@ -337,7 +337,7 @@ mod tests {
 
     #[test]
     fn modeled_range_json_becomes_sheet() {
-        let mut cx = cx();
+        let mut cx = test_context();
         let target = target();
         let site = ModeledSite {
             path: target.graph_path(),
@@ -369,7 +369,7 @@ mod tests {
 
     #[test]
     fn write_plan_keeps_decimal_text_and_exact_numbers_as_strings() {
-        let mut cx = cx();
+        let mut cx = test_context();
         let target = target();
         let mut sheet = Sheet::new("Q1");
         sheet.set_cell(
