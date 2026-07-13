@@ -1,0 +1,8 @@
+id = "local-gantt-plan"
+title = "Local Gantt plan"
+codec = "lisp"
+setup = "setup.siml"
+purpose = "purpose.md"
+order = 10
+tags = ["office", "gantt", "schedule", "store", "sandbox-descriptor"]
+requires = ["office/gantt", "discrete/graph"]

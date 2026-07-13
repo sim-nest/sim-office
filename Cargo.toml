@@ -5,6 +5,7 @@ members = [
   "crates/sim-codec-ooxml",
   "crates/sim-lib-deck",
   "crates/sim-lib-doc-core",
+  "crates/sim-lib-gantt",
   "crates/sim-lib-doc-markup",
   "crates/sim-lib-doc-site",
   "crates/sim-lib-doc-store",

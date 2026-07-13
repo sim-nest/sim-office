@@ -44,6 +44,11 @@
 {"kind":"recipe","path":"crates/sim-lib-doc-surface/recipes/01-basics/suite-surface-descriptor/recipe.toml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-surface/recipes/01-basics/suite-surface-descriptor/setup.siml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-surface/recipes/book.toml"}
+{"kind":"recipe","path":"crates/sim-lib-gantt/recipes/01-basics/chapter.toml"}
+{"kind":"recipe","path":"crates/sim-lib-gantt/recipes/01-basics/local-gantt-plan/purpose.md"}
+{"kind":"recipe","path":"crates/sim-lib-gantt/recipes/01-basics/local-gantt-plan/recipe.toml"}
+{"kind":"recipe","path":"crates/sim-lib-gantt/recipes/01-basics/local-gantt-plan/setup.siml"}
+{"kind":"recipe","path":"crates/sim-lib-gantt/recipes/book.toml"}
 {"kind":"recipe","path":"crates/sim-lib-mail/recipes/01-basics/chapter.toml"}
 {"kind":"recipe","path":"crates/sim-lib-mail/recipes/01-basics/mail-calendar-summary/purpose.md"}
 {"kind":"recipe","path":"crates/sim-lib-mail/recipes/01-basics/mail-calendar-summary/recipe.toml"}

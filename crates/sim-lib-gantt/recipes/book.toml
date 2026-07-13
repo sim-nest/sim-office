@@ -1,0 +1,5 @@
+book = "office/gantt"
+title = "Gantt Plans"
+summary = "Local schedule plans, dependency links, and critical-path descriptors."
+order = 418
+chapters = ["01-basics"]
