@@ -35,6 +35,11 @@
     "crates/sim-lib-sheet/recipes/01-basics/exact-sheet-formula/purpose.md",
     "crates/sim-lib-sheet/recipes/01-basics/exact-sheet-formula/recipe.toml",
     "crates/sim-lib-sheet/recipes/01-basics/exact-sheet-formula/setup.siml",
-    "crates/sim-lib-sheet/recipes/book.toml"
+    "crates/sim-lib-sheet/recipes/book.toml",
+    "crates/sim-site-msgraph/recipes/01-basics/chapter.toml",
+    "crates/sim-site-msgraph/recipes/01-basics/msgraph-modeled-read/purpose.md",
+    "crates/sim-site-msgraph/recipes/01-basics/msgraph-modeled-read/recipe.toml",
+    "crates/sim-site-msgraph/recipes/01-basics/msgraph-modeled-read/setup.siml",
+    "crates/sim-site-msgraph/recipes/book.toml"
   ]
 }

@@ -13,4 +13,5 @@ Generated from Cargo metadata by `xtask crate-catalog v1`.
 | `sim-lib-doc-store` | `false` | `custom-build, lib` | SQLite document store projections for SIM office documents. |
 | `sim-lib-doc-surface` | `false` | `custom-build, lib` | Scene projection and intent decoding for SIM office document panes. |
 | `sim-lib-sheet` | `false` | `custom-build, lib` | Exact spreadsheet domain model for SIM office documents. |
+| `sim-site-msgraph` | `false` | `custom-build, lib` | Microsoft Graph site adapter for SIM office documents. |
 | `xtask` | `false` | `bin` | SIM workspace package for xtask. |

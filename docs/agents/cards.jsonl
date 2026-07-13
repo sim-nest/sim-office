@@ -33,3 +33,8 @@
 {"kind":"recipe","path":"crates/sim-lib-sheet/recipes/01-basics/exact-sheet-formula/recipe.toml"}
 {"kind":"recipe","path":"crates/sim-lib-sheet/recipes/01-basics/exact-sheet-formula/setup.siml"}
 {"kind":"recipe","path":"crates/sim-lib-sheet/recipes/book.toml"}
+{"kind":"recipe","path":"crates/sim-site-msgraph/recipes/01-basics/chapter.toml"}
+{"kind":"recipe","path":"crates/sim-site-msgraph/recipes/01-basics/msgraph-modeled-read/purpose.md"}
+{"kind":"recipe","path":"crates/sim-site-msgraph/recipes/01-basics/msgraph-modeled-read/recipe.toml"}
+{"kind":"recipe","path":"crates/sim-site-msgraph/recipes/01-basics/msgraph-modeled-read/setup.siml"}
+{"kind":"recipe","path":"crates/sim-site-msgraph/recipes/book.toml"}

@@ -1,6 +1,6 @@
 {
   "generator": "xtask crate-catalog v1",
-  "package_count": 8,
+  "package_count": 9,
   "packages": [
     {
       "description": "OOXML spreadsheet codec for SIM office documents.",
@@ -88,6 +88,19 @@
       "publish": "false",
       "readme": "crates/sim-lib-sheet/README.md",
       "root": "crates/sim-lib-sheet",
+      "target_kinds": [
+        "custom-build",
+        "lib"
+      ]
+    },
+    {
+      "description": "Microsoft Graph site adapter for SIM office documents.",
+      "generated_readme": false,
+      "manifest": "crates/sim-site-msgraph/Cargo.toml",
+      "name": "sim-site-msgraph",
+      "publish": "false",
+      "readme": "crates/sim-site-msgraph/README.md",
+      "root": "crates/sim-site-msgraph",
       "target_kinds": [
         "custom-build",
         "lib"
