@@ -1,0 +1,5 @@
+(quote
+  (office/doc-markup
+    (decode "codec:markup/markdown" "article.md")
+    (doc-kind article)
+    (encode "codec:markup/typst" "article.typ")))
