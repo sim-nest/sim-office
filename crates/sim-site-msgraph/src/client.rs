@@ -5,6 +5,7 @@ use std::fmt;
 use serde_json::Value;
 use sim_kernel::{CapabilityName, Cx};
 use sim_lib_doc_core::{CREDENTIALS_CAPABILITY, NET_CONNECT_CAPABILITY};
+use sim_lib_sheet::{MsGraphSite, SheetError};
 
 use crate::{Cassette, TokenProvider};
 
@@ -130,6 +131,13 @@ pub fn graph_get<T: TokenProvider>(
             base_url,
             token_provider,
         } => live_graph_get(cx, base_url, token_provider, path),
+    }
+}
+
+impl<T: TokenProvider> MsGraphSite for GraphMode<T> {
+    fn graph_get(&self, cx: &mut Cx, path: &str) -> Result<Value, SheetError> {
+        graph_get(cx, self, path)
+            .map_err(|error| SheetError::WrongDocBody(format!("Microsoft Graph read: {error}")))
     }
 }
 
