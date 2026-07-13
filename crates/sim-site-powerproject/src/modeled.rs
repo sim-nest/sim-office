@@ -54,13 +54,13 @@ mod tests {
 
     use super::*;
 
-    fn cx() -> Cx {
+    fn test_context() -> Cx {
         Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
     }
 
     #[test]
     fn modeled_ole_receipt_imports_mspdi() {
-        let mut cx = cx();
+        let mut cx = test_context();
         let receipt = ModeledOleReceipt::new(
             "ole-export-1",
             br#"<?xml version="1.0" encoding="UTF-8"?>

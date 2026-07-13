@@ -109,7 +109,7 @@ mod tests {
 
     use super::*;
 
-    fn cx() -> Cx {
+    fn test_context() -> Cx {
         Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
     }
 
@@ -136,7 +136,7 @@ mod tests {
 
     #[test]
     fn site_registers_as_export_site() {
-        let mut cx = cx();
+        let mut cx = test_context();
 
         let record = register_powerproject_site(&mut cx, true).unwrap();
 
