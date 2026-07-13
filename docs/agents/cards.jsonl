@@ -1,3 +1,11 @@
+{"kind":"recipe","path":"crates/sim-codec-odf/recipes/01-basics/chapter.toml"}
+{"kind":"recipe","path":"crates/sim-codec-odf/recipes/01-basics/odp-round-trip/purpose.md"}
+{"kind":"recipe","path":"crates/sim-codec-odf/recipes/01-basics/odp-round-trip/recipe.toml"}
+{"kind":"recipe","path":"crates/sim-codec-odf/recipes/01-basics/odp-round-trip/setup.siml"}
+{"kind":"recipe","path":"crates/sim-codec-odf/recipes/01-basics/ods-round-trip/purpose.md"}
+{"kind":"recipe","path":"crates/sim-codec-odf/recipes/01-basics/ods-round-trip/recipe.toml"}
+{"kind":"recipe","path":"crates/sim-codec-odf/recipes/01-basics/ods-round-trip/setup.siml"}
+{"kind":"recipe","path":"crates/sim-codec-odf/recipes/book.toml"}
 {"kind":"recipe","path":"crates/sim-codec-ooxml/recipes/01-basics/chapter.toml"}
 {"kind":"recipe","path":"crates/sim-codec-ooxml/recipes/01-basics/pptx-round-trip/purpose.md"}
 {"kind":"recipe","path":"crates/sim-codec-ooxml/recipes/01-basics/pptx-round-trip/recipe.toml"}

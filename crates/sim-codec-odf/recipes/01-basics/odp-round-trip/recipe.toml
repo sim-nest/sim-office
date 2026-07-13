@@ -1,0 +1,8 @@
+id = "odp-round-trip"
+title = "ODP round trip"
+codec = "lisp"
+setup = "setup.siml"
+purpose = "purpose.md"
+order = 20
+tags = ["office", "deck", "odp", "odf", "codec", "sandbox-descriptor"]
+requires = ["office/deck", "office/doc-core", "codec/odf"]

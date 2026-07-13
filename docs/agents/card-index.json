@@ -1,6 +1,14 @@
 {
   "schema": "sim.card-index.v1",
   "cards": [
+    "crates/sim-codec-odf/recipes/01-basics/chapter.toml",
+    "crates/sim-codec-odf/recipes/01-basics/odp-round-trip/purpose.md",
+    "crates/sim-codec-odf/recipes/01-basics/odp-round-trip/recipe.toml",
+    "crates/sim-codec-odf/recipes/01-basics/odp-round-trip/setup.siml",
+    "crates/sim-codec-odf/recipes/01-basics/ods-round-trip/purpose.md",
+    "crates/sim-codec-odf/recipes/01-basics/ods-round-trip/recipe.toml",
+    "crates/sim-codec-odf/recipes/01-basics/ods-round-trip/setup.siml",
+    "crates/sim-codec-odf/recipes/book.toml",
     "crates/sim-codec-ooxml/recipes/01-basics/chapter.toml",
     "crates/sim-codec-ooxml/recipes/01-basics/pptx-round-trip/purpose.md",
     "crates/sim-codec-ooxml/recipes/01-basics/pptx-round-trip/recipe.toml",
