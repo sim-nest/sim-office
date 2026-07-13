@@ -1,6 +1,7 @@
 [workspace]
 resolver = "3"
 members = [
+  "crates/sim-codec-mspdi",
   "crates/sim-codec-odf",
   "crates/sim-codec-ooxml",
   "crates/sim-lib-deck",
