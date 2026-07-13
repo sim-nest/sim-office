@@ -6,6 +6,7 @@
 pub mod caps;
 pub mod edit;
 pub mod error;
+pub mod evidence;
 pub mod fidelity;
 pub mod model;
 pub mod place;
@@ -18,6 +19,7 @@ pub use caps::{
 };
 pub use edit::{DomainEdit, Edit, invert};
 pub use error::OfficeError;
+pub use evidence::{Evidence, LinkRole};
 pub use fidelity::{FidelityReport, LossNote};
 pub use model::{
     DOC_KIND_ARTICLE, DOC_KIND_README, DOC_KIND_REPORT, Doc, DocId, DocKind, ExternalRef,

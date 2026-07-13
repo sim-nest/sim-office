@@ -4,6 +4,7 @@
 #![deny(missing_docs)]
 
 mod codec;
+pub mod evidence;
 pub mod store;
 
 #[cfg(test)]
