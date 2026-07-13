@@ -74,3 +74,8 @@
 {"kind":"recipe","path":"crates/sim-site-msgraph/recipes/01-basics/msgraph-modeled-read/recipe.toml"}
 {"kind":"recipe","path":"crates/sim-site-msgraph/recipes/01-basics/msgraph-modeled-read/setup.siml"}
 {"kind":"recipe","path":"crates/sim-site-msgraph/recipes/book.toml"}
+{"kind":"recipe","path":"crates/sim-site-powerproject/recipes/01-basics/chapter.toml"}
+{"kind":"recipe","path":"crates/sim-site-powerproject/recipes/01-basics/powerproject-placement/purpose.md"}
+{"kind":"recipe","path":"crates/sim-site-powerproject/recipes/01-basics/powerproject-placement/recipe.toml"}
+{"kind":"recipe","path":"crates/sim-site-powerproject/recipes/01-basics/powerproject-placement/setup.siml"}
+{"kind":"recipe","path":"crates/sim-site-powerproject/recipes/book.toml"}

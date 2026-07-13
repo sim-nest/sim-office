@@ -76,6 +76,11 @@
     "crates/sim-site-msgraph/recipes/01-basics/msgraph-modeled-read/purpose.md",
     "crates/sim-site-msgraph/recipes/01-basics/msgraph-modeled-read/recipe.toml",
     "crates/sim-site-msgraph/recipes/01-basics/msgraph-modeled-read/setup.siml",
-    "crates/sim-site-msgraph/recipes/book.toml"
+    "crates/sim-site-msgraph/recipes/book.toml",
+    "crates/sim-site-powerproject/recipes/01-basics/chapter.toml",
+    "crates/sim-site-powerproject/recipes/01-basics/powerproject-placement/purpose.md",
+    "crates/sim-site-powerproject/recipes/01-basics/powerproject-placement/recipe.toml",
+    "crates/sim-site-powerproject/recipes/01-basics/powerproject-placement/setup.siml",
+    "crates/sim-site-powerproject/recipes/book.toml"
   ]
 }

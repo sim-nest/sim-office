@@ -20,6 +20,7 @@ without learning office-file enums.
 | `sim-lib-doc-surface` | Scene projection and intent decoding for suite document panes. |
 | `sim-lib-sheet` | Exact local spreadsheet records, formulas, document projection, and cell edits. |
 | `sim-site-msgraph` | Microsoft Graph site adapter with modeled cassettes and gated live reads. |
+| `sim-site-powerproject` | Powerproject and Project for the web placements for Gantt documents. |
 
 ## Documentation
 
