@@ -7,6 +7,7 @@ use sim_kernel::{Cx, DefaultFactory, Expr, NoopEvalPolicy, Symbol};
 use sim_lib_doc_core::{Doc, DocCodec, DocCodecOptions, DocId, DocKind, SurfaceCaps};
 use sim_lib_doc_store::DocStore;
 use sim_lib_intent::{Origin, intent};
+use sim_value::access::field;
 
 use crate::{
     MARKUP_EDIT_DOMAIN, MarkupDocCodec, apply_markup_edit, decode_markup_suite_intent,
@@ -61,18 +62,6 @@ fn sheet_doc(cx: &mut Cx) -> Doc {
 
 fn value_expr(cx: &mut Cx, value: sim_kernel::Value) -> Expr {
     value.object().as_expr(cx).unwrap()
-}
-
-fn field<'a>(expr: &'a Expr, name: &str) -> Option<&'a Expr> {
-    let Expr::Map(entries) = expr else {
-        return None;
-    };
-    entries.iter().find_map(|(key, value)| match key {
-        Expr::Symbol(symbol) if symbol.namespace.is_none() && symbol.name.as_ref() == name => {
-            Some(value)
-        }
-        _ => None,
-    })
 }
 
 fn child_ids(scene: &Expr) -> Vec<String> {

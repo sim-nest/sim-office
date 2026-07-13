@@ -24,6 +24,7 @@ sim-cookbook = { version = "0.1.0" }
 
 [dev-dependencies]
 sim-lib-doc-surface = { version = "0.1.0", path = "../sim-lib-doc-surface" }
+sim-value = { version = "0.1.0" }
 tempfile = "3"
 
 [lints]
