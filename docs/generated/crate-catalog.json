@@ -1,15 +1,28 @@
 {
   "generator": "xtask crate-catalog v1",
-  "package_count": 9,
+  "package_count": 10,
   "packages": [
     {
-      "description": "OOXML spreadsheet codec for SIM office documents.",
+      "description": "OOXML spreadsheet and presentation codecs for SIM office documents.",
       "generated_readme": false,
       "manifest": "crates/sim-codec-ooxml/Cargo.toml",
       "name": "sim-codec-ooxml",
       "publish": "false",
       "readme": "crates/sim-codec-ooxml/README.md",
       "root": "crates/sim-codec-ooxml",
+      "target_kinds": [
+        "custom-build",
+        "lib"
+      ]
+    },
+    {
+      "description": "Presentation deck domain model for SIM office documents.",
+      "generated_readme": false,
+      "manifest": "crates/sim-lib-deck/Cargo.toml",
+      "name": "sim-lib-deck",
+      "publish": "false",
+      "readme": "crates/sim-lib-deck/README.md",
+      "root": "crates/sim-lib-deck",
       "target_kinds": [
         "custom-build",
         "lib"

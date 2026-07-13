@@ -1,8 +1,16 @@
 {"kind":"recipe","path":"crates/sim-codec-ooxml/recipes/01-basics/chapter.toml"}
+{"kind":"recipe","path":"crates/sim-codec-ooxml/recipes/01-basics/pptx-round-trip/purpose.md"}
+{"kind":"recipe","path":"crates/sim-codec-ooxml/recipes/01-basics/pptx-round-trip/recipe.toml"}
+{"kind":"recipe","path":"crates/sim-codec-ooxml/recipes/01-basics/pptx-round-trip/setup.siml"}
 {"kind":"recipe","path":"crates/sim-codec-ooxml/recipes/01-basics/xlsx-round-trip/purpose.md"}
 {"kind":"recipe","path":"crates/sim-codec-ooxml/recipes/01-basics/xlsx-round-trip/recipe.toml"}
 {"kind":"recipe","path":"crates/sim-codec-ooxml/recipes/01-basics/xlsx-round-trip/setup.siml"}
 {"kind":"recipe","path":"crates/sim-codec-ooxml/recipes/book.toml"}
+{"kind":"recipe","path":"crates/sim-lib-deck/recipes/01-basics/chapter.toml"}
+{"kind":"recipe","path":"crates/sim-lib-deck/recipes/01-basics/deck-outline/purpose.md"}
+{"kind":"recipe","path":"crates/sim-lib-deck/recipes/01-basics/deck-outline/recipe.toml"}
+{"kind":"recipe","path":"crates/sim-lib-deck/recipes/01-basics/deck-outline/setup.siml"}
+{"kind":"recipe","path":"crates/sim-lib-deck/recipes/book.toml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-core/recipes/01-basics/chapter.toml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-core/recipes/01-basics/doc-core-descriptor/purpose.md"}
 {"kind":"recipe","path":"crates/sim-lib-doc-core/recipes/01-basics/doc-core-descriptor/recipe.toml"}

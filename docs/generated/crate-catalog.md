@@ -6,7 +6,8 @@ Generated from Cargo metadata by `xtask crate-catalog v1`.
 
 | Package | Publish | Targets | Description |
 | --- | --- | --- | --- |
-| `sim-codec-ooxml` | `false` | `custom-build, lib` | OOXML spreadsheet codec for SIM office documents. |
+| `sim-codec-ooxml` | `false` | `custom-build, lib` | OOXML spreadsheet and presentation codecs for SIM office documents. |
+| `sim-lib-deck` | `false` | `custom-build, lib` | Presentation deck domain model for SIM office documents. |
 | `sim-lib-doc-core` | `false` | `custom-build, lib` | Core document records and shape hooks for SIM office documents. |
 | `sim-lib-doc-markup` | `false` | `custom-build, lib` | Markup document codecs for SIM office documents. |
 | `sim-lib-doc-site` | `false` | `custom-build, lib` | Document site registration and modeled realize spine for SIM office documents. |

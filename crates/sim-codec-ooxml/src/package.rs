@@ -1,4 +1,4 @@
-//! ZIP package helpers for the `.xlsx` container.
+//! ZIP package helpers for OOXML containers.
 
 use std::collections::BTreeMap;
 use std::io::{Cursor, Read, Write};
@@ -14,17 +14,19 @@ pub(crate) const ROOT_RELS: &str = "_rels/.rels";
 pub(crate) const WORKBOOK: &str = "xl/workbook.xml";
 pub(crate) const WORKBOOK_RELS: &str = "xl/_rels/workbook.xml.rels";
 pub(crate) const WORKSHEET: &str = "xl/worksheets/sheet1.xml";
+pub(crate) const PRESENTATION: &str = "ppt/presentation.xml";
+pub(crate) const PRESENTATION_RELS: &str = "ppt/_rels/presentation.xml.rels";
 
-/// In-memory `.xlsx` package entries.
-pub(crate) struct XlsxPackage {
+/// In-memory OOXML package entries.
+pub(crate) struct OoxmlPackage {
     entries: BTreeMap<String, Vec<u8>>,
 }
 
-impl XlsxPackage {
-    /// Reads a ZIP-backed `.xlsx` package.
-    pub(crate) fn read(bytes: &[u8]) -> Result<Self, OfficeError> {
+impl OoxmlPackage {
+    /// Reads a ZIP-backed OOXML package.
+    pub(crate) fn read(bytes: &[u8], extension: &str) -> Result<Self, OfficeError> {
         if bytes.starts_with(OLE_COMPOUND_HEADER) {
-            return Err(error(".xls binary workbooks are not supported; use .xlsx"));
+            return Err(ole_error(extension));
         }
         let mut archive = ZipArchive::new(Cursor::new(bytes)).map_err(zip_error)?;
         let mut entries = BTreeMap::new();
@@ -41,9 +43,6 @@ impl XlsxPackage {
         let package = Self { entries };
         package.require(CONTENT_TYPES)?;
         package.require(ROOT_RELS)?;
-        package.require(WORKBOOK)?;
-        package.require(WORKBOOK_RELS)?;
-        package.require(WORKSHEET)?;
         Ok(package)
     }
 
@@ -59,15 +58,20 @@ impl XlsxPackage {
         self.entries.contains_key(name)
     }
 
-    fn require(&self, name: &str) -> Result<&[u8], OfficeError> {
+    /// Returns sorted package entry names.
+    pub(crate) fn names(&self) -> impl Iterator<Item = &str> {
+        self.entries.keys().map(String::as_str)
+    }
+
+    pub(crate) fn require(&self, name: &str) -> Result<&[u8], OfficeError> {
         self.entries
             .get(name)
             .map(Vec::as_slice)
-            .ok_or_else(|| error(format!("xlsx package is missing {name}")))
+            .ok_or_else(|| error(format!("OOXML package is missing {name}")))
     }
 }
 
-/// Writes a ZIP-backed `.xlsx` package from UTF-8 XML entries.
+/// Writes a ZIP-backed OOXML package from UTF-8 XML entries.
 pub(crate) fn write_package(entries: BTreeMap<String, String>) -> Result<Vec<u8>, OfficeError> {
     let mut cursor = Cursor::new(Vec::new());
     {
@@ -85,7 +89,16 @@ pub(crate) fn write_package(entries: BTreeMap<String, String>) -> Result<Vec<u8>
 }
 
 fn zip_error(error: zip::result::ZipError) -> OfficeError {
-    self::error(format!("invalid xlsx zip package: {error}"))
+    self::error(format!("invalid OOXML zip package: {error}"))
+}
+
+fn ole_error(extension: &str) -> OfficeError {
+    let message = match extension {
+        ".xlsx" => ".xls binary workbooks are not supported; use .xlsx".to_owned(),
+        ".pptx" => ".ppt binary presentations are not supported; use .pptx".to_owned(),
+        other => format!("binary Office packages are not supported for {other}"),
+    };
+    error(message)
 }
 
 fn error(message: impl Into<String>) -> OfficeError {

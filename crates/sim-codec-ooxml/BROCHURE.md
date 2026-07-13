@@ -1,22 +1,22 @@
 # sim-codec-ooxml
 
-In one line: Excel-compatible local files can move through SIM without turning numbers into floats.
+In one line: Office file packages can move through SIM without hiding what the portable model cannot keep.
 
 ## What it gives you
 
-`sim-codec-ooxml` gives the office family a small `.xlsx` boundary for the exact
-sheet model. It creates ordinary workbook packages, reads them back into SIM
-sheet documents, and calls out styling or merge information that does not fit
-the portable local model.
+`sim-codec-ooxml` gives the office family local file boundaries for spreadsheet
+and presentation documents. It creates ordinary workbook and slide packages,
+reads them back into SIM documents, and calls out styling, merged cells,
+transitions, or media that do not fit the portable local models.
 
 ## Why you will be glad
 
-- Local spreadsheets can travel through Excel-compatible files.
-- Exact rational values stay exact across the file boundary.
-- Loss reports make unsupported workbook features visible instead of silent.
+- Local spreadsheets and slide decks can travel through familiar Office files.
+- Exact spreadsheet values stay exact across the file boundary.
+- Loss reports make unsupported workbook and presentation features visible.
 
 ## Where it fits
 
-This crate sits between the exact sheet domain and vendor spreadsheet files. It
-keeps the local model useful before live Excel, SharePoint, or LibreOffice sites
-enter the workflow.
+This crate sits between the local office domains and vendor file packages. It
+keeps sheets and decks useful before live Excel, PowerPoint, SharePoint, or
+LibreOffice sites enter the workflow.

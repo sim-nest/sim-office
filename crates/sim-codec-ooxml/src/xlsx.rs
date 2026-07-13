@@ -14,7 +14,7 @@ use sim_lib_sheet::{
 };
 
 use crate::package::{
-    CONTENT_TYPES, ROOT_RELS, WORKBOOK, WORKBOOK_RELS, WORKSHEET, XlsxPackage, write_package,
+    CONTENT_TYPES, OoxmlPackage, ROOT_RELS, WORKBOOK, WORKBOOK_RELS, WORKSHEET, write_package,
 };
 
 /// Stable codec id for local OOXML spreadsheet packages.
@@ -58,7 +58,10 @@ impl DocCodec for XlsxCodec {
         bytes: &[u8],
         _options: &DocCodecOptions,
     ) -> Result<(Doc, FidelityReport), OfficeError> {
-        let package = XlsxPackage::read(bytes)?;
+        let package = OoxmlPackage::read(bytes, XLSX_EXTENSION)?;
+        package.require(WORKBOOK)?;
+        package.require(WORKBOOK_RELS)?;
+        package.require(WORKSHEET)?;
         let sheet_info = first_sheet(package.text(WORKBOOK)?)?;
         let sheet_path = worksheet_path(&package, &sheet_info.rel_id)?;
         let shared_strings = shared_strings(&package)?;
@@ -201,7 +204,7 @@ fn first_sheet(workbook_xml: &str) -> Result<SheetInfo, OfficeError> {
     Ok(SheetInfo { name, rel_id })
 }
 
-fn worksheet_path(package: &XlsxPackage, rel_id: &str) -> Result<String, OfficeError> {
+fn worksheet_path(package: &OoxmlPackage, rel_id: &str) -> Result<String, OfficeError> {
     let rels = parse_xml(package.text(WORKBOOK_RELS)?, "workbook relationships")?;
     for relationship in rels
         .descendants()
@@ -229,7 +232,7 @@ fn resolve_workbook_target(target: &str) -> String {
     }
 }
 
-fn shared_strings(package: &XlsxPackage) -> Result<Vec<String>, OfficeError> {
+fn shared_strings(package: &OoxmlPackage) -> Result<Vec<String>, OfficeError> {
     if !package.has("xl/sharedStrings.xml") {
         return Ok(Vec::new());
     }

@@ -1,0 +1,8 @@
+id = "pptx-round-trip"
+title = "PPTX round trip"
+codec = "lisp"
+setup = "setup.siml"
+purpose = "purpose.md"
+order = 20
+tags = ["office", "deck", "pptx", "codec", "sandbox-descriptor"]
+requires = ["office/deck", "office/doc-core", "codec/ooxml-pptx"]

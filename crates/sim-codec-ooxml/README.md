@@ -1,8 +1,9 @@
 # sim-codec-ooxml
 
-OOXML spreadsheet codec for SIM office documents.
+OOXML spreadsheet and presentation codecs for SIM office documents.
 
-The crate reads and writes a narrow, valid `.xlsx` package for the local sheet
-domain. It keeps spreadsheet numbers exact by serializing rationals as text
-with explicit SIM metadata, rejects binary `.xls` files, and reports unsupported
-styles or merged cells through the shared fidelity report.
+The crate reads and writes narrow `.xlsx` and `.pptx` packages for the local
+sheet and deck domains. Spreadsheet numbers stay exact through explicit SIM
+metadata, presentation slides carry portable block metadata, binary Office
+formats are rejected, and unsupported workbook or slide features are reported
+through the shared fidelity report.

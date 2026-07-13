@@ -1,0 +1,1 @@
+(quote (office/deck "Project update" (slide intro (heading "Status") (bullets "Done" "Next")) (slide numbers (table (columns "Metric" "Value") (row "Budget" "On track")))))
