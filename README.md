@@ -19,6 +19,7 @@ without learning office-file enums.
 | `sim-lib-doc-site` | Opaque site registration and modeled/live document placement calls. |
 | `sim-lib-doc-store` | Local SQLite document snapshots and ledger-sequenced edit projections. |
 | `sim-lib-doc-surface` | Scene projection and intent decoding for suite document panes. |
+| `sim-lib-office-pack` | Annual accounts pack previews for spreadsheets, decks, mail drafts, and archives. |
 | `sim-lib-sheet` | Exact local spreadsheet records, formulas, document projection, and cell edits. |
 | `sim-site-msgraph` | Microsoft Graph site adapter with modeled cassettes and gated live reads. |
 | `sim-site-powerproject` | Powerproject and Project for the web placements for Gantt documents. |

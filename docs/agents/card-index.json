@@ -70,6 +70,8 @@
     "crates/sim-lib-mail/recipes/01-basics/mail-calendar-summary/recipe.toml",
     "crates/sim-lib-mail/recipes/01-basics/mail-calendar-summary/setup.siml",
     "crates/sim-lib-mail/recipes/book.toml",
+    "crates/sim-lib-office-pack/recipes/01-basics/chapter.toml",
+    "crates/sim-lib-office-pack/recipes/book.toml",
     "crates/sim-lib-sheet/recipes/01-basics/chapter.toml",
     "crates/sim-lib-sheet/recipes/01-basics/exact-sheet-formula/purpose.md",
     "crates/sim-lib-sheet/recipes/01-basics/exact-sheet-formula/recipe.toml",

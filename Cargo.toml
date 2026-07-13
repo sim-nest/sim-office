@@ -13,6 +13,7 @@ members = [
   "crates/sim-lib-doc-store",
   "crates/sim-lib-doc-surface",
   "crates/sim-lib-mail",
+  "crates/sim-lib-office-pack",
   "crates/sim-lib-sheet",
   "crates/sim-site-dalux",
   "crates/sim-site-libreoffice",
