@@ -64,6 +64,11 @@
 {"kind":"recipe","path":"crates/sim-lib-sheet/recipes/01-basics/exact-sheet-formula/recipe.toml"}
 {"kind":"recipe","path":"crates/sim-lib-sheet/recipes/01-basics/exact-sheet-formula/setup.siml"}
 {"kind":"recipe","path":"crates/sim-lib-sheet/recipes/book.toml"}
+{"kind":"recipe","path":"crates/sim-site-dalux/recipes/01-basics/chapter.toml"}
+{"kind":"recipe","path":"crates/sim-site-dalux/recipes/01-basics/dalux-modeled-items/purpose.md"}
+{"kind":"recipe","path":"crates/sim-site-dalux/recipes/01-basics/dalux-modeled-items/recipe.toml"}
+{"kind":"recipe","path":"crates/sim-site-dalux/recipes/01-basics/dalux-modeled-items/setup.siml"}
+{"kind":"recipe","path":"crates/sim-site-dalux/recipes/book.toml"}
 {"kind":"recipe","path":"crates/sim-site-libreoffice/recipes/01-basics/chapter.toml"}
 {"kind":"recipe","path":"crates/sim-site-libreoffice/recipes/01-basics/libreoffice-helper-modeled/purpose.md"}
 {"kind":"recipe","path":"crates/sim-site-libreoffice/recipes/01-basics/libreoffice-helper-modeled/recipe.toml"}
