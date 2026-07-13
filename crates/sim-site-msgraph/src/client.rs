@@ -1,11 +1,13 @@
 //! Microsoft Graph client boundary.
 
 use std::fmt;
+use std::io::Read;
 
 use serde_json::Value;
 use sim_kernel::{CapabilityName, Cx};
+use sim_lib_deck::{DeckError, MsGraphSite as DeckMsGraphSite};
 use sim_lib_doc_core::{CREDENTIALS_CAPABILITY, NET_CONNECT_CAPABILITY};
-use sim_lib_sheet::{MsGraphSite, SheetError};
+use sim_lib_sheet::{MsGraphSite as SheetMsGraphSite, SheetError};
 
 use crate::{Cassette, TokenProvider};
 
@@ -134,10 +136,33 @@ pub fn graph_get<T: TokenProvider>(
     }
 }
 
-impl<T: TokenProvider> MsGraphSite for GraphMode<T> {
+/// Runs one Microsoft Graph `GET` call in modeled or live mode and returns bytes.
+pub fn graph_get_bytes<T: TokenProvider>(
+    cx: &mut Cx,
+    mode: &GraphMode<T>,
+    path: &str,
+) -> Result<Vec<u8>, GraphError> {
+    validate_graph_path(path)?;
+    match mode {
+        GraphMode::Modeled(cassette) => cassette.get_bytes(path),
+        GraphMode::Live {
+            base_url,
+            token_provider,
+        } => live_graph_get_bytes(cx, base_url, token_provider, path),
+    }
+}
+
+impl<T: TokenProvider> SheetMsGraphSite for GraphMode<T> {
     fn graph_get(&self, cx: &mut Cx, path: &str) -> Result<Value, SheetError> {
         graph_get(cx, self, path)
             .map_err(|error| SheetError::WrongDocBody(format!("Microsoft Graph read: {error}")))
+    }
+}
+
+impl<T: TokenProvider> DeckMsGraphSite for GraphMode<T> {
+    fn graph_get_bytes(&self, cx: &mut Cx, path: &str) -> Result<Vec<u8>, DeckError> {
+        graph_get_bytes(cx, self, path)
+            .map_err(|error| DeckError::GraphFile(format!("Microsoft Graph file read: {error}")))
     }
 }
 
@@ -164,6 +189,41 @@ fn live_graph_get<T: TokenProvider>(
         Ok(response) => decode_response(response.status(), response.into_string(), Some(&token)),
         Err(ureq::Error::Status(status, response)) => {
             decode_status_error(status, response.into_string(), Some(&token))
+        }
+        Err(error) => Err(GraphError::Transport {
+            message: redacted_body(&error.to_string(), Some(&token)),
+        }),
+    }
+}
+
+fn live_graph_get_bytes<T: TokenProvider>(
+    cx: &Cx,
+    base_url: &str,
+    token_provider: &T,
+    path: &str,
+) -> Result<Vec<u8>, GraphError> {
+    require_live_gate(cx)?;
+    let token = token_provider
+        .bearer(&[GRAPH_DEFAULT_SCOPE])
+        .map_err(|error| GraphError::Token {
+            message: error.to_string(),
+        })?;
+    let url = graph_url(base_url, path)?;
+    let auth = format!("Bearer {token}");
+    let response = ureq::get(&url)
+        .set(
+            "Accept",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        )
+        .set("Authorization", &auth)
+        .call();
+
+    match response {
+        Ok(response) => {
+            decode_byte_response(response.status(), response.into_reader(), Some(&token))
+        }
+        Err(ureq::Error::Status(status, response)) => {
+            decode_status_error_bytes(status, response.into_reader(), Some(&token))
         }
         Err(error) => Err(GraphError::Transport {
             message: redacted_body(&error.to_string(), Some(&token)),
@@ -237,6 +297,41 @@ fn decode_status_error(
     Err(GraphError::HttpStatus { status, body })
 }
 
+fn decode_byte_response(
+    status: u16,
+    mut body: impl Read,
+    token: Option<&str>,
+) -> Result<Vec<u8>, GraphError> {
+    let mut bytes = Vec::new();
+    body.read_to_end(&mut bytes)
+        .map_err(|error| GraphError::Transport {
+            message: redacted_body(&error.to_string(), token),
+        })?;
+    if !(200..300).contains(&status) {
+        return Err(GraphError::HttpStatus {
+            status,
+            body: redacted_body(&String::from_utf8_lossy(&bytes), token),
+        });
+    }
+    Ok(bytes)
+}
+
+fn decode_status_error_bytes(
+    status: u16,
+    mut body: impl Read,
+    token: Option<&str>,
+) -> Result<Vec<u8>, GraphError> {
+    let mut bytes = Vec::new();
+    body.read_to_end(&mut bytes)
+        .map_err(|error| GraphError::Transport {
+            message: redacted_body(&error.to_string(), token),
+        })?;
+    Err(GraphError::HttpStatus {
+        status,
+        body: redacted_body(&String::from_utf8_lossy(&bytes), token),
+    })
+}
+
 pub(crate) fn redacted_body(body: &str, token: Option<&str>) -> String {
     let mut redacted = match token {
         Some(token) if !token.is_empty() => body.replace(token, "[redacted-token]"),
@@ -260,13 +355,13 @@ mod tests {
 
     use super::*;
 
-    fn cx() -> Cx {
+    fn test_context() -> Cx {
         Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
     }
 
     #[test]
     fn modeled_reads_are_deterministic() {
-        let mut cx = cx();
+        let mut cx = test_context();
         let mode: GraphMode<StaticTokenProvider> = GraphMode::Modeled(Cassette::with_json(
             "/me/drive/root",
             json!({ "id": "root", "name": "Documents" }),
@@ -280,8 +375,23 @@ mod tests {
     }
 
     #[test]
+    fn modeled_file_reads_are_deterministic() {
+        let mut cx = test_context();
+        let mode: GraphMode<StaticTokenProvider> = GraphMode::Modeled(Cassette::with_bytes(
+            "/me/drive/items/deck-1/content",
+            vec![1, 2, 3],
+        ));
+
+        let first = graph_get_bytes(&mut cx, &mode, "/me/drive/items/deck-1/content").unwrap();
+        let second = graph_get_bytes(&mut cx, &mode, "/me/drive/items/deck-1/content").unwrap();
+
+        assert_eq!(first, vec![1, 2, 3]);
+        assert_eq!(first, second);
+    }
+
+    #[test]
     fn live_mode_is_denied_without_network_capability() {
-        let mut cx = cx();
+        let mut cx = test_context();
         let mode = GraphMode::Live {
             base_url: "https://graph.microsoft.com/v1.0".to_owned(),
             token_provider: StaticTokenProvider::new("secret-token"),
@@ -310,7 +420,7 @@ mod tests {
 
     #[test]
     fn graph_paths_are_site_local() {
-        let mut cx = cx();
+        let mut cx = test_context();
         let mode: GraphMode<StaticTokenProvider> = GraphMode::Modeled(Cassette::new());
 
         let error = graph_get(&mut cx, &mode, "https://example.com/me").unwrap_err();

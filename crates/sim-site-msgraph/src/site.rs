@@ -1,6 +1,7 @@
 //! Office document site descriptor for Microsoft Graph.
 
 use sim_kernel::{CapabilityName, Cx, ExportRecord};
+use sim_lib_deck::DECK_DOC_KIND;
 use sim_lib_doc_core::{
     CREDENTIALS_CAPABILITY, DOC_KIND_ARTICLE, DOC_KIND_README, DOC_KIND_REPORT, DocKind, DocSite,
     NET_CONNECT_CAPABILITY, OfficeError,
@@ -18,6 +19,7 @@ pub fn msgraph_site(default_modeled: bool) -> DocSite {
         MSGRAPH_SITE_ID,
         vec![
             DocKind::new(SHEET_DOC_KIND),
+            DocKind::new(DECK_DOC_KIND),
             DocKind::new(DOC_KIND_ARTICLE),
             DocKind::new(DOC_KIND_REPORT),
             DocKind::new(DOC_KIND_README),

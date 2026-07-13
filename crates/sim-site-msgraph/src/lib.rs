@@ -9,8 +9,10 @@ pub mod modeled;
 pub mod site;
 
 pub use auth::{StaticTokenProvider, TokenProvider};
-pub use client::{GRAPH_DEFAULT_SCOPE, GRAPH_LIVE_ENV, GraphError, GraphMode, graph_get};
-pub use modeled::{Cassette, CassetteResponse};
+pub use client::{
+    GRAPH_DEFAULT_SCOPE, GRAPH_LIVE_ENV, GraphError, GraphMode, graph_get, graph_get_bytes,
+};
+pub use modeled::{Cassette, CassetteBytesResponse, CassetteResponse};
 pub use site::{
     MSGRAPH_SITE_ID, live_msgraph_site, modeled_msgraph_site, msgraph_site, register_msgraph_site,
 };

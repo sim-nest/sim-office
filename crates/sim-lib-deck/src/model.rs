@@ -110,6 +110,8 @@ pub enum DeckError {
     WrongDocBody(String),
     /// A deck record was invalid.
     InvalidDeck(String),
+    /// A deck file transport operation failed.
+    GraphFile(String),
 }
 
 impl fmt::Display for DeckError {
@@ -119,6 +121,7 @@ impl fmt::Display for DeckError {
             Self::WrongDocKind(kind) => write!(f, "expected deck document, got {kind}"),
             Self::WrongDocBody(message) => write!(f, "invalid deck document body: {message}"),
             Self::InvalidDeck(message) => write!(f, "invalid deck: {message}"),
+            Self::GraphFile(message) => write!(f, "deck file transport failed: {message}"),
         }
     }
 }
@@ -288,15 +291,15 @@ fn strings_from_expr(expr: &Expr, label: &'static str) -> Result<Vec<String>, De
         .collect()
 }
 
-fn map(entries: Vec<(Expr, Expr)>) -> Expr {
+pub(crate) fn map(entries: Vec<(Expr, Expr)>) -> Expr {
     Expr::Map(entries)
 }
 
-fn entry(name: &'static str, value: Expr) -> (Expr, Expr) {
+pub(crate) fn entry(name: &'static str, value: Expr) -> (Expr, Expr) {
     (Expr::Symbol(Symbol::new(name)), value)
 }
 
-fn office_symbol(name: &'static str) -> Symbol {
+pub(crate) fn office_symbol(name: &'static str) -> Symbol {
     Symbol::qualified("office", name)
 }
 
