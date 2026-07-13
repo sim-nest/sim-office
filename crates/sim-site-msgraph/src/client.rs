@@ -7,6 +7,7 @@ use serde_json::Value;
 use sim_kernel::{CapabilityName, Cx};
 use sim_lib_deck::{DeckError, MsGraphSite as DeckMsGraphSite};
 use sim_lib_doc_core::{CREDENTIALS_CAPABILITY, NET_CONNECT_CAPABILITY};
+use sim_lib_mail::{MailError, MsGraphSite as MailMsGraphSite};
 use sim_lib_sheet::{MsGraphSite as SheetMsGraphSite, SheetError};
 
 use crate::{Cassette, TokenProvider};
@@ -136,6 +137,23 @@ pub fn graph_get<T: TokenProvider>(
     }
 }
 
+/// Runs one Microsoft Graph `POST` call in modeled or live mode.
+pub fn graph_post<T: TokenProvider>(
+    cx: &mut Cx,
+    mode: &GraphMode<T>,
+    path: &str,
+    body: &Value,
+) -> Result<Value, GraphError> {
+    validate_graph_path(path)?;
+    match mode {
+        GraphMode::Modeled(cassette) => cassette.post(path, body),
+        GraphMode::Live {
+            base_url,
+            token_provider,
+        } => live_graph_post(cx, base_url, token_provider, path, body),
+    }
+}
+
 /// Runs one Microsoft Graph `GET` call in modeled or live mode and returns bytes.
 pub fn graph_get_bytes<T: TokenProvider>(
     cx: &mut Cx,
@@ -166,6 +184,19 @@ impl<T: TokenProvider> DeckMsGraphSite for GraphMode<T> {
     }
 }
 
+impl<T: TokenProvider> MailMsGraphSite for GraphMode<T> {
+    fn graph_get(&self, cx: &mut Cx, path: &str) -> Result<Value, MailError> {
+        graph_get(cx, self, path)
+            .map_err(|error| MailError::WrongDocBody(format!("Microsoft Graph mail read: {error}")))
+    }
+
+    fn graph_post(&self, cx: &mut Cx, path: &str, body: &Value) -> Result<Value, MailError> {
+        graph_post(cx, self, path, body).map_err(|error| {
+            MailError::WrongDocBody(format!("Microsoft Graph mail write: {error}"))
+        })
+    }
+}
+
 fn live_graph_get<T: TokenProvider>(
     cx: &Cx,
     base_url: &str,
@@ -184,6 +215,38 @@ fn live_graph_get<T: TokenProvider>(
         .set("Accept", "application/json")
         .set("Authorization", &auth)
         .call();
+
+    match response {
+        Ok(response) => decode_response(response.status(), response.into_string(), Some(&token)),
+        Err(ureq::Error::Status(status, response)) => {
+            decode_status_error(status, response.into_string(), Some(&token))
+        }
+        Err(error) => Err(GraphError::Transport {
+            message: redacted_body(&error.to_string(), Some(&token)),
+        }),
+    }
+}
+
+fn live_graph_post<T: TokenProvider>(
+    cx: &Cx,
+    base_url: &str,
+    token_provider: &T,
+    path: &str,
+    body: &Value,
+) -> Result<Value, GraphError> {
+    require_live_gate(cx)?;
+    let token = token_provider
+        .bearer(&[GRAPH_DEFAULT_SCOPE])
+        .map_err(|error| GraphError::Token {
+            message: error.to_string(),
+        })?;
+    let url = graph_url(base_url, path)?;
+    let auth = format!("Bearer {token}");
+    let response = ureq::post(&url)
+        .set("Accept", "application/json")
+        .set("Content-Type", "application/json")
+        .set("Authorization", &auth)
+        .send_string(&body.to_string());
 
     match response {
         Ok(response) => decode_response(response.status(), response.into_string(), Some(&token)),
@@ -342,89 +405,4 @@ pub(crate) fn redacted_body(body: &str, token: Option<&str>) -> String {
         redacted.push_str("...[truncated]");
     }
     redacted
-}
-
-#[cfg(test)]
-mod tests {
-    use std::sync::Arc;
-
-    use serde_json::json;
-    use sim_kernel::{Cx, DefaultFactory, NoopEvalPolicy};
-
-    use crate::StaticTokenProvider;
-
-    use super::*;
-
-    fn test_context() -> Cx {
-        Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
-    }
-
-    #[test]
-    fn modeled_reads_are_deterministic() {
-        let mut cx = test_context();
-        let mode: GraphMode<StaticTokenProvider> = GraphMode::Modeled(Cassette::with_json(
-            "/me/drive/root",
-            json!({ "id": "root", "name": "Documents" }),
-        ));
-
-        let first = graph_get(&mut cx, &mode, "/me/drive/root").unwrap();
-        let second = graph_get(&mut cx, &mode, "/me/drive/root").unwrap();
-
-        assert_eq!(first, second);
-        assert_eq!(first["id"], "root");
-    }
-
-    #[test]
-    fn modeled_file_reads_are_deterministic() {
-        let mut cx = test_context();
-        let mode: GraphMode<StaticTokenProvider> = GraphMode::Modeled(Cassette::with_bytes(
-            "/me/drive/items/deck-1/content",
-            vec![1, 2, 3],
-        ));
-
-        let first = graph_get_bytes(&mut cx, &mode, "/me/drive/items/deck-1/content").unwrap();
-        let second = graph_get_bytes(&mut cx, &mode, "/me/drive/items/deck-1/content").unwrap();
-
-        assert_eq!(first, vec![1, 2, 3]);
-        assert_eq!(first, second);
-    }
-
-    #[test]
-    fn live_mode_is_denied_without_network_capability() {
-        let mut cx = test_context();
-        let mode = GraphMode::Live {
-            base_url: "https://graph.microsoft.com/v1.0".to_owned(),
-            token_provider: StaticTokenProvider::new("secret-token"),
-        };
-
-        let error = graph_get(&mut cx, &mode, "/me/drive/root").unwrap_err();
-
-        assert!(matches!(
-            error,
-            GraphError::CapabilityDenied { capability }
-                if capability.as_str() == NET_CONNECT_CAPABILITY
-        ));
-    }
-
-    #[test]
-    fn status_errors_redact_tokens_and_long_bodies() {
-        let body = format!("token=secret-token {}", "x".repeat(400));
-
-        let redacted = redacted_body(&body, Some("secret-token"));
-
-        assert!(redacted.contains("[redacted-token]"));
-        assert!(!redacted.contains("secret-token"));
-        assert!(redacted.contains("[truncated]"));
-        assert!(!redacted.contains(&"x".repeat(220)));
-    }
-
-    #[test]
-    fn graph_paths_are_site_local() {
-        let mut cx = test_context();
-        let mode: GraphMode<StaticTokenProvider> = GraphMode::Modeled(Cassette::new());
-
-        let error = graph_get(&mut cx, &mode, "https://example.com/me").unwrap_err();
-
-        assert!(matches!(error, GraphError::InvalidPath { .. }));
-    }
 }

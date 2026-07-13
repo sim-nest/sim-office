@@ -16,6 +16,7 @@ sim-kernel = { version = "0.1.0" }
 sim-lib-deck = { version = "0.1.0", path = "../sim-lib-deck" }
 sim-lib-doc-core = { version = "0.1.0", path = "../sim-lib-doc-core" }
 sim-lib-doc-site = { version = "0.1.0", path = "../sim-lib-doc-site" }
+sim-lib-mail = { version = "0.1.0", path = "../sim-lib-mail" }
 sim-lib-sheet = { version = "0.1.0", path = "../sim-lib-sheet" }
 ureq = "2"
 
