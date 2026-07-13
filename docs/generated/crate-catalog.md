@@ -6,13 +6,23 @@ Generated from Cargo metadata by `xtask crate-catalog v1`.
 
 | Package | Publish | Targets | Description |
 | --- | --- | --- | --- |
+| `sim-codec-mspdi` | `false` | `custom-build, lib` | MSPDI schedule codec for SIM office Gantt documents. |
+| `sim-codec-odf` | `false` | `custom-build, lib` | ODF spreadsheet and presentation codecs for SIM office documents. |
 | `sim-codec-ooxml` | `false` | `custom-build, lib` | OOXML spreadsheet and presentation codecs for SIM office documents. |
 | `sim-lib-deck` | `false` | `custom-build, lib` | Presentation deck domain model for SIM office documents. |
 | `sim-lib-doc-core` | `false` | `custom-build, lib` | Core document records and shape hooks for SIM office documents. |
+| `sim-lib-doc-ledger` | `false` | `custom-build, lib` | Ring-3 office bridge for ledger draft and statement previews. |
 | `sim-lib-doc-markup` | `false` | `custom-build, lib` | Markup document codecs for SIM office documents. |
 | `sim-lib-doc-site` | `false` | `custom-build, lib` | Document site registration and modeled realize spine for SIM office documents. |
 | `sim-lib-doc-store` | `false` | `custom-build, lib` | SQLite document store projections for SIM office documents. |
 | `sim-lib-doc-surface` | `false` | `custom-build, lib` | Scene projection and intent decoding for SIM office document panes. |
+| `sim-lib-gantt` | `false` | `custom-build, lib` | Local Gantt schedule model and SQLite backend for SIM office plans. |
+| `sim-lib-mail` | `false` | `custom-build, lib` | Mail and calendar domain model for SIM office documents. |
+| `sim-lib-office-pack` | `false` | `custom-build, lib` | Annual accounts pack planner for SIM office documents. |
 | `sim-lib-sheet` | `false` | `custom-build, lib` | Exact spreadsheet domain model for SIM office documents. |
+| `sim-site-dalux` | `false` | `custom-build, lib` | Dalux API-identity site placement for SIM office documents. |
+| `sim-site-libreoffice` | `false` | `custom-build, lib` | LibreOffice helper-process site for SIM office documents. |
 | `sim-site-msgraph` | `false` | `custom-build, lib` | Microsoft Graph site adapter for SIM office documents. |
+| `sim-site-powerproject` | `false` | `custom-build, lib` | Powerproject and Project for the web site placement for SIM Gantt documents. |
+| `sim-site-sharepoint` | `false` | `custom-build, lib` | SharePoint Graph site placement for SIM office documents. |
 | `xtask` | `false` | `bin` | SIM workspace package for xtask. |

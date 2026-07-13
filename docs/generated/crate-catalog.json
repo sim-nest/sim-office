@@ -1,7 +1,33 @@
 {
   "generator": "xtask crate-catalog v1",
-  "package_count": 10,
+  "package_count": 20,
   "packages": [
+    {
+      "description": "MSPDI schedule codec for SIM office Gantt documents.",
+      "generated_readme": false,
+      "manifest": "crates/sim-codec-mspdi/Cargo.toml",
+      "name": "sim-codec-mspdi",
+      "publish": "false",
+      "readme": "crates/sim-codec-mspdi/README.md",
+      "root": "crates/sim-codec-mspdi",
+      "target_kinds": [
+        "custom-build",
+        "lib"
+      ]
+    },
+    {
+      "description": "ODF spreadsheet and presentation codecs for SIM office documents.",
+      "generated_readme": false,
+      "manifest": "crates/sim-codec-odf/Cargo.toml",
+      "name": "sim-codec-odf",
+      "publish": "false",
+      "readme": "crates/sim-codec-odf/README.md",
+      "root": "crates/sim-codec-odf",
+      "target_kinds": [
+        "custom-build",
+        "lib"
+      ]
+    },
     {
       "description": "OOXML spreadsheet and presentation codecs for SIM office documents.",
       "generated_readme": false,
@@ -36,6 +62,19 @@
       "publish": "false",
       "readme": "crates/sim-lib-doc-core/README.md",
       "root": "crates/sim-lib-doc-core",
+      "target_kinds": [
+        "custom-build",
+        "lib"
+      ]
+    },
+    {
+      "description": "Ring-3 office bridge for ledger draft and statement previews.",
+      "generated_readme": false,
+      "manifest": "crates/sim-lib-doc-ledger/Cargo.toml",
+      "name": "sim-lib-doc-ledger",
+      "publish": "false",
+      "readme": "crates/sim-lib-doc-ledger/README.md",
+      "root": "crates/sim-lib-doc-ledger",
       "target_kinds": [
         "custom-build",
         "lib"
@@ -94,6 +133,45 @@
       ]
     },
     {
+      "description": "Local Gantt schedule model and SQLite backend for SIM office plans.",
+      "generated_readme": false,
+      "manifest": "crates/sim-lib-gantt/Cargo.toml",
+      "name": "sim-lib-gantt",
+      "publish": "false",
+      "readme": "crates/sim-lib-gantt/README.md",
+      "root": "crates/sim-lib-gantt",
+      "target_kinds": [
+        "custom-build",
+        "lib"
+      ]
+    },
+    {
+      "description": "Mail and calendar domain model for SIM office documents.",
+      "generated_readme": false,
+      "manifest": "crates/sim-lib-mail/Cargo.toml",
+      "name": "sim-lib-mail",
+      "publish": "false",
+      "readme": "crates/sim-lib-mail/README.md",
+      "root": "crates/sim-lib-mail",
+      "target_kinds": [
+        "custom-build",
+        "lib"
+      ]
+    },
+    {
+      "description": "Annual accounts pack planner for SIM office documents.",
+      "generated_readme": false,
+      "manifest": "crates/sim-lib-office-pack/Cargo.toml",
+      "name": "sim-lib-office-pack",
+      "publish": "false",
+      "readme": "crates/sim-lib-office-pack/README.md",
+      "root": "crates/sim-lib-office-pack",
+      "target_kinds": [
+        "custom-build",
+        "lib"
+      ]
+    },
+    {
       "description": "Exact spreadsheet domain model for SIM office documents.",
       "generated_readme": false,
       "manifest": "crates/sim-lib-sheet/Cargo.toml",
@@ -107,6 +185,32 @@
       ]
     },
     {
+      "description": "Dalux API-identity site placement for SIM office documents.",
+      "generated_readme": false,
+      "manifest": "crates/sim-site-dalux/Cargo.toml",
+      "name": "sim-site-dalux",
+      "publish": "false",
+      "readme": "crates/sim-site-dalux/README.md",
+      "root": "crates/sim-site-dalux",
+      "target_kinds": [
+        "custom-build",
+        "lib"
+      ]
+    },
+    {
+      "description": "LibreOffice helper-process site for SIM office documents.",
+      "generated_readme": false,
+      "manifest": "crates/sim-site-libreoffice/Cargo.toml",
+      "name": "sim-site-libreoffice",
+      "publish": "false",
+      "readme": "crates/sim-site-libreoffice/README.md",
+      "root": "crates/sim-site-libreoffice",
+      "target_kinds": [
+        "custom-build",
+        "lib"
+      ]
+    },
+    {
       "description": "Microsoft Graph site adapter for SIM office documents.",
       "generated_readme": false,
       "manifest": "crates/sim-site-msgraph/Cargo.toml",
@@ -114,6 +218,32 @@
       "publish": "false",
       "readme": "crates/sim-site-msgraph/README.md",
       "root": "crates/sim-site-msgraph",
+      "target_kinds": [
+        "custom-build",
+        "lib"
+      ]
+    },
+    {
+      "description": "Powerproject and Project for the web site placement for SIM Gantt documents.",
+      "generated_readme": false,
+      "manifest": "crates/sim-site-powerproject/Cargo.toml",
+      "name": "sim-site-powerproject",
+      "publish": "false",
+      "readme": "crates/sim-site-powerproject/README.md",
+      "root": "crates/sim-site-powerproject",
+      "target_kinds": [
+        "custom-build",
+        "lib"
+      ]
+    },
+    {
+      "description": "SharePoint Graph site placement for SIM office documents.",
+      "generated_readme": false,
+      "manifest": "crates/sim-site-sharepoint/Cargo.toml",
+      "name": "sim-site-sharepoint",
+      "publish": "false",
+      "readme": "crates/sim-site-sharepoint/README.md",
+      "root": "crates/sim-site-sharepoint",
       "target_kinds": [
         "custom-build",
         "lib"
