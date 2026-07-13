@@ -11,6 +11,7 @@ members = [
   "crates/sim-lib-doc-surface",
   "crates/sim-lib-mail",
   "crates/sim-lib-sheet",
+  "crates/sim-site-libreoffice",
   "crates/sim-site-msgraph",
   "xtask",
 ]
