@@ -25,6 +25,11 @@
     "crates/sim-lib-doc-surface/recipes/01-basics/suite-surface-descriptor/purpose.md",
     "crates/sim-lib-doc-surface/recipes/01-basics/suite-surface-descriptor/recipe.toml",
     "crates/sim-lib-doc-surface/recipes/01-basics/suite-surface-descriptor/setup.siml",
-    "crates/sim-lib-doc-surface/recipes/book.toml"
+    "crates/sim-lib-doc-surface/recipes/book.toml",
+    "crates/sim-lib-sheet/recipes/01-basics/chapter.toml",
+    "crates/sim-lib-sheet/recipes/01-basics/exact-sheet-formula/purpose.md",
+    "crates/sim-lib-sheet/recipes/01-basics/exact-sheet-formula/recipe.toml",
+    "crates/sim-lib-sheet/recipes/01-basics/exact-sheet-formula/setup.siml",
+    "crates/sim-lib-sheet/recipes/book.toml"
   ]
 }

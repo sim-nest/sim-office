@@ -1,0 +1,5 @@
+book = "office/sheet"
+title = "Spreadsheet Domain"
+summary = "Exact local sheets and open cell edits."
+order = 414
+chapters = ["01-basics"]

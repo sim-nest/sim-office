@@ -14,6 +14,7 @@ without learning office-file enums.
 | `sim-lib-doc-site` | Opaque site registration and modeled/live document placement calls. |
 | `sim-lib-doc-store` | Local SQLite document snapshots and ledger-sequenced edit projections. |
 | `sim-lib-doc-surface` | Scene projection and intent decoding for suite document panes. |
+| `sim-lib-sheet` | Exact local spreadsheet records, formulas, document projection, and cell edits. |
 
 ## Documentation
 

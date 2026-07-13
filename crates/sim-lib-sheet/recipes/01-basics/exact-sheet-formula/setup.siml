@@ -1,0 +1,1 @@
+(quote (office/sheet formula (A1 1) (B1 5/2) (= C1 (+ A1 B1)) (C1 7/2)))

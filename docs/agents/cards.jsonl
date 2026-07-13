@@ -23,3 +23,8 @@
 {"kind":"recipe","path":"crates/sim-lib-doc-surface/recipes/01-basics/suite-surface-descriptor/recipe.toml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-surface/recipes/01-basics/suite-surface-descriptor/setup.siml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-surface/recipes/book.toml"}
+{"kind":"recipe","path":"crates/sim-lib-sheet/recipes/01-basics/chapter.toml"}
+{"kind":"recipe","path":"crates/sim-lib-sheet/recipes/01-basics/exact-sheet-formula/purpose.md"}
+{"kind":"recipe","path":"crates/sim-lib-sheet/recipes/01-basics/exact-sheet-formula/recipe.toml"}
+{"kind":"recipe","path":"crates/sim-lib-sheet/recipes/01-basics/exact-sheet-formula/setup.siml"}
+{"kind":"recipe","path":"crates/sim-lib-sheet/recipes/book.toml"}
