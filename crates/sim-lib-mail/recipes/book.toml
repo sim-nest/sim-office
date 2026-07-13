@@ -1,0 +1,5 @@
+book = "office/mail"
+title = "Mail And Calendar Domain"
+summary = "Privacy-aware messages, events, and attachment references."
+order = 418
+chapters = ["01-basics"]

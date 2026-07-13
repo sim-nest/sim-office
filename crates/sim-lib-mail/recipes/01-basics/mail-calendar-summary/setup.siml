@@ -1,0 +1,1 @@
+(quote (office/mail-calendar (message msg-1 "Project update" "ada@example.test" "Short body preview" (attachment "site/msgraph" "drive-item-1")) (event evt-1 "Review" "2026-07-13T09:00:00Z" "2026-07-13T10:00:00Z" ("ada@example.test" "bo@example.test"))))
