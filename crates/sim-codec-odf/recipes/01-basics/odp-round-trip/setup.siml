@@ -1,1 +1,9 @@
-(quote (office/odf round-trip (deck ProjectUpdate (slide intro Status)) (package .odp) (decoded ProjectUpdate)))
+(expr:map
+  [kind office/odf-round-trip]
+  [operation encode-decode]
+  [doc-kind office/deck]
+  [deck ProjectUpdate]
+  [slides [intro]]
+  [package ".odp"]
+  [decoded ProjectUpdate]
+  [mode modeled])

@@ -1,1 +1,7 @@
-(quote (office/doc-store projection (doc doc-1) (ledger-seq 42) (undo inverse-edit)))
+(expr:map
+  [kind office/doc-store-projection]
+  [operation project-store]
+  [doc doc-1]
+  [ledger-seq "42"]
+  [undo inverse-edit]
+  [mode modeled])

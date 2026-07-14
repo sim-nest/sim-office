@@ -1,1 +1,8 @@
-(quote (office/ledger preview-post (draft draft-1) (state preview-only) (evidence site/sharepoint/file-9 ledger/voucher-pending)))
+(expr:map
+  [kind office/ledger-draft-preview]
+  [operation preview-post]
+  [draft draft-1]
+  [state preview-only]
+  [evidence [site/sharepoint/file-9 ledger/voucher-pending]]
+  [writes [none]]
+  [mode modeled])

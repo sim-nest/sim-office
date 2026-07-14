@@ -1,1 +1,7 @@
-(quote (office/sharepoint-site (site site/sharepoint) (mode modeled) (list list-1) (drive drive-1)))
+(expr:map
+  [kind office/sharepoint-site]
+  [operation graph-read]
+  [site site/sharepoint]
+  [list list-1]
+  [drive drive-1]
+  [mode modeled])

@@ -1,1 +1,9 @@
-(quote (office/odf round-trip (sheet Sheet1 (A1 1) (B1 5/2)) (package .ods) (decoded Sheet1)))
+(expr:map
+  [kind office/odf-round-trip]
+  [operation encode-decode]
+  [doc-kind office/sheet]
+  [sheet Sheet1]
+  [cells [A1 "1" B1 "5/2"]]
+  [package ".ods"]
+  [decoded Sheet1]
+  [mode modeled])

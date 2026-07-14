@@ -1,1 +1,7 @@
-(quote (office/doc-site descriptor (site site/msgraph) (mode modeled) (write preview)))
+(expr:map
+  [kind office/doc-site-descriptor]
+  [operation register-site]
+  [site site/msgraph]
+  [default modeled]
+  [write preview]
+  [mode modeled])

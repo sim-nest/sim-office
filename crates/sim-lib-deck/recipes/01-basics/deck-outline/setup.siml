@@ -1,1 +1,10 @@
-(quote (office/deck "Project update" (slide intro (heading "Status") (bullets "Done" "Next")) (slide numbers (table (columns "Metric" "Value") (row "Budget" "On track")))))
+(expr:map
+  [kind office/deck-outline]
+  [operation build-deck]
+  [deck "Project update"]
+  [slides [intro numbers]]
+  [intro-heading "Status"]
+  [intro-bullets ["Done" "Next"]]
+  [table-columns ["Metric" "Value"]]
+  [table-row ["Budget" "On track"]]
+  [mode modeled])

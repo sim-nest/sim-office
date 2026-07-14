@@ -1,1 +1,7 @@
-(quote (office/dalux-site (site site/dalux) (mode modeled) (project "project-1") (items cassette)))
+(expr:map
+  [kind office/dalux-site]
+  [operation read-modeled-items]
+  [site site/dalux]
+  [project "project-1"]
+  [items cassette]
+  [mode modeled])

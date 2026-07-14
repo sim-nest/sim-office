@@ -1,1 +1,7 @@
-(quote (office/doc-core descriptor (kind report) (id r1) (shape office/doc/report)))
+(expr:map
+  [kind office/doc-core-descriptor]
+  [operation describe-doc]
+  [doc-kind report]
+  [doc-id r1]
+  [shape office/doc/report]
+  [mode modeled])

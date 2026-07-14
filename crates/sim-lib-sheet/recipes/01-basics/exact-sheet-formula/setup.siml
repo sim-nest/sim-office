@@ -1,1 +1,8 @@
-(quote (office/sheet formula (A1 1) (B1 5/2) (= C1 (+ A1 B1)) (C1 7/2)))
+(expr:map
+  [kind office/sheet-formula]
+  [operation evaluate-formula]
+  [sheet Sheet1]
+  [inputs [A1 "1" B1 "5/2"]]
+  [formula ["C1" "(+ A1 B1)"]]
+  [result ["C1" "7/2"]]
+  [mode modeled])
