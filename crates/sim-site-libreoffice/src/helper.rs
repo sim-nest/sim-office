@@ -13,6 +13,33 @@ use crate::site::LIBREOFFICE_SITE_ID;
 /// Environment gate required before a live LibreOffice helper may spawn.
 pub const LIBREOFFICE_BRIDGE_ENV: &str = "SIM_OFFICE_LIBREOFFICE_BRIDGE";
 
+#[cfg(test)]
+trait GrantOutcome {
+    fn expect_granted(self);
+}
+
+#[cfg(test)]
+impl GrantOutcome for () {
+    fn expect_granted(self) {}
+}
+
+#[cfg(test)]
+impl GrantOutcome for sim_kernel::Result<()> {
+    fn expect_granted(self) {
+        self.unwrap();
+    }
+}
+
+#[cfg(test)]
+macro_rules! expect_granted {
+    ($grant:expr) => {{
+        #[allow(clippy::let_unit_value)]
+        let grant_result = $grant;
+        #[allow(clippy::unit_arg)]
+        grant_result.expect_granted();
+    }};
+}
+
 /// LibreOffice helper process placement.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct LibreOfficeSite {
@@ -232,7 +259,7 @@ mod tests {
 
     fn cx_with_process_spawn() -> Cx {
         let (mut cx, seat) = Cx::new_seated(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory));
-        seat.grant(&mut cx, CapabilityName::new(PROCESS_SPAWN_CAPABILITY));
+        expect_granted!(seat.grant(&mut cx, CapabilityName::new(PROCESS_SPAWN_CAPABILITY)));
         cx
     }
 
