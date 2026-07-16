@@ -1,109 +1,132 @@
 {
-  "schema": "sim.card-index.v1",
+  "card_count": 21,
   "cards": [
-    "crates/sim-codec-mspdi/recipes/01-basics/chapter.toml",
-    "crates/sim-codec-mspdi/recipes/01-basics/mspdi-round-trip/purpose.md",
-    "crates/sim-codec-mspdi/recipes/01-basics/mspdi-round-trip/recipe.toml",
-    "crates/sim-codec-mspdi/recipes/01-basics/mspdi-round-trip/setup.siml",
-    "crates/sim-codec-mspdi/recipes/book.toml",
-    "crates/sim-codec-odf/recipes/01-basics/chapter.toml",
-    "crates/sim-codec-odf/recipes/01-basics/odp-round-trip/purpose.md",
-    "crates/sim-codec-odf/recipes/01-basics/odp-round-trip/recipe.toml",
-    "crates/sim-codec-odf/recipes/01-basics/odp-round-trip/setup.siml",
-    "crates/sim-codec-odf/recipes/01-basics/ods-round-trip/purpose.md",
-    "crates/sim-codec-odf/recipes/01-basics/ods-round-trip/recipe.toml",
-    "crates/sim-codec-odf/recipes/01-basics/ods-round-trip/setup.siml",
-    "crates/sim-codec-odf/recipes/book.toml",
-    "crates/sim-codec-ooxml/recipes/01-basics/chapter.toml",
-    "crates/sim-codec-ooxml/recipes/01-basics/pptx-round-trip/purpose.md",
-    "crates/sim-codec-ooxml/recipes/01-basics/pptx-round-trip/recipe.toml",
-    "crates/sim-codec-ooxml/recipes/01-basics/pptx-round-trip/setup.siml",
-    "crates/sim-codec-ooxml/recipes/01-basics/xlsx-round-trip/purpose.md",
-    "crates/sim-codec-ooxml/recipes/01-basics/xlsx-round-trip/recipe.toml",
-    "crates/sim-codec-ooxml/recipes/01-basics/xlsx-round-trip/setup.siml",
-    "crates/sim-codec-ooxml/recipes/book.toml",
-    "crates/sim-lib-deck/recipes/01-basics/chapter.toml",
-    "crates/sim-lib-deck/recipes/01-basics/deck-outline/purpose.md",
-    "crates/sim-lib-deck/recipes/01-basics/deck-outline/recipe.toml",
-    "crates/sim-lib-deck/recipes/01-basics/deck-outline/setup.siml",
-    "crates/sim-lib-deck/recipes/book.toml",
-    "crates/sim-lib-doc-core/recipes/01-basics/chapter.toml",
-    "crates/sim-lib-doc-core/recipes/01-basics/doc-core-descriptor/purpose.md",
-    "crates/sim-lib-doc-core/recipes/01-basics/doc-core-descriptor/recipe.toml",
-    "crates/sim-lib-doc-core/recipes/01-basics/doc-core-descriptor/setup.siml",
-    "crates/sim-lib-doc-core/recipes/book.toml",
-    "crates/sim-lib-doc-ledger/recipes/01-basics/chapter.toml",
-    "crates/sim-lib-doc-ledger/recipes/01-basics/ledger-draft-preview/purpose.md",
-    "crates/sim-lib-doc-ledger/recipes/01-basics/ledger-draft-preview/recipe.toml",
-    "crates/sim-lib-doc-ledger/recipes/01-basics/ledger-draft-preview/setup.siml",
-    "crates/sim-lib-doc-ledger/recipes/book.toml",
-    "crates/sim-lib-doc-markup/recipes/01-basics/chapter.toml",
-    "crates/sim-lib-doc-markup/recipes/01-basics/markup-doc-codec/purpose.md",
-    "crates/sim-lib-doc-markup/recipes/01-basics/markup-doc-codec/recipe.toml",
-    "crates/sim-lib-doc-markup/recipes/01-basics/markup-doc-codec/setup.siml",
-    "crates/sim-lib-doc-markup/recipes/book.toml",
-    "crates/sim-lib-doc-site/recipes/01-basics/chapter.toml",
-    "crates/sim-lib-doc-site/recipes/01-basics/doc-site-descriptor/purpose.md",
-    "crates/sim-lib-doc-site/recipes/01-basics/doc-site-descriptor/recipe.toml",
-    "crates/sim-lib-doc-site/recipes/01-basics/doc-site-descriptor/setup.siml",
-    "crates/sim-lib-doc-site/recipes/book.toml",
-    "crates/sim-lib-doc-store/recipes/01-basics/chapter.toml",
-    "crates/sim-lib-doc-store/recipes/01-basics/doc-store-projection/purpose.md",
-    "crates/sim-lib-doc-store/recipes/01-basics/doc-store-projection/recipe.toml",
-    "crates/sim-lib-doc-store/recipes/01-basics/doc-store-projection/setup.siml",
-    "crates/sim-lib-doc-store/recipes/01-basics/evidence-fact-graph/purpose.md",
-    "crates/sim-lib-doc-store/recipes/01-basics/evidence-fact-graph/recipe.toml",
-    "crates/sim-lib-doc-store/recipes/01-basics/evidence-fact-graph/setup.siml",
-    "crates/sim-lib-doc-store/recipes/book.toml",
-    "crates/sim-lib-doc-surface/recipes/01-basics/chapter.toml",
-    "crates/sim-lib-doc-surface/recipes/01-basics/suite-surface-descriptor/purpose.md",
-    "crates/sim-lib-doc-surface/recipes/01-basics/suite-surface-descriptor/recipe.toml",
-    "crates/sim-lib-doc-surface/recipes/01-basics/suite-surface-descriptor/setup.siml",
-    "crates/sim-lib-doc-surface/recipes/book.toml",
-    "crates/sim-lib-gantt/recipes/01-basics/chapter.toml",
-    "crates/sim-lib-gantt/recipes/01-basics/local-gantt-plan/purpose.md",
-    "crates/sim-lib-gantt/recipes/01-basics/local-gantt-plan/recipe.toml",
-    "crates/sim-lib-gantt/recipes/01-basics/local-gantt-plan/setup.siml",
-    "crates/sim-lib-gantt/recipes/book.toml",
-    "crates/sim-lib-mail/recipes/01-basics/chapter.toml",
-    "crates/sim-lib-mail/recipes/01-basics/mail-calendar-summary/purpose.md",
-    "crates/sim-lib-mail/recipes/01-basics/mail-calendar-summary/recipe.toml",
-    "crates/sim-lib-mail/recipes/01-basics/mail-calendar-summary/setup.siml",
-    "crates/sim-lib-mail/recipes/book.toml",
-    "crates/sim-lib-office-pack/recipes/01-basics/chapter.toml",
-    "crates/sim-lib-office-pack/recipes/book.toml",
-    "crates/sim-lib-sheet/recipes/01-basics/chapter.toml",
-    "crates/sim-lib-sheet/recipes/01-basics/exact-sheet-formula/purpose.md",
-    "crates/sim-lib-sheet/recipes/01-basics/exact-sheet-formula/recipe.toml",
-    "crates/sim-lib-sheet/recipes/01-basics/exact-sheet-formula/setup.siml",
-    "crates/sim-lib-sheet/recipes/book.toml",
-    "crates/sim-site-dalux/recipes/01-basics/chapter.toml",
-    "crates/sim-site-dalux/recipes/01-basics/dalux-modeled-items/purpose.md",
-    "crates/sim-site-dalux/recipes/01-basics/dalux-modeled-items/recipe.toml",
-    "crates/sim-site-dalux/recipes/01-basics/dalux-modeled-items/setup.siml",
-    "crates/sim-site-dalux/recipes/book.toml",
-    "crates/sim-site-libreoffice/recipes/01-basics/chapter.toml",
-    "crates/sim-site-libreoffice/recipes/01-basics/libreoffice-helper-modeled/purpose.md",
-    "crates/sim-site-libreoffice/recipes/01-basics/libreoffice-helper-modeled/recipe.toml",
-    "crates/sim-site-libreoffice/recipes/01-basics/libreoffice-helper-modeled/setup.siml",
-    "crates/sim-site-libreoffice/recipes/book.toml",
-    "crates/sim-site-msgraph/recipes/01-basics/chapter.toml",
-    "crates/sim-site-msgraph/recipes/01-basics/msgraph-modeled-read/purpose.md",
-    "crates/sim-site-msgraph/recipes/01-basics/msgraph-modeled-read/recipe.toml",
-    "crates/sim-site-msgraph/recipes/01-basics/msgraph-modeled-read/setup.siml",
-    "crates/sim-site-msgraph/recipes/book.toml",
-    "crates/sim-site-powerproject/recipes/01-basics/chapter.toml",
-    "crates/sim-site-powerproject/recipes/01-basics/powerproject-placement/purpose.md",
-    "crates/sim-site-powerproject/recipes/01-basics/powerproject-placement/recipe.toml",
-    "crates/sim-site-powerproject/recipes/01-basics/powerproject-placement/setup.siml",
-    "crates/sim-site-powerproject/recipes/book.toml",
-    "crates/sim-site-sharepoint/recipes/01-basics/chapter.toml",
-    "crates/sim-site-sharepoint/recipes/01-basics/sharepoint-graph-read/purpose.md",
-    "crates/sim-site-sharepoint/recipes/01-basics/sharepoint-graph-read/recipe.toml",
-    "crates/sim-site-sharepoint/recipes/01-basics/sharepoint-graph-read/setup.siml",
-    "crates/sim-site-sharepoint/recipes/01-basics/sharepoint-rest-fallback/purpose.md",
-    "crates/sim-site-sharepoint/recipes/01-basics/sharepoint-rest-fallback/recipe.toml",
-    "crates/sim-site-sharepoint/recipes/01-basics/sharepoint-rest-fallback/setup.siml",
-    "crates/sim-site-sharepoint/recipes/book.toml"
-  ]
+    {
+      "id": "browse/catalog",
+      "kind": "browse-root",
+      "owner": "workspace",
+      "summary": "root browse catalog"
+    },
+    {
+      "id": "cookbook/office/dalux-site",
+      "kind": "cookbook-recipe",
+      "owner": "sim-site-dalux",
+      "summary": "Modeled Dalux project item reads with API identity live gates."
+    },
+    {
+      "id": "cookbook/office/deck",
+      "kind": "cookbook-recipe",
+      "owner": "sim-lib-deck",
+      "summary": "Local decks with slides, bullets, tables, and image references."
+    },
+    {
+      "id": "cookbook/office/doc-core",
+      "kind": "cookbook-recipe",
+      "owner": "sim-lib-doc-core",
+      "summary": "Office document model and kind-shape descriptors."
+    },
+    {
+      "id": "cookbook/office/doc-ledger",
+      "kind": "cookbook-recipe",
+      "owner": "sim-lib-doc-ledger",
+      "summary": "Preview ledger draft posting from office evidence."
+    },
+    {
+      "id": "cookbook/office/doc-markup",
+      "kind": "cookbook-recipe",
+      "owner": "sim-lib-doc-markup",
+      "summary": "Markup document codecs for office article documents."
+    },
+    {
+      "id": "cookbook/office/doc-site",
+      "kind": "cookbook-recipe",
+      "owner": "sim-lib-doc-site",
+      "summary": "Document site registration and modeled placement calls."
+    },
+    {
+      "id": "cookbook/office/doc-store",
+      "kind": "cookbook-recipe",
+      "owner": "sim-lib-doc-store",
+      "summary": "Local document snapshots, edit projections, and evidence fact links."
+    },
+    {
+      "id": "cookbook/office/doc-surface",
+      "kind": "cookbook-recipe",
+      "owner": "sim-lib-doc-surface",
+      "summary": "Suite scene projection and intent-to-edit descriptors."
+    },
+    {
+      "id": "cookbook/office/gantt",
+      "kind": "cookbook-recipe",
+      "owner": "sim-lib-gantt",
+      "summary": "Local schedule plans, dependency links, and critical-path descriptors."
+    },
+    {
+      "id": "cookbook/office/libreoffice-site",
+      "kind": "cookbook-recipe",
+      "owner": "sim-site-libreoffice",
+      "summary": "Permissioned helper-process placement for LibreOffice office tasks."
+    },
+    {
+      "id": "cookbook/office/mail",
+      "kind": "cookbook-recipe",
+      "owner": "sim-lib-mail",
+      "summary": "Privacy-aware messages, events, and attachment references."
+    },
+    {
+      "id": "cookbook/office/msgraph-site",
+      "kind": "cookbook-recipe",
+      "owner": "sim-site-msgraph",
+      "summary": "Modeled Microsoft Graph document site calls with explicit live gates."
+    },
+    {
+      "id": "cookbook/office/mspdi",
+      "kind": "cookbook-recipe",
+      "owner": "sim-codec-mspdi",
+      "summary": "Microsoft Project XML exchange for local Gantt documents."
+    },
+    {
+      "id": "cookbook/office/odf",
+      "kind": "cookbook-recipe",
+      "owner": "sim-codec-odf",
+      "summary": "Local .ods and .odp packages for sheet and deck documents."
+    },
+    {
+      "id": "cookbook/office/ooxml",
+      "kind": "cookbook-recipe",
+      "owner": "sim-codec-ooxml",
+      "summary": "Local .xlsx and .pptx packages for sheet and deck documents."
+    },
+    {
+      "id": "cookbook/office/pack",
+      "kind": "cookbook-recipe",
+      "owner": "sim-lib-office-pack",
+      "summary": "Preview annual accounts exports before live mail or archive actions."
+    },
+    {
+      "id": "cookbook/office/powerproject-site",
+      "kind": "cookbook-recipe",
+      "owner": "sim-site-powerproject",
+      "summary": "Powerproject and Project for the web placements for Gantt plans."
+    },
+    {
+      "id": "cookbook/office/sharepoint-site",
+      "kind": "cookbook-recipe",
+      "owner": "sim-site-sharepoint",
+      "summary": "Modeled SharePoint list, drive, and REST fallback operations."
+    },
+    {
+      "id": "cookbook/office/sheet",
+      "kind": "cookbook-recipe",
+      "owner": "sim-lib-sheet",
+      "summary": "Exact local sheets and open cell edits."
+    },
+    {
+      "id": "registry/catalog",
+      "kind": "browse-registry",
+      "owner": "workspace",
+      "summary": "registry catalog browse card"
+    }
+  ],
+  "generator": "xtask repo-contract v1"
 }
