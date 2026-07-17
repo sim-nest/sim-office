@@ -2,16 +2,17 @@
 
 use sim_kernel::Cx;
 use sim_lib_doc_core::{Doc, FidelityReport, OfficeError};
-use sim_lib_gantt::{GanttPlan, LinkKind, TaskLink};
+use sim_lib_gantt::{GanttPlan, LinkKind, TaskLink, validate_gantt_plan};
 use time::Date;
 
-use crate::{MSPDI_CODEC_ID, doc_to_plan};
+use crate::{MSPDI_CODEC_ID, MSPDI_LAG_FORMAT_DAYS, TENTHS_PER_WORKDAY, doc_to_plan, error};
 
 const MSPDI_XMLNS: &str = "http://schemas.microsoft.com/project";
 
 pub(crate) fn encode(cx: &mut Cx, doc: &Doc) -> Result<(Vec<u8>, FidelityReport), OfficeError> {
     let plan = doc_to_plan(cx, doc)?;
-    let xml = project_xml(&plan);
+    validate_gantt_plan(&plan).map_err(|err| error(format!("invalid Gantt plan: {err}")))?;
+    let xml = project_xml(&plan)?;
     Ok((xml.into_bytes(), FidelityReport::new(MSPDI_CODEC_ID)))
 }
 
@@ -24,7 +25,7 @@ pub(crate) fn format_date(date: Date) -> String {
     )
 }
 
-fn project_xml(plan: &GanttPlan) -> String {
+fn project_xml(plan: &GanttPlan) -> Result<String, OfficeError> {
     let mut xml = format!(
         r#"<?xml version="1.0" encoding="UTF-8"?><Project xmlns="{MSPDI_XMLNS}"><Name>{}</Name><Tasks>"#,
         escape_text(&plan.id)
@@ -40,21 +41,31 @@ fn project_xml(plan: &GanttPlan) -> String {
             task.percent_complete
         ));
         for link in plan.links.iter().filter(|link| link.successor == task.id) {
-            xml.push_str(&link_xml(link));
+            xml.push_str(&link_xml(link)?);
         }
         xml.push_str("</Task>");
     }
     xml.push_str("</Tasks></Project>");
-    xml
+    Ok(xml)
 }
 
-fn link_xml(link: &TaskLink) -> String {
-    format!(
-        "<PredecessorLink><PredecessorUID>{}</PredecessorUID><Type>{}</Type><LinkLag>{}</LinkLag></PredecessorLink>",
+fn link_xml(link: &TaskLink) -> Result<String, OfficeError> {
+    let link_lag = link_lag_value(link.lag_days)?;
+    Ok(format!(
+        "<PredecessorLink><PredecessorUID>{}</PredecessorUID><Type>{}</Type><LinkLag>{}</LinkLag><LagFormat>{}</LagFormat></PredecessorLink>",
         escape_text(&link.predecessor),
         mspdi_link_type(link.kind),
-        link.lag_days
-    )
+        link_lag,
+        MSPDI_LAG_FORMAT_DAYS
+    ))
+}
+
+fn link_lag_value(lag_days: i32) -> Result<i32, OfficeError> {
+    lag_days.checked_mul(TENTHS_PER_WORKDAY).ok_or_else(|| {
+        error(format!(
+            "Gantt lag_days {lag_days} does not fit MSPDI LinkLag"
+        ))
+    })
 }
 
 fn mspdi_link_type(kind: LinkKind) -> u8 {

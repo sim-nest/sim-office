@@ -11,7 +11,7 @@ pub mod critical;
 pub mod local;
 pub mod model;
 
-pub use critical::{ScheduleError, critical_tasks};
+pub use critical::{ScheduleError, critical_tasks, validate_gantt_plan};
 pub use local::GanttStore;
 pub use model::{GANTT_DOC_KIND, GanttPlan, LinkKind, Task, TaskLink};
 

@@ -22,6 +22,9 @@ pub use model::{doc_to_plan, plan_to_doc};
 /// Stable codec id for Microsoft Project XML schedule exchange.
 pub const MSPDI_CODEC_ID: &str = "codec/mspdi";
 
+pub(crate) const MSPDI_LAG_FORMAT_DAYS: &str = "7";
+pub(crate) const TENTHS_PER_WORKDAY: i32 = 8 * 60 * 10;
+
 /// Local MSPDI XML codec for Gantt documents.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct MspdiCodec;

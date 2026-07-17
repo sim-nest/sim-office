@@ -2,7 +2,7 @@
 
 use std::collections::BTreeMap;
 
-use sim_lib_gantt::{GanttPlan, Task, TaskLink};
+use sim_lib_gantt::{GanttPlan, Task, TaskLink, validate_gantt_plan};
 
 use crate::PowerprojectError;
 
@@ -86,6 +86,8 @@ pub fn plan_pss_update(
     target: &DataverseProjectTarget,
 ) -> Result<Vec<DataverseOperation>, PowerprojectError> {
     validate_target(target)?;
+    validate_gantt_plan(plan)
+        .map_err(|err| PowerprojectError::Dataverse(format!("invalid Gantt plan: {err}")))?;
     let operation_set_id = format!("sim-{}-operation-set", sanitize_token(&plan.id));
     let mut operations = Vec::with_capacity(plan.tasks.len() + plan.links.len() + 2);
 
@@ -291,5 +293,32 @@ mod tests {
         let error = plan_pss_update(&plan(), &target).unwrap_err();
 
         assert!(error.to_string().contains("project_id"));
+    }
+
+    #[test]
+    fn dataverse_preview_rejects_invalid_percent_complete() {
+        let target = DataverseProjectTarget::new("https://org.crm.dynamics.com", "project-1");
+        let mut plan = plan();
+        plan.tasks[0].percent_complete = 101;
+
+        let error = plan_pss_update(&plan, &target).unwrap_err();
+
+        assert!(error.to_string().contains("invalid Gantt plan"));
+        assert!(error.to_string().contains("percent_complete"));
+    }
+
+    #[test]
+    fn dataverse_preview_rejects_missing_successor() {
+        let target = DataverseProjectTarget::new("https://org.crm.dynamics.com", "project-1");
+        let mut plan = plan();
+        plan.links[0].successor = "missing-successor".to_owned();
+
+        let error = plan_pss_update(&plan, &target).unwrap_err();
+
+        assert!(
+            error
+                .to_string()
+                .contains("missing task id missing-successor")
+        );
     }
 }

@@ -57,6 +57,11 @@ pub fn critical_tasks(_cx: &mut Cx, plan: &GanttPlan) -> Result<Vec<String>, Sch
         .collect())
 }
 
+/// Validates the public Gantt plan boundary without running critical-path analysis.
+pub fn validate_gantt_plan(plan: &GanttPlan) -> Result<(), ScheduleError> {
+    validate_plan(plan).map(|_| ())
+}
+
 pub(crate) fn validate_plan(plan: &GanttPlan) -> Result<Vec<i64>, ScheduleError> {
     if plan.id.trim().is_empty() {
         return Err(ScheduleError::InvalidField {
@@ -300,5 +305,38 @@ mod tests {
         let error = critical_tasks(&mut cx, &plan).unwrap_err();
 
         assert!(matches!(error, ScheduleError::Cycle(tasks) if tasks.len() == 2));
+    }
+
+    #[test]
+    fn validator_rejects_invalid_percent_dates_and_links() {
+        let mut plan = linked_plan();
+        plan.tasks[0].percent_complete = 101;
+        let error = validate_gantt_plan(&plan).unwrap_err();
+        assert!(
+            matches!(error, ScheduleError::InvalidField { field, .. } if field.contains("percent_complete"))
+        );
+
+        let mut plan = linked_plan();
+        plan.tasks[0].finish = date(1).previous_day().unwrap();
+        let error = validate_gantt_plan(&plan).unwrap_err();
+        assert!(
+            matches!(error, ScheduleError::InvalidField { field, .. } if field.contains("finish"))
+        );
+
+        let mut plan = linked_plan();
+        plan.links[0].predecessor = "missing-predecessor".to_owned();
+        let error = validate_gantt_plan(&plan).unwrap_err();
+        assert_eq!(
+            error,
+            ScheduleError::MissingTask("missing-predecessor".to_owned())
+        );
+
+        let mut plan = linked_plan();
+        plan.links[0].successor = "missing-successor".to_owned();
+        let error = validate_gantt_plan(&plan).unwrap_err();
+        assert_eq!(
+            error,
+            ScheduleError::MissingTask("missing-successor".to_owned())
+        );
     }
 }

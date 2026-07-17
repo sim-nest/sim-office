@@ -5,10 +5,12 @@ use std::str;
 use roxmltree::{Document, Node};
 use sim_kernel::Cx;
 use sim_lib_doc_core::{Doc, ExternalRef, FidelityReport, LossNote, OfficeError};
-use sim_lib_gantt::{GanttPlan, LinkKind, Task, TaskLink};
+use sim_lib_gantt::{GanttPlan, LinkKind, Task, TaskLink, validate_gantt_plan};
 use time::{Date, Month};
 
-use crate::{MSPDI_CODEC_ID, error, model::parse_i32, plan_to_doc};
+use crate::{
+    MSPDI_CODEC_ID, MSPDI_LAG_FORMAT_DAYS, TENTHS_PER_WORKDAY, error, model::parse_i32, plan_to_doc,
+};
 
 const FIELD_FINISH: &str = "Finish";
 const FIELD_ID: &str = "ID";
@@ -18,6 +20,7 @@ const FIELD_START: &str = "Start";
 const FIELD_TASKS: &str = "Tasks";
 const FIELD_UID: &str = "UID";
 const LINK_LAG: &str = "LinkLag";
+const LINK_LAG_FORMAT: &str = "LagFormat";
 const LINK_TYPE: &str = "Type";
 const PREDECESSOR_LINK: &str = "PredecessorLink";
 const PREDECESSOR_UID: &str = "PredecessorUID";
@@ -51,6 +54,7 @@ pub(crate) fn decode(cx: &mut Cx, bytes: &[u8]) -> Result<(Doc, FidelityReport),
     }
 
     let plan = GanttPlan::new(id, tasks, links);
+    ensure_valid(&plan)?;
     let mut doc = plan_to_doc(cx, &plan)?;
     doc.origin
         .push(ExternalRef::new(MSPDI_CODEC_ID, "Project", None, None));
@@ -137,14 +141,11 @@ fn decode_link(
         .map(mspdi_link_type)
         .transpose()?
         .unwrap_or(LinkKind::FinishStart);
-    let lag_days = clean_text(child_text(node, LINK_LAG))
-        .map(|value| parse_i32(value, LINK_LAG))
-        .transpose()?
-        .unwrap_or(0);
+    let lag_days = link_lag_days(node)?;
 
     for child in element_children(node) {
         match child.tag_name().name() {
-            PREDECESSOR_UID | LINK_TYPE | LINK_LAG => {}
+            PREDECESSOR_UID | LINK_TYPE | LINK_LAG | LINK_LAG_FORMAT => {}
             other => {
                 report_extra_loss(format!("Task[{successor}].PredecessorLink.{other}"), report)
             }
@@ -160,6 +161,28 @@ fn decode_link(
     Ok(())
 }
 
+fn link_lag_days(link: Node<'_, '_>) -> Result<i32, OfficeError> {
+    let raw = clean_text(child_text(link, LINK_LAG))
+        .map(|value| parse_i32(value, LINK_LAG))
+        .transpose()?
+        .unwrap_or(0);
+    let format = clean_text(child_text(link, LINK_LAG_FORMAT)).unwrap_or(MSPDI_LAG_FORMAT_DAYS);
+    match format {
+        MSPDI_LAG_FORMAT_DAYS => checked_div_exact(raw, TENTHS_PER_WORKDAY, LINK_LAG),
+        other => Err(error(format!("unsupported MSPDI LagFormat {other}"))),
+    }
+}
+
+fn checked_div_exact(value: i32, divisor: i32, field: &str) -> Result<i32, OfficeError> {
+    if value % divisor == 0 {
+        Ok(value / divisor)
+    } else {
+        Err(error(format!(
+            "MSPDI {field} value {value} is not an exact whole-day lag"
+        )))
+    }
+}
+
 fn mspdi_link_type(value: &str) -> Result<LinkKind, OfficeError> {
     match value.trim() {
         "0" => Ok(LinkKind::FinishFinish),
@@ -168,6 +191,10 @@ fn mspdi_link_type(value: &str) -> Result<LinkKind, OfficeError> {
         "3" => Ok(LinkKind::StartStart),
         other => Err(error(format!("unsupported MSPDI predecessor type {other}"))),
     }
+}
+
+fn ensure_valid(plan: &GanttPlan) -> Result<(), OfficeError> {
+    validate_gantt_plan(plan).map_err(|err| error(format!("invalid Gantt plan: {err}")))
 }
 
 fn report_project_extras(root: Node<'_, '_>, report: &mut FidelityReport) {
