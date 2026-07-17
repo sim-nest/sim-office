@@ -3,10 +3,10 @@
   "generated_by": "cargo run -p xtask -- simdoc",
   "generation_timestamp": "2026-07-14T22:53:58+02:00",
   "generator": "xtask repo-contract v1",
-  "git_commit": "1526161c0713f0e45f7a708d1f4149223e96c281",
+  "git_commit": "e11abf3dc2695e5c3b5df5b5fe851b029a33302c",
   "repo": "sim-office",
   "schema": "sim.provenance.v1",
-  "source_commit": "1526161c0713f0e45f7a708d1f4149223e96c281",
+  "source_commit": "e11abf3dc2695e5c3b5df5b5fe851b029a33302c",
   "source_remote": "https://github.com/sim-nest/sim-office",
   "validation_commands": [
     "cargo fmt --all --check",
@@ -19,9 +19,9 @@
     "cargo run -p xtask -- validation-matrix --check --repo .",
     "cargo run -p xtask -- crate-catalog --check --repo ."
   ],
-  "workspace_hash": "002da00566753a91",
+  "workspace_hash": "5d9cbe319c371e24",
   "workspace_hash_algorithm": "fnv1a64",
-  "workspace_hash_input_count": 175,
+  "workspace_hash_input_count": 177,
   "workspace_hash_inputs": [
     "Cargo.toml",
     "crates/sim-codec-mspdi/Cargo.toml",
@@ -50,6 +50,8 @@
     "crates/sim-codec-ooxml/recipes/book.toml",
     "crates/sim-codec-ooxml/src/lib.rs",
     "crates/sim-codec-ooxml/src/package.rs",
+    "crates/sim-codec-ooxml/src/pptx/decode.rs",
+    "crates/sim-codec-ooxml/src/pptx/tests.rs",
     "crates/sim-codec-ooxml/src/pptx.rs",
     "crates/sim-codec-ooxml/src/xlsx.rs",
     "crates/sim-codec-ooxml/src/xlsx_tests.rs",

@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::io::{Cursor, Write};
 use std::sync::Arc;
 
@@ -11,7 +12,10 @@ use zip::write::SimpleFileOptions;
 use zip::{CompressionMethod, ZipArchive, ZipWriter};
 
 use super::*;
-use crate::package::{CONTENT_XML, MANIFEST_XML, ODP_MIMETYPE, ODS_MIMETYPE, STYLES_XML};
+use crate::package::{
+    CONTENT_XML, MANIFEST_XML, ODP_MIMETYPE, ODS_MIMETYPE, OFFICE_NS, STYLES_XML, TABLE_NS,
+    manifest_xml, styles_xml, write_package,
+};
 
 fn cx() -> Cx {
     Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
@@ -111,11 +115,37 @@ fn compressed_first_mimetype_is_rejected() {
 }
 
 #[test]
+fn ods_formula_without_sim_metadata_preserves_formula() {
+    let mut cx = cx();
+    let bytes = ods_package(&format!(
+        r#"<?xml version="1.0" encoding="UTF-8"?><office:document-content xmlns:office="{OFFICE_NS}" xmlns:table="{TABLE_NS}" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" office:version="1.2"><office:body><office:spreadsheet><table:table table:name="Formulas"><table:table-row><table:table-cell office:value-type="string" table:formula="of:=A1+B1"><text:p>999</text:p></table:table-cell></table:table-row></table:table></office:spreadsheet></office:body></office:document-content>"#
+    ));
+    let decode_options = options(&mut cx);
+
+    let (decoded, report) = OdfCodec.decode(&mut cx, &bytes, &decode_options).unwrap();
+    let sheet = doc_to_sheet(&mut cx, &decoded).unwrap();
+
+    assert!(report.is_lossless());
+    assert!(matches!(
+        sheet.cell(&CellRef::parse("A1").unwrap()),
+        CellValue::Formula(formula) if formula == "=A1+B1"
+    ));
+}
+
+#[test]
 fn recipes_are_embedded() {
     let cards = sim_cookbook::recipes_from_embedded(RECIPES).unwrap();
 
     assert!(cards.iter().any(|card| card.id.ends_with("ods-round-trip")));
     assert!(cards.iter().any(|card| card.id.ends_with("odp-round-trip")));
+}
+
+fn ods_package(content_xml: &str) -> Vec<u8> {
+    let mut entries = BTreeMap::new();
+    entries.insert(CONTENT_XML.to_owned(), content_xml.to_owned());
+    entries.insert(STYLES_XML.to_owned(), styles_xml());
+    entries.insert(MANIFEST_XML.to_owned(), manifest_xml(ODS_MIMETYPE));
+    write_package(ODS_MIMETYPE, entries).unwrap()
 }
 
 fn assert_mimetype_first(bytes: &[u8], expected: &str) {

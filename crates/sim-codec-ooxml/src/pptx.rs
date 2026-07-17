@@ -3,7 +3,6 @@
 use std::collections::BTreeMap;
 use std::sync::OnceLock;
 
-use roxmltree::{Document, Node};
 use sim_kernel::Cx;
 use sim_lib_deck::{DECK_DOC_KIND, Deck, Slide, SlideBlock, deck_to_doc, doc_to_deck};
 use sim_lib_doc_core::{
@@ -31,6 +30,11 @@ const XMLNS_A: &str = "http://schemas.openxmlformats.org/drawingml/2006/main";
 const XMLNS_P: &str = "http://schemas.openxmlformats.org/presentationml/2006/main";
 const XMLNS_REL: &str = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 const XMLNS_SIM: &str = "https://sim.nest/office/ooxml";
+
+mod decode;
+
+#[cfg(test)]
+mod tests;
 
 /// Local `.pptx` codec for presentation deck documents.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -63,13 +67,7 @@ impl DocCodec for PptxCodec {
         let package = OoxmlPackage::read(bytes, PPTX_EXTENSION)?;
         package.require(PRESENTATION)?;
         package.require(PRESENTATION_RELS)?;
-        let mut report = FidelityReport::new(PPTX_CODEC_ID);
-        let title = presentation_title(package.text(PRESENTATION)?)?;
-        let mut deck = Deck::new(title);
-        for (index, path) in slide_paths(&package).iter().enumerate() {
-            let slide = decode_slide(index + 1, path, package.text(path)?, &mut report)?;
-            deck.push_slide(slide);
-        }
+        let (deck, report) = decode::decode_deck(&package)?;
         let mut doc = deck_to_doc(cx, DocId::new(format!("pptx:{}", deck.title)), &deck)
             .map_err(deck_error)?;
         doc.origin
@@ -335,34 +333,6 @@ fn theme_xml() -> String {
     r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="SIM"><a:themeElements><a:clrScheme name="SIM"><a:dk1><a:srgbClr val="111111"/></a:dk1><a:lt1><a:srgbClr val="FFFFFF"/></a:lt1><a:dk2><a:srgbClr val="333333"/></a:dk2><a:lt2><a:srgbClr val="F2F2F2"/></a:lt2><a:accent1><a:srgbClr val="3465A4"/></a:accent1><a:accent2><a:srgbClr val="4E9A06"/></a:accent2><a:accent3><a:srgbClr val="CC0000"/></a:accent3><a:accent4><a:srgbClr val="75507B"/></a:accent4><a:accent5><a:srgbClr val="C17D11"/></a:accent5><a:accent6><a:srgbClr val="204A87"/></a:accent6><a:hlink><a:srgbClr val="3465A4"/></a:hlink><a:folHlink><a:srgbClr val="75507B"/></a:folHlink></a:clrScheme><a:fontScheme name="SIM"><a:majorFont><a:latin typeface="Aptos Display"/></a:majorFont><a:minorFont><a:latin typeface="Aptos"/></a:minorFont></a:fontScheme><a:fmtScheme name="SIM"><a:fillStyleLst/><a:lnStyleLst/><a:effectStyleLst/><a:bgFillStyleLst/></a:fmtScheme></a:themeElements></a:theme>"#.to_owned()
 }
 
-fn presentation_title(xml: &str) -> Result<String, OfficeError> {
-    let document = parse_xml(xml, "presentation")?;
-    Ok(attr(document.root_element(), "title")
-        .unwrap_or("Presentation")
-        .to_owned())
-}
-
-fn slide_paths(package: &OoxmlPackage) -> Vec<String> {
-    let mut paths = package
-        .names()
-        .filter(|name| {
-            name.starts_with("ppt/slides/slide")
-                && name.ends_with(".xml")
-                && !name.contains("/_rels/")
-        })
-        .map(str::to_owned)
-        .collect::<Vec<_>>();
-    paths.sort_by_key(|path| slide_number(path).unwrap_or(usize::MAX));
-    paths
-}
-
-fn slide_number(path: &str) -> Option<usize> {
-    path.strip_prefix("ppt/slides/slide")?
-        .strip_suffix(".xml")?
-        .parse()
-        .ok()
-}
-
 fn slide_path(index: usize) -> String {
     format!("ppt/slides/slide{index}.xml")
 }
@@ -375,128 +345,6 @@ fn slide_rels() -> String {
     format!(
         r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="{REL_SLIDE_LAYOUT}" Target="../slideLayouts/slideLayout1.xml"/></Relationships>"#
     )
-}
-
-fn decode_slide(
-    index: usize,
-    path: &str,
-    xml: &str,
-    report: &mut FidelityReport,
-) -> Result<Slide, OfficeError> {
-    let document = parse_xml(xml, path)?;
-    let root = document.root_element();
-    report_unsupported(path, &document, report);
-    let id = attr(root, "id")
-        .map(str::to_owned)
-        .unwrap_or_else(|| format!("slide-{index}"));
-    let title = attr(root, "title")
-        .or_else(|| attr(root, "name"))
-        .map(str::to_owned)
-        .unwrap_or_else(|| format!("Slide {index}"));
-    let blocks = root
-        .descendants()
-        .filter(|node| node.has_tag_name("block"))
-        .map(block_from_node)
-        .collect::<Result<Vec<_>, _>>()?;
-    Ok(Slide { id, title, blocks })
-}
-
-fn report_unsupported(path: &str, document: &Document<'_>, report: &mut FidelityReport) {
-    let has_sim_blocks = document
-        .descendants()
-        .any(|node| node.has_tag_name("block"));
-    if document
-        .descendants()
-        .any(|node| node.has_tag_name("transition"))
-    {
-        add_loss(
-            report,
-            format!("{path}.transition"),
-            "slide transitions are not represented in the portable deck model",
-        );
-    }
-    if document.descendants().any(|node| {
-        node.has_tag_name("pic") || node.has_tag_name("audio") || node.has_tag_name("video")
-    }) {
-        add_loss(
-            report,
-            format!("{path}.media"),
-            "embedded media is represented only by explicit external image references",
-        );
-    }
-    if !has_sim_blocks
-        && document
-            .descendants()
-            .any(|node| node.has_tag_name("sp") || node.has_tag_name("graphicFrame"))
-    {
-        add_loss(
-            report,
-            format!("{path}.shapes"),
-            "presentation shapes outside the SIM deck subset are not decoded",
-        );
-    }
-}
-
-fn block_from_node(node: Node<'_, '_>) -> Result<SlideBlock, OfficeError> {
-    match attr(node, "kind").unwrap_or_default() {
-        "heading" => Ok(SlideBlock::Heading(child_text(node, "value"))),
-        "bullet-list" => Ok(SlideBlock::BulletList(child_texts(node, "item"))),
-        "table" => Ok(SlideBlock::Table {
-            columns: node
-                .children()
-                .find(|child| child.has_tag_name("columns"))
-                .map(|columns| child_texts(columns, "item"))
-                .unwrap_or_default(),
-            rows: node
-                .children()
-                .find(|child| child.has_tag_name("rows"))
-                .map(|rows| {
-                    rows.children()
-                        .filter(|child| child.has_tag_name("row"))
-                        .map(|row| child_texts(row, "item"))
-                        .collect()
-                })
-                .unwrap_or_default(),
-        }),
-        "image-ref" => Ok(SlideBlock::ImageRef(ExternalRef::new(
-            attr(node, "backend").unwrap_or(PPTX_CODEC_ID),
-            attr(node, "external-id").unwrap_or_default(),
-            attr(node, "version").map(str::to_owned),
-            attr(node, "web-url").map(str::to_owned),
-        ))),
-        other => Err(error(format!("unsupported deck block kind {other}"))),
-    }
-}
-
-fn child_text(node: Node<'_, '_>, tag: &str) -> String {
-    node.children()
-        .find(|child| child.has_tag_name(tag))
-        .and_then(|child| child.text())
-        .unwrap_or_default()
-        .to_owned()
-}
-
-fn child_texts(node: Node<'_, '_>, tag: &str) -> Vec<String> {
-    node.children()
-        .filter(|child| child.has_tag_name(tag))
-        .filter_map(|child| child.text())
-        .map(str::to_owned)
-        .collect()
-}
-
-fn parse_xml<'a>(text: &'a str, label: &str) -> Result<Document<'a>, OfficeError> {
-    Document::parse(text).map_err(|err| error(format!("could not parse {label} XML: {err}")))
-}
-
-fn attr<'a>(node: Node<'a, '_>, name: &str) -> Option<&'a str> {
-    node.attributes()
-        .find(|attribute| attribute.name() == name)
-        .map(|attribute| attribute.value())
-}
-
-fn add_loss(report: &mut FidelityReport, field: impl Into<String>, reason: impl Into<String>) {
-    let current = std::mem::take(report);
-    *report = current.with_dropped(field, reason);
 }
 
 fn escape_text(text: &str) -> String {
@@ -517,136 +365,4 @@ fn deck_error(error: impl std::fmt::Display) -> OfficeError {
 
 fn error(message: impl Into<String>) -> OfficeError {
     OfficeError::Kernel(message.into())
-}
-
-#[cfg(test)]
-mod tests {
-    use std::io::Cursor;
-    use std::sync::Arc;
-
-    use sim_kernel::{Cx, DefaultFactory, NoopEvalPolicy};
-    use sim_lib_doc_core::DocCodecOptions;
-    use zip::ZipArchive;
-
-    use super::*;
-
-    fn test_context() -> Cx {
-        Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
-    }
-
-    fn codec_options(context: &mut Cx) -> DocCodecOptions {
-        DocCodecOptions::new(context.factory().nil().unwrap())
-    }
-
-    #[test]
-    fn two_slide_deck_writes_required_parts_and_decodes_back() {
-        let mut context = test_context();
-        let mut deck = Deck::new("Project Update");
-        let mut intro = Slide::new("intro", "Status");
-        intro.push_block(SlideBlock::Heading("Status".to_owned()));
-        intro.push_block(SlideBlock::BulletList(vec![
-            "Local deck model".to_owned(),
-            "OOXML export".to_owned(),
-        ]));
-        let mut numbers = Slide::new("numbers", "Numbers");
-        numbers.push_block(SlideBlock::Table {
-            columns: vec!["Metric".to_owned(), "Value".to_owned()],
-            rows: vec![vec!["Budget".to_owned(), "On track".to_owned()]],
-        });
-        numbers.push_block(SlideBlock::ImageRef(ExternalRef::new(
-            "site/msgraph",
-            "drive-item-1",
-            Some("etag-1".to_owned()),
-            Some("https://example.com/image".to_owned()),
-        )));
-        deck.push_slide(intro);
-        deck.push_slide(numbers);
-        let doc = deck_to_doc(&mut context, DocId::new("deck-1"), &deck).unwrap();
-        let options = codec_options(&mut context);
-        let codec = PptxCodec;
-
-        let (bytes, encode_report) = codec.encode(&mut context, &doc, &options).unwrap();
-        let (decoded, decode_report) = codec.decode(&mut context, &bytes, &options).unwrap();
-        let decoded_deck = doc_to_deck(&mut context, &decoded).unwrap();
-
-        assert!(encode_report.is_lossless());
-        assert!(decode_report.is_lossless());
-        assert_eq!(decoded_deck, deck);
-        let mut archive = ZipArchive::new(Cursor::new(bytes)).unwrap();
-        let mut names = Vec::new();
-        for index in 0..archive.len() {
-            names.push(archive.by_index(index).unwrap().name().to_owned());
-        }
-        for required in [
-            CONTENT_TYPES,
-            ROOT_RELS,
-            PRESENTATION,
-            PRESENTATION_RELS,
-            "ppt/slides/slide1.xml",
-            "ppt/slides/_rels/slide1.xml.rels",
-            "ppt/slides/slide2.xml",
-            "ppt/slides/_rels/slide2.xml.rels",
-        ] {
-            assert!(
-                names.iter().any(|name| name == required),
-                "missing {required}"
-            );
-        }
-    }
-
-    #[test]
-    fn unsupported_pptx_features_are_reported_as_dropped() {
-        let mut context = test_context();
-        let mut entries = BTreeMap::new();
-        entries.insert(CONTENT_TYPES.to_owned(), content_types(1));
-        entries.insert(ROOT_RELS.to_owned(), root_rels());
-        entries.insert(
-            PRESENTATION.to_owned(),
-            presentation_xml(&Deck {
-                title: "Imported".to_owned(),
-                slides: vec![Slide::new("slide-1", "Imported")],
-            }),
-        );
-        entries.insert(PRESENTATION_RELS.to_owned(), presentation_rels(1));
-        entries.insert("ppt/slides/slide1.xml".to_owned(), unsupported_slide_xml());
-        let bytes = write_package(entries).unwrap();
-        let options = codec_options(&mut context);
-
-        let (_doc, report) = PptxCodec.decode(&mut context, &bytes, &options).unwrap();
-
-        assert!(
-            report
-                .dropped
-                .iter()
-                .any(|loss| loss.field == "ppt/slides/slide1.xml.transition")
-        );
-        assert!(
-            report
-                .dropped
-                .iter()
-                .any(|loss| loss.field == "ppt/slides/slide1.xml.media")
-        );
-        assert!(
-            report
-                .dropped
-                .iter()
-                .any(|loss| loss.field == "ppt/slides/slide1.xml.shapes")
-        );
-    }
-
-    #[test]
-    fn recipes_export_embedded_books() {
-        assert!(
-            sim_lib_deck::RECIPES
-                .iter()
-                .any(|(path, _)| *path == "book.toml")
-        );
-    }
-
-    fn unsupported_slide_xml() -> String {
-        format!(
-            r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><p:sld xmlns:a="{XMLNS_A}" xmlns:p="{XMLNS_P}" xmlns:r="{XMLNS_REL}"><p:cSld name="Imported"><p:spTree>{}<p:sp><p:nvSpPr><p:cNvPr id="2" name="Freeform"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr><p:spPr/><p:txBody><a:bodyPr/><a:p><a:r><a:t>Loose shape</a:t></a:r></a:p></p:txBody></p:sp><p:pic><p:nvPicPr><p:cNvPr id="3" name="Image"/></p:nvPicPr></p:pic></p:spTree></p:cSld><p:transition/></p:sld>"#,
-            group_shape_xml()
-        )
-    }
 }

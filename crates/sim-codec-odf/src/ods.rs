@@ -216,6 +216,10 @@ fn decode_untyped_cell(
     cell: Node<'_, '_>,
     text: &str,
 ) -> Result<CellValue, OfficeError> {
+    if let Some(formula) = attr_ns(cell, TABLE_NS, "formula").or_else(|| attr_any(cell, "formula"))
+    {
+        return normalize_formula(formula).map(CellValue::Formula);
+    }
     match attr_ns(cell, OFFICE_NS, "value-type") {
         Some("boolean") => bool_value(
             attr_ns(cell, OFFICE_NS, "boolean-value")
@@ -232,6 +236,19 @@ fn decode_untyped_cell(
         Some("string") | Some("date") | Some("time") => Ok(CellValue::Text(text.to_owned())),
         _ if text.trim().is_empty() => Ok(CellValue::Blank),
         _ => Ok(CellValue::Text(text.to_owned())),
+    }
+}
+
+fn normalize_formula(formula: &str) -> Result<String, OfficeError> {
+    let formula = formula.trim();
+    let formula = formula
+        .strip_prefix("of:")
+        .or_else(|| formula.strip_prefix("oooc:"))
+        .unwrap_or(formula);
+    if formula.starts_with('=') {
+        Ok(formula.to_owned())
+    } else {
+        Err(error(format!("unsupported ODF formula syntax {formula}")))
     }
 }
 

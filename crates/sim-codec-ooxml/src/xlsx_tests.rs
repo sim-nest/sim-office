@@ -106,6 +106,89 @@ fn styled_fixture_reports_loss() {
     );
 }
 
+#[test]
+fn workbook_relationship_target_and_inline_runs_are_decoded() {
+    let mut cx = cx();
+    let mut entries = BTreeMap::new();
+    entries.insert(
+        CONTENT_TYPES.to_owned(),
+        content_types_with_worksheets(&["xl/worksheets/custom.xml"]),
+    );
+    entries.insert(ROOT_RELS.to_owned(), root_rels());
+    entries.insert(
+        WORKBOOK.to_owned(),
+        workbook_with_sheets(&[("Custom", "3", "rId9")]),
+    );
+    entries.insert(
+        WORKBOOK_RELS.to_owned(),
+        workbook_rels_with_targets(&[("rId9", "worksheets/custom.xml")]),
+    );
+    entries.insert(
+        "xl/worksheets/custom.xml".to_owned(),
+        worksheet_with_inline_runs("A1", &["Split ", "text"]),
+    );
+    let bytes = write_package(entries).unwrap();
+
+    let decode_options = options(&mut cx);
+    let (decoded, report) = XlsxCodec.decode(&mut cx, &bytes, &decode_options).unwrap();
+    let sheet = doc_to_sheet(&mut cx, &decoded).unwrap();
+
+    assert!(report.is_lossless());
+    assert_eq!(sheet.name, "Custom");
+    assert!(matches!(
+        sheet.cell(&CellRef::parse("A1").unwrap()),
+        CellValue::Text(text) if text == "Split text"
+    ));
+}
+
+#[test]
+fn multisheet_workbook_reports_ignored_non_first_sheet() {
+    let mut cx = cx();
+    let mut entries = BTreeMap::new();
+    entries.insert(
+        CONTENT_TYPES.to_owned(),
+        content_types_with_worksheets(&[
+            "xl/worksheets/first-visible.xml",
+            "xl/worksheets/sheet1.xml",
+        ]),
+    );
+    entries.insert(ROOT_RELS.to_owned(), root_rels());
+    entries.insert(
+        WORKBOOK.to_owned(),
+        workbook_with_sheets(&[
+            ("FirstVisible", "7", "rFirst"),
+            ("IgnoredSecond", "1", "rSecond"),
+        ]),
+    );
+    entries.insert(
+        WORKBOOK_RELS.to_owned(),
+        workbook_rels_with_targets(&[
+            ("rFirst", "worksheets/first-visible.xml"),
+            ("rSecond", "worksheets/sheet1.xml"),
+        ]),
+    );
+    entries.insert(
+        "xl/worksheets/first-visible.xml".to_owned(),
+        worksheet_with_inline_runs("A1", &["imported"]),
+    );
+    entries.insert(
+        "xl/worksheets/sheet1.xml".to_owned(),
+        worksheet_with_inline_runs("A1", &["ignored"]),
+    );
+    let bytes = write_package(entries).unwrap();
+
+    let decode_options = options(&mut cx);
+    let (decoded, report) = XlsxCodec.decode(&mut cx, &bytes, &decode_options).unwrap();
+    let sheet = doc_to_sheet(&mut cx, &decoded).unwrap();
+
+    assert_eq!(sheet.name, "FirstVisible");
+    assert!(matches!(
+        sheet.cell(&CellRef::parse("A1").unwrap()),
+        CellValue::Text(text) if text == "imported"
+    ));
+    assert!(report.dropped.iter().any(|loss| loss.field == "sheets"));
+}
+
 fn content_types_with_styles() -> String {
     concat!(
         r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#,
@@ -118,6 +201,63 @@ fn content_types_with_styles() -> String {
         r#"</Types>"#
     )
     .to_owned()
+}
+
+fn content_types_with_worksheets(paths: &[&str]) -> String {
+    let mut xml = concat!(
+        r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>"#,
+        r#"<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">"#
+    )
+    .to_owned();
+    xml.push_str(
+        r#"<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>"#,
+    );
+    xml.push_str(r#"<Default Extension="xml" ContentType="application/xml"/>"#);
+    xml.push_str(
+        r#"<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>"#,
+    );
+    for path in paths {
+        xml.push_str(&format!(
+            r#"<Override PartName="/{path}" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>"#
+        ));
+    }
+    xml.push_str("</Types>");
+    xml
+}
+
+fn workbook_with_sheets(sheets: &[(&str, &str, &str)]) -> String {
+    let mut xml = format!(
+        r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="{XMLNS_MAIN}" xmlns:r="{XMLNS_REL}"><sheets>"#
+    );
+    for (name, sheet_id, rel_id) in sheets {
+        xml.push_str(&format!(
+            r#"<sheet name="{}" sheetId="{sheet_id}" r:id="{rel_id}"/>"#,
+            escape_attr(name)
+        ));
+    }
+    xml.push_str("</sheets></workbook>");
+    xml
+}
+
+fn workbook_rels_with_targets(targets: &[(&str, &str)]) -> String {
+    let mut xml = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">"#.to_owned();
+    for (rel_id, target) in targets {
+        xml.push_str(&format!(
+            r#"<Relationship Id="{rel_id}" Type="{REL_WORKSHEET}" Target="{target}"/>"#
+        ));
+    }
+    xml.push_str("</Relationships>");
+    xml
+}
+
+fn worksheet_with_inline_runs(cell_ref: &str, runs: &[&str]) -> String {
+    let mut run_xml = String::new();
+    for run in runs {
+        run_xml.push_str(&format!(r#"<r><t>{}</t></r>"#, escape_text(run)));
+    }
+    format!(
+        r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="{XMLNS_MAIN}"><sheetData><row r="1"><c r="{cell_ref}" t="inlineStr"><is>{run_xml}</is></c></row></sheetData></worksheet>"#
+    )
 }
 
 fn styles_xml() -> String {

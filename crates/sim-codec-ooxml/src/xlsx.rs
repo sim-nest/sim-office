@@ -61,11 +61,23 @@ impl DocCodec for XlsxCodec {
         let package = OoxmlPackage::read(bytes, XLSX_EXTENSION)?;
         package.require(WORKBOOK)?;
         package.require(WORKBOOK_RELS)?;
-        package.require(WORKSHEET)?;
-        let sheet_info = first_sheet(package.text(WORKBOOK)?)?;
+        let sheet_infos = workbook_sheets(package.text(WORKBOOK)?)?;
+        let sheet_info = sheet_infos
+            .first()
+            .ok_or_else(|| error("workbook has no sheet records"))?;
         let sheet_path = worksheet_path(&package, &sheet_info.rel_id)?;
         let shared_strings = shared_strings(&package)?;
         let mut report = FidelityReport::new(XLSX_CODEC_ID);
+        if sheet_infos.len() > 1 {
+            add_loss(
+                &mut report,
+                "sheets",
+                format!(
+                    "portable sheet model imports the first workbook sheet and drops {} additional sheet(s)",
+                    sheet_infos.len() - 1
+                ),
+            );
+        }
         if package.has("xl/styles.xml") {
             add_loss(
                 &mut report,
@@ -193,15 +205,22 @@ fn cell_xml(cx: &mut Cx, cell: &CellRef, value: &CellValue) -> Result<String, Of
     Ok(xml)
 }
 
-fn first_sheet(workbook_xml: &str) -> Result<SheetInfo, OfficeError> {
+fn workbook_sheets(workbook_xml: &str) -> Result<Vec<SheetInfo>, OfficeError> {
     let document = parse_xml(workbook_xml, "workbook")?;
-    let sheet = document
+    let sheets = document
         .descendants()
-        .find(|node| node.has_tag_name("sheet"))
-        .ok_or_else(|| error("workbook has no sheet records"))?;
-    let name = attr(sheet, "name").unwrap_or("Sheet1").to_owned();
-    let rel_id = attr(sheet, "id").unwrap_or("rId1").to_owned();
-    Ok(SheetInfo { name, rel_id })
+        .filter(|node| node.has_tag_name("sheet"))
+        .map(|sheet| {
+            let name = attr(sheet, "name").unwrap_or("Sheet1").to_owned();
+            let rel_id = attr(sheet, "id").unwrap_or("rId1").to_owned();
+            SheetInfo { name, rel_id }
+        })
+        .collect::<Vec<_>>();
+    if sheets.is_empty() {
+        Err(error("workbook has no sheet records"))
+    } else {
+        Ok(sheets)
+    }
 }
 
 fn worksheet_path(package: &OoxmlPackage, rel_id: &str) -> Result<String, OfficeError> {
@@ -210,7 +229,9 @@ fn worksheet_path(package: &OoxmlPackage, rel_id: &str) -> Result<String, Office
         .descendants()
         .filter(|node| node.has_tag_name("Relationship"))
     {
-        if attr(relationship, "Id") == Some(rel_id) {
+        if attr(relationship, "Id") == Some(rel_id)
+            && attr(relationship, "Type") == Some(REL_WORKSHEET)
+        {
             let target = attr(relationship, "Target")
                 .ok_or_else(|| error(format!("relationship {rel_id} has no Target")))?;
             return Ok(resolve_workbook_target(target));
@@ -326,10 +347,9 @@ fn cell_text(
     match cell_type {
         Some("inlineStr") => Ok(cell
             .descendants()
-            .find(|node| node.has_tag_name("t"))
-            .and_then(|node| node.text())
-            .unwrap_or_default()
-            .to_owned()),
+            .filter(|node| node.has_tag_name("t"))
+            .filter_map(|node| node.text())
+            .collect()),
         Some("s") => {
             let index = child_text(cell, "v")
                 .ok_or_else(|| error("shared string cell is missing v"))?
