@@ -29,14 +29,14 @@ workspace = true
 [dependencies.sim-ledger]
 version = "0.1.0"
 git = "https://github.com/sim-nest/sim-ledger"
-rev = "f3cdfda515f2ac7c8208836f3f9c5c30c85fe5ef"
+rev = "a58f8890739dee30ee9baf73ea6b38cc1803ea01"
 
 [dependencies.sim-lib-ledger-close]
 version = "0.1.0"
 git = "https://github.com/sim-nest/sim-ledger"
-rev = "f3cdfda515f2ac7c8208836f3f9c5c30c85fe5ef"
+rev = "a58f8890739dee30ee9baf73ea6b38cc1803ea01"
 
 [dependencies.sim-lib-ledger-books]
 version = "0.1.0"
 git = "https://github.com/sim-nest/sim-ledger"
-rev = "f3cdfda515f2ac7c8208836f3f9c5c30c85fe5ef"
+rev = "a58f8890739dee30ee9baf73ea6b38cc1803ea01"

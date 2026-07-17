@@ -22,7 +22,7 @@ pub fn project_statements(
 ) -> Result<StatementProjection, OfficeError> {
     Ok(StatementProjection {
         sheet: statements_to_sheet(cx, statements)?,
-        deck: statements_to_deck(statements),
+        deck: statements_to_deck(statements)?,
     })
 }
 
@@ -39,15 +39,14 @@ pub fn statements_to_sheet(
 }
 
 /// Project statements into a deck with one slide per statement table.
-#[must_use]
-pub fn statements_to_deck(statements: &FinancialStatements) -> Deck {
+pub fn statements_to_deck(statements: &FinancialStatements) -> Result<Deck, OfficeError> {
     let mut deck = Deck::new(format!("Statements {}", statements.year));
     deck.push_slide(table_slide(
         "income-statement",
         &statements.income_statement,
-    ));
-    deck.push_slide(table_slide("balance-sheet", &statements.balance_sheet));
-    deck
+    )?);
+    deck.push_slide(table_slide("balance-sheet", &statements.balance_sheet)?);
+    Ok(deck)
 }
 
 fn write_table(
@@ -76,7 +75,7 @@ fn write_table(
     Ok(())
 }
 
-fn table_slide(id: &str, table: &StatementTable) -> Slide {
+fn table_slide(id: &str, table: &StatementTable) -> Result<Slide, OfficeError> {
     let mut slide = Slide::new(id, &table.title);
     let mut rows: Vec<Vec<String>> = table
         .rows
@@ -85,16 +84,13 @@ fn table_slide(id: &str, table: &StatementTable) -> Slide {
         .collect();
     rows.push(vec![
         "Total".to_owned(),
-        table
-            .total_minor()
-            .expect("statement totals fit minor units")
-            .to_string(),
+        table.total_minor().map_err(office_error)?.to_string(),
     ]);
     slide.push_block(SlideBlock::Table {
         columns: vec!["Label".to_owned(), "Amount minor".to_owned()],
         rows,
     });
-    slide
+    Ok(slide)
 }
 
 fn set_text(sheet: &mut Sheet, column: u32, row: u32, text: &str) -> Result<(), OfficeError> {
@@ -148,6 +144,15 @@ mod tests {
         assert_eq!(deck_total(&projection.deck, "Balance sheet"), 1_200);
     }
 
+    #[test]
+    fn deck_projection_returns_error_on_total_overflow() {
+        let statements = overflow_statements();
+
+        let error = statements_to_deck(&statements).unwrap_err();
+
+        assert!(error.to_string().contains("statement total"));
+    }
+
     fn cx() -> Cx {
         Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
     }
@@ -174,6 +179,25 @@ mod tests {
                 id: "basis".to_owned(),
                 text: "Exact fixture".to_owned(),
             }],
+        }
+    }
+
+    fn overflow_statements() -> FinancialStatements {
+        FinancialStatements {
+            income_statement: StatementTable {
+                title: "Income statement".to_owned(),
+                rows: vec![
+                    StatementRow {
+                        label: "max".to_owned(),
+                        amount_minor: i64::MAX,
+                    },
+                    StatementRow {
+                        label: "one".to_owned(),
+                        amount_minor: 1,
+                    },
+                ],
+            },
+            ..statements()
         }
     }
 

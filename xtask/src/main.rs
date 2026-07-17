@@ -1,5 +1,7 @@
 #![forbid(unsafe_code)]
 
+#[cfg(test)]
+mod ledger_pins;
 mod simdoc;
 
 fn main() {
