@@ -40,7 +40,30 @@ pub struct ExportTargets {
     /// SharePoint archive target.
     pub sharepoint_archive: Option<ExternalRef>,
     /// Outlook draft target.
-    pub outlook_draft: Option<ExternalRef>,
+    pub outlook_draft: Option<OutlookDraftTarget>,
+}
+
+/// Outlook draft preview target for annual accounts packs.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct OutlookDraftTarget {
+    /// Remote target reference that receives the eventual draft operation.
+    pub target: ExternalRef,
+    /// Target mailbox for the Microsoft Graph draft.
+    pub mailbox: String,
+    /// Recipient email addresses for the draft preview.
+    pub recipients: Vec<String>,
+}
+
+impl OutlookDraftTarget {
+    /// Builds an Outlook draft preview target.
+    #[must_use]
+    pub fn new(target: ExternalRef, mailbox: impl Into<String>, recipients: Vec<String>) -> Self {
+        Self {
+            target,
+            mailbox: mailbox.into(),
+            recipients,
+        }
+    }
 }
 
 impl ExportTargets {
@@ -74,6 +97,24 @@ impl ExportTargets {
     /// Sets the Outlook draft target.
     #[must_use]
     pub fn with_outlook_draft(mut self, target: ExternalRef) -> Self {
+        self.outlook_draft = Some(OutlookDraftTarget::new(target, "me", Vec::new()));
+        self
+    }
+
+    /// Sets the Outlook draft target with explicit recipients.
+    #[must_use]
+    pub fn with_outlook_draft_recipients(
+        mut self,
+        target: ExternalRef,
+        recipients: Vec<String>,
+    ) -> Self {
+        self.outlook_draft = Some(OutlookDraftTarget::new(target, "me", recipients));
+        self
+    }
+
+    /// Sets the full Outlook draft target.
+    #[must_use]
+    pub fn with_outlook_draft_target(mut self, target: OutlookDraftTarget) -> Self {
         self.outlook_draft = Some(target);
         self
     }

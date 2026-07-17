@@ -57,6 +57,21 @@ fn empty_targets_are_rejected() {
     );
 }
 
+#[test]
+fn outlook_preview_rejects_missing_recipients() {
+    let mut cx = cx();
+    let targets = ExportTargets::new().with_outlook_draft(ExternalRef::new(
+        "site/msgraph",
+        "me/messages",
+        None,
+        None,
+    ));
+
+    let err = plan_archive_with_cx(&mut cx, &pack(), &targets).unwrap_err();
+
+    assert!(err.to_string().contains("recipients must be non-empty"));
+}
+
 fn cx() -> Cx {
     Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
 }
@@ -114,7 +129,10 @@ fn targets() -> ExportTargets {
             None,
             None,
         ))
-        .with_outlook_draft(ExternalRef::new("site/msgraph", "me/messages", None, None))
+        .with_outlook_draft_recipients(
+            ExternalRef::new("site/msgraph", "me/messages", None, None),
+            vec!["board@example.test".to_owned()],
+        )
         .with_sharepoint_archive(ExternalRef::new(
             "site/sharepoint",
             "sites/contoso/drive/accounting",

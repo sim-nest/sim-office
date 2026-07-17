@@ -32,6 +32,7 @@ const FIELD_ODATA_ETAG: &str = "@odata.etag";
 const FIELD_RECEIVED_DATE_TIME: &str = "receivedDateTime";
 const FIELD_START: &str = "start";
 const FIELD_SUBJECT: &str = "subject";
+const FIELD_TIME_ZONE: &str = "timeZone";
 const FIELD_TO_RECIPIENTS: &str = "toRecipients";
 const FIELD_VALUE: &str = "value";
 const FIELD_WEB_LINK: &str = "webLink";
@@ -323,10 +324,14 @@ fn graph_datetime_field(
         )));
     };
     if let Some(text) = value.as_str() {
-        return parse_graph_datetime(text, label);
+        return parse_graph_datetime(text, label, None);
     }
     if let Some(text) = value.get(FIELD_DATE_TIME).and_then(JsonValue::as_str) {
-        return parse_graph_datetime(text, label);
+        return parse_graph_datetime(
+            text,
+            label,
+            optional_string_field(value, FIELD_TIME_ZONE).as_deref(),
+        );
     }
     Err(MailError::WrongDocBody(format!(
         "Graph field {label} must be a datetime string or object"
@@ -340,10 +345,14 @@ fn optional_datetime(value: Option<&JsonValue>) -> Result<Option<OffsetDateTime>
     }
 }
 
-fn parse_graph_datetime(text: &str, label: &'static str) -> Result<OffsetDateTime, MailError> {
+fn parse_graph_datetime(
+    text: &str,
+    label: &'static str,
+    time_zone: Option<&str>,
+) -> Result<OffsetDateTime, MailError> {
     match OffsetDateTime::parse(text, &Rfc3339) {
         Ok(value) => Ok(value),
-        Err(first_error) if !has_explicit_offset(text) => {
+        Err(first_error) if !has_explicit_offset(text) && is_utc_time_zone(time_zone) => {
             let normalized = format!("{text}Z");
             OffsetDateTime::parse(&normalized, &Rfc3339).map_err(|error| {
                 MailError::WrongDocBody(format!(
@@ -351,6 +360,10 @@ fn parse_graph_datetime(text: &str, label: &'static str) -> Result<OffsetDateTim
                 ))
             })
         }
+        Err(_) if !has_explicit_offset(text) => Err(MailError::WrongDocBody(format!(
+            "Graph datetime {label} has no offset and timeZone {} is not faithfully represented",
+            time_zone.unwrap_or("<missing>")
+        ))),
         Err(error) => Err(MailError::WrongDocBody(format!(
             "invalid Graph datetime {label}: {error}"
         ))),
@@ -365,6 +378,17 @@ fn has_explicit_offset(text: &str) -> bool {
         return false;
     };
     text[time_index + 1..].contains('+') || text[time_index + 1..].contains('-')
+}
+
+fn is_utc_time_zone(time_zone: Option<&str>) -> bool {
+    matches!(
+        time_zone.map(str::trim),
+        Some("UTC")
+            | Some("Etc/UTC")
+            | Some("Etc/GMT")
+            | Some("GMT")
+            | Some("Greenwich Standard Time")
+    )
 }
 
 fn graph_email(value: Option<&JsonValue>) -> Option<String> {

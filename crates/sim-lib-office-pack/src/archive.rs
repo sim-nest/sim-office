@@ -5,7 +5,8 @@ use sim_lib_doc_core::{DocId, Edit, Evidence, ExternalRef};
 use sim_lib_mail::{DraftMessage, MailboxTarget};
 
 use crate::{
-    AnnualAccountsPack, EncodedStatementFiles, GeneratedFile, PackError, pack::default_context,
+    AnnualAccountsPack, EncodedStatementFiles, GeneratedFile, OutlookDraftTarget, PackError,
+    pack::default_context,
 };
 
 /// Edit domain for annual accounts pack preview operations.
@@ -88,25 +89,27 @@ fn outlook_draft_edit(
     cx: &mut Cx,
     pack: &AnnualAccountsPack,
     files: &EncodedStatementFiles,
-    target: &ExternalRef,
+    target: &OutlookDraftTarget,
 ) -> Result<Edit, PackError> {
+    validate_outlook_draft_target(target)?;
     let draft = DraftMessage::new(
-        MailboxTarget::new("me", None),
+        MailboxTarget::new(target.mailbox.clone(), None),
         format!("Annual accounts {}", pack.year),
         format!(
             "Annual accounts {} are ready for review. Attachments: {}, {}.",
             pack.year, files.spreadsheet.filename, files.deck.filename
         ),
-        Vec::new(),
+        target.recipients.clone(),
     );
     let entries = vec![
         action_entry(cx, "preview-outlook-draft")?,
         string_entry(cx, "mailbox", draft.target.user_id_or_me.clone())?,
         string_entry(cx, "subject", draft.subject.clone())?,
         string_entry(cx, "body", draft.body.clone())?,
+        strings_entry(cx, "recipients", &draft.to)?,
         files_entry(cx, files, false)?,
         evidence_entry(cx, &pack.evidence)?,
-        target_entry(cx, target)?,
+        target_entry(cx, &target.target)?,
     ];
     let op = cx.factory().table(entries)?;
     let inverse = discard_payload(cx, "preview-outlook-draft")?;
@@ -116,6 +119,25 @@ fn outlook_draft_edit(
         op,
         inverse,
     ))
+}
+
+fn validate_outlook_draft_target(target: &OutlookDraftTarget) -> Result<(), PackError> {
+    if target.mailbox.trim().is_empty() {
+        return Err(PackError::Office(
+            "Outlook draft mailbox is empty".to_owned(),
+        ));
+    }
+    if target.recipients.is_empty()
+        || target
+            .recipients
+            .iter()
+            .any(|recipient| recipient.trim().is_empty())
+    {
+        return Err(PackError::Office(
+            "Outlook draft recipients must be non-empty".to_owned(),
+        ));
+    }
+    Ok(())
 }
 
 fn sharepoint_archive_edit(
@@ -160,6 +182,18 @@ fn string_entry(
     value: impl Into<String>,
 ) -> Result<(Symbol, Value), PackError> {
     Ok((Symbol::new(field), cx.factory().string(value.into())?))
+}
+
+fn strings_entry(
+    cx: &mut Cx,
+    field: &'static str,
+    values: &[String],
+) -> Result<(Symbol, Value), PackError> {
+    let values = values
+        .iter()
+        .map(|value| cx.factory().string(value.clone()).map_err(PackError::from))
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok((Symbol::new(field), cx.factory().list(values)?))
 }
 
 fn file_entry(

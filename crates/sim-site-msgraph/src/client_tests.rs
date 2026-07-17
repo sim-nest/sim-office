@@ -46,16 +46,38 @@ fn modeled_file_reads_are_deterministic() {
 #[test]
 fn modeled_posts_are_deterministic() {
     let mut cx = test_context();
+    let request = json!({ "subject": "Hi" });
     let mode: GraphMode<StaticTokenProvider> = GraphMode::Modeled(Cassette::with_post_json(
         "/me/messages",
+        request.clone(),
         json!({ "id": "draft-1" }),
     ));
 
-    let first = graph_post(&mut cx, &mode, "/me/messages", &json!({ "subject": "Hi" })).unwrap();
-    let second = graph_post(&mut cx, &mode, "/me/messages", &json!({ "subject": "Hi" })).unwrap();
+    let first = graph_post(&mut cx, &mode, "/me/messages", &request).unwrap();
+    let second = graph_post(&mut cx, &mode, "/me/messages", &request).unwrap();
 
     assert_eq!(first, json!({ "id": "draft-1" }));
     assert_eq!(first, second);
+}
+
+#[test]
+fn modeled_posts_fail_on_body_mismatch() {
+    let mut cx = test_context();
+    let mode: GraphMode<StaticTokenProvider> = GraphMode::Modeled(Cassette::with_post_json(
+        "/me/messages",
+        json!({ "subject": "Expected" }),
+        json!({ "id": "draft-1" }),
+    ));
+
+    let error = graph_post(
+        &mut cx,
+        &mode,
+        "/me/messages",
+        &json!({ "subject": "Wrong" }),
+    )
+    .unwrap_err();
+
+    assert!(matches!(error, GraphError::MissingCassette { .. }));
 }
 
 #[test]

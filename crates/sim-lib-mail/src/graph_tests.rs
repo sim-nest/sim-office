@@ -2,6 +2,7 @@ use std::{cell::RefCell, sync::Arc};
 
 use serde_json::{Value as JsonValue, json};
 use sim_kernel::{Cx, DefaultFactory, NoopEvalPolicy};
+use time::{OffsetDateTime, format_description::well_known::Rfc3339};
 
 use crate::{
     CALENDAR_EVENT_DOC_KIND, MAIL_DOC_KIND, MailError, calendar_event_to_doc, mail_to_doc,
@@ -117,6 +118,75 @@ fn modeled_events_map_to_calendar_docs() {
 
     assert_eq!(doc.kind.as_str(), CALENDAR_EVENT_DOC_KIND);
     assert_eq!(events[0].attendees, vec!["bo@example.test"]);
+}
+
+#[test]
+fn graph_calendar_decodes_explicit_offset_timestamps() {
+    let mut cx = test_context();
+    let target = CalendarTarget::new("me", None);
+    let site = ModeledGetSite {
+        path: target.events_path().unwrap(),
+        body: json!({
+            "value": [{
+                "id": "event-offset",
+                "subject": "Offset review",
+                "start": { "dateTime": "2026-07-13T12:00:00+02:00", "timeZone": "W. Europe Standard Time" },
+                "end": { "dateTime": "2026-07-13T13:00:00+02:00", "timeZone": "W. Europe Standard Time" }
+            }]
+        }),
+    };
+
+    let events = read_calendar_events(&mut cx, &site, &target).unwrap();
+
+    assert_eq!(
+        events[0].starts_at,
+        OffsetDateTime::parse("2026-07-13T12:00:00+02:00", &Rfc3339).unwrap()
+    );
+}
+
+#[test]
+fn graph_calendar_decodes_utc_time_zone_without_offset() {
+    let mut cx = test_context();
+    let target = CalendarTarget::new("me", None);
+    let site = ModeledGetSite {
+        path: target.events_path().unwrap(),
+        body: json!({
+            "value": [{
+                "id": "event-utc",
+                "subject": "UTC review",
+                "start": { "dateTime": "2026-07-13T10:00:00", "timeZone": "UTC" },
+                "end": { "dateTime": "2026-07-13T11:00:00", "timeZone": "UTC" }
+            }]
+        }),
+    };
+
+    let events = read_calendar_events(&mut cx, &site, &target).unwrap();
+
+    assert_eq!(
+        events[0].starts_at,
+        OffsetDateTime::parse("2026-07-13T10:00:00Z", &Rfc3339).unwrap()
+    );
+}
+
+#[test]
+fn graph_calendar_rejects_non_utc_no_offset_timestamps() {
+    let mut cx = test_context();
+    let target = CalendarTarget::new("me", None);
+    let site = ModeledGetSite {
+        path: target.events_path().unwrap(),
+        body: json!({
+            "value": [{
+                "id": "event-local",
+                "subject": "Local review",
+                "start": { "dateTime": "2026-07-13T10:00:00", "timeZone": "W. Europe Standard Time" },
+                "end": { "dateTime": "2026-07-13T11:00:00", "timeZone": "W. Europe Standard Time" }
+            }]
+        }),
+    };
+
+    let error = read_calendar_events(&mut cx, &site, &target).unwrap_err();
+
+    assert!(error.to_string().contains("not faithfully represented"));
 }
 
 #[test]

@@ -15,6 +15,7 @@ const BATCH_BOUNDARY: &str = "batch_sim_sharepoint";
 const DEFAULT_ACCEPT: &str = "application/json;odata=nometadata";
 const HEADER_ACCEPT: &str = "Accept";
 const HEADER_CONTENT_TYPE: &str = "Content-Type";
+const HEADER_IF_MATCH: &str = "If-Match";
 const HEADER_TRANSFER_ENCODING: &str = "Content-Transfer-Encoding";
 const JSON_CONTENT_TYPE: &str = "application/json;odata=nometadata";
 
@@ -82,10 +83,26 @@ impl RestBatchOp {
         Self::new(RestBatchMethod::Patch, api_path, Some(body))
     }
 
+    /// Builds an update operation with a required ETag precondition.
+    #[must_use]
+    pub fn patch_checked(
+        api_path: impl Into<String>,
+        body: JsonValue,
+        etag: impl Into<String>,
+    ) -> Self {
+        Self::patch(api_path, body).with_header(HEADER_IF_MATCH, etag)
+    }
+
     /// Builds a delete operation.
     #[must_use]
     pub fn delete(api_path: impl Into<String>) -> Self {
         Self::new(RestBatchMethod::Delete, api_path, None)
+    }
+
+    /// Builds a delete operation with a required ETag precondition.
+    #[must_use]
+    pub fn delete_checked(api_path: impl Into<String>, etag: impl Into<String>) -> Self {
+        Self::delete(api_path).with_header(HEADER_IF_MATCH, etag)
     }
 
     /// Builds an operation with an explicit method and optional body.
@@ -141,6 +158,7 @@ fn write_operation(
     site_url: &str,
     op: &RestBatchOp,
 ) -> Result<(), SharePointError> {
+    validate_write_precondition(site_url, op)?;
     let url = api_url_for(site_url, &op.api_path)?;
     body.push_str("--");
     body.push_str(BATCH_BOUNDARY);
@@ -171,6 +189,24 @@ fn write_operation(
         body.push_str("\r\n");
     }
     Ok(())
+}
+
+fn validate_write_precondition(site_url: &str, op: &RestBatchOp) -> Result<(), SharePointError> {
+    if !matches!(op.method, RestBatchMethod::Patch | RestBatchMethod::Delete) {
+        return Ok(());
+    }
+    match op
+        .headers
+        .get(HEADER_IF_MATCH)
+        .map(String::as_str)
+        .map(str::trim)
+    {
+        Some(value) if !value.is_empty() => Ok(()),
+        _ => Err(crate::permission::rest_site_error(
+            site_url,
+            format!("SharePoint REST {} requires If-Match", op.method),
+        )),
+    }
 }
 
 fn operation_headers(op: &RestBatchOp) -> BTreeMap<String, String> {
@@ -229,5 +265,49 @@ X-RequestDigest: digest-1\r\n\r\n\
 
         assert!(body.contains("Content-Type: application/json;odata=nometadata\r\n"));
         assert!(body.contains(r#"{"Title":"Tasks"}"#));
+    }
+
+    #[test]
+    fn patch_and_delete_require_if_match() {
+        let patch = odata_batch_body(
+            "https://contoso.sharepoint.com/sites/design",
+            &[RestBatchOp::patch(
+                "_api/web/lists/getbytitle('Tasks')/items(1)",
+                json!({ "Title": "Updated" }),
+            )],
+        )
+        .unwrap_err();
+        let delete = odata_batch_body(
+            "https://contoso.sharepoint.com/sites/design",
+            &[RestBatchOp::delete(
+                "_api/web/lists/getbytitle('Tasks')/items(1)",
+            )],
+        )
+        .unwrap_err();
+
+        assert!(patch.to_string().contains("requires If-Match"));
+        assert!(delete.to_string().contains("requires If-Match"));
+    }
+
+    #[test]
+    fn checked_patch_and_delete_emit_if_match() {
+        let body = odata_batch_body(
+            "https://contoso.sharepoint.com/sites/design",
+            &[
+                RestBatchOp::patch_checked(
+                    "_api/web/lists/getbytitle('Tasks')/items(1)",
+                    json!({ "Title": "Updated" }),
+                    "\"etag-1\"",
+                ),
+                RestBatchOp::delete_checked(
+                    "_api/web/lists/getbytitle('Tasks')/items(2)",
+                    "\"etag-2\"",
+                ),
+            ],
+        )
+        .unwrap();
+
+        assert!(body.contains("If-Match: \"etag-1\"\r\n"));
+        assert!(body.contains("If-Match: \"etag-2\"\r\n"));
     }
 }

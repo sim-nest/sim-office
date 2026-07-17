@@ -24,7 +24,7 @@ pub mod ole;
 
 pub use dataverse::{DataverseAction, DataverseOperation, DataverseProjectTarget, plan_pss_update};
 pub use modeled::{ModeledOleReceipt, import_modeled_ole_receipt};
-pub use ole::{POWERPROJECT_OLE_BRIDGE_ENV, ole_export_compiled};
+pub use ole::{POWERPROJECT_OLE_BRIDGE_ENV, export_current_project_to_mspdi, ole_export_compiled};
 
 /// Stable office site id for Powerproject and Project for the web placements.
 pub const POWERPROJECT_SITE_ID: &str = "site/powerproject";

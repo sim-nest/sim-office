@@ -213,20 +213,22 @@ mod tests {
     #[test]
     fn batch_posts_to_api_batch_path() {
         let mut cx = test_context();
+        let site_url = "https://contoso.sharepoint.com/sites/design";
+        let ops = [RestBatchOp::get("_api/web/lists/getbytitle('Tasks')/items")];
+        let expected_body = json!({
+            "content_type": odata_batch_content_type(),
+            "body": odata_batch_body(site_url, &ops).unwrap(),
+        });
         let rest = SharePointRestSite::new(
-            "https://contoso.sharepoint.com/sites/design",
+            site_url,
             GraphMode::<StaticTokenProvider>::Modeled(Cassette::with_post_json(
                 BATCH_API_PATH,
+                expected_body,
                 json!({ "status": "accepted" }),
             )),
         );
 
-        let response = rest
-            .batch(
-                &mut cx,
-                &[RestBatchOp::get("_api/web/lists/getbytitle('Tasks')/items")],
-            )
-            .unwrap();
+        let response = rest.batch(&mut cx, &ops).unwrap();
 
         assert_eq!(response["status"], "accepted");
     }

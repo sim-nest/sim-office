@@ -10,7 +10,7 @@ use crate::client::{GraphError, redacted_body};
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Cassette {
     responses: BTreeMap<String, CassetteResponse>,
-    post_responses: BTreeMap<String, CassetteResponse>,
+    post_responses: BTreeMap<PostCassetteKey, CassetteResponse>,
     byte_responses: BTreeMap<String, CassetteBytesResponse>,
 }
 
@@ -29,8 +29,8 @@ impl Cassette {
 
     /// Builds a cassette containing one successful JSON `POST` response.
     #[must_use]
-    pub fn with_post_json(path: impl Into<String>, body: Value) -> Self {
-        Self::with_post_status(path, 200, body)
+    pub fn with_post_json(path: impl Into<String>, expected_body: Value, body: Value) -> Self {
+        Self::with_post_status(path, expected_body, 200, body)
     }
 
     /// Builds a cassette containing one successful byte response.
@@ -49,9 +49,14 @@ impl Cassette {
 
     /// Builds a cassette containing one `POST` response with an explicit HTTP status.
     #[must_use]
-    pub fn with_post_status(path: impl Into<String>, status: u16, body: Value) -> Self {
+    pub fn with_post_status(
+        path: impl Into<String>,
+        expected_body: Value,
+        status: u16,
+        body: Value,
+    ) -> Self {
         let mut cassette = Self::new();
-        cassette.insert_post(path, CassetteResponse::new(status, body));
+        cassette.insert_post(path, expected_body, CassetteResponse::new(status, body));
         cassette
     }
 
@@ -69,8 +74,14 @@ impl Cassette {
     }
 
     /// Inserts or replaces a `POST` response.
-    pub fn insert_post(&mut self, path: impl Into<String>, response: CassetteResponse) {
-        self.post_responses.insert(path.into(), response);
+    pub fn insert_post(
+        &mut self,
+        path: impl Into<String>,
+        expected_body: Value,
+        response: CassetteResponse,
+    ) {
+        self.post_responses
+            .insert(PostCassetteKey::new(path.into(), &expected_body), response);
     }
 
     /// Inserts or replaces a byte response.
@@ -98,12 +109,13 @@ impl Cassette {
     }
 
     /// Reads a modeled `POST` response as if it came from Microsoft Graph.
-    pub fn post(&self, path: &str, _body: &Value) -> Result<Value, GraphError> {
+    pub fn post(&self, path: &str, body: &Value) -> Result<Value, GraphError> {
+        let key = PostCassetteKey::new(path.to_owned(), body);
         let response =
             self.post_responses
-                .get(path)
+                .get(&key)
                 .ok_or_else(|| GraphError::MissingCassette {
-                    path: path.to_owned(),
+                    path: format!("{path} with body {}", modeled_body_key(body)),
                 })?;
         if (200..300).contains(&response.status) {
             return Ok(response.body.clone());
@@ -131,6 +143,21 @@ impl Cassette {
             status: response.status,
             body: redacted_body(&String::from_utf8_lossy(&response.body), None),
         })
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+struct PostCassetteKey {
+    path: String,
+    body: String,
+}
+
+impl PostCassetteKey {
+    fn new(path: String, body: &Value) -> Self {
+        Self {
+            path,
+            body: modeled_body_key(body),
+        }
     }
 }
 
@@ -166,6 +193,11 @@ impl CassetteBytesResponse {
     pub fn new(status: u16, body: Vec<u8>) -> Self {
         Self { status, body }
     }
+}
+
+fn modeled_body_key(body: &Value) -> String {
+    serde_json::to_string(body)
+        .unwrap_or_else(|error| format!("could not encode modeled request body: {error}"))
 }
 
 #[cfg(test)]
@@ -216,16 +248,29 @@ mod tests {
 
     #[test]
     fn modeled_posts_are_deterministic() {
-        let cassette = Cassette::with_post_json("/me/messages", json!({ "id": "draft-1" }));
+        let request = json!({ "subject": "Hi" });
+        let cassette =
+            Cassette::with_post_json("/me/messages", request.clone(), json!({ "id": "draft-1" }));
 
-        let first = cassette
-            .post("/me/messages", &json!({ "subject": "Hi" }))
-            .unwrap();
-        let second = cassette
-            .post("/me/messages", &json!({ "subject": "Hi" }))
-            .unwrap();
+        let first = cassette.post("/me/messages", &request).unwrap();
+        let second = cassette.post("/me/messages", &request).unwrap();
 
         assert_eq!(first, json!({ "id": "draft-1" }));
         assert_eq!(first, second);
+    }
+
+    #[test]
+    fn modeled_posts_require_matching_body() {
+        let cassette = Cassette::with_post_json(
+            "/me/messages",
+            json!({ "subject": "Expected" }),
+            json!({ "id": "draft-1" }),
+        );
+
+        let error = cassette
+            .post("/me/messages", &json!({ "subject": "Wrong" }))
+            .unwrap_err();
+
+        assert!(matches!(error, GraphError::MissingCassette { .. }));
     }
 }
