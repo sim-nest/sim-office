@@ -80,4 +80,6 @@ pub static RECIPES: sim_cookbook::EmbeddedDir =
     include!(concat!(env!("OUT_DIR"), "/cookbook_recipes.rs"));
 
 #[cfg(test)]
+mod package_tests;
+#[cfg(test)]
 mod tests;

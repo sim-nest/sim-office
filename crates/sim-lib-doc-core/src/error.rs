@@ -14,6 +14,13 @@ pub enum OfficeError {
     /// The kernel reported an error that does not have a narrower office-core
     /// category yet.
     Kernel(String),
+    /// A compressed office package exceeded one of the bounded reader limits.
+    PackageTooLarge {
+        /// The limit that rejected the package.
+        limit: &'static str,
+        /// Package or entry details useful to the caller.
+        detail: String,
+    },
     /// A domain edit could not be applied.
     DomainEdit(String),
     /// A document site could not be resolved or run.
@@ -28,6 +35,9 @@ impl fmt::Display for OfficeError {
             Self::ShapeBuild(message) => write!(f, "could not build document shape: {message}"),
             Self::CapabilityDenied(capability) => write!(f, "capability denied: {capability}"),
             Self::Kernel(message) => write!(f, "kernel error: {message}"),
+            Self::PackageTooLarge { limit, detail } => {
+                write!(f, "office package exceeds {limit} limit: {detail}")
+            }
             Self::DomainEdit(message) => write!(f, "domain edit failed: {message}"),
             Self::Site(message) => write!(f, "document site error: {message}"),
             Self::Surface(message) => write!(f, "document surface error: {message}"),

@@ -1,10 +1,10 @@
 //! ODF ZIP package helpers.
 
 use std::collections::BTreeMap;
-use std::io::{Cursor, Read, Write};
+use std::io::{Cursor, Write};
 
 use roxmltree::{Document, Node};
-use sim_lib_doc_core::{FidelityReport, OfficeError};
+use sim_lib_doc_core::{FidelityReport, OfficeError, ZipLimits, read_zip_entries};
 use zip::write::SimpleFileOptions;
 use zip::{CompressionMethod, ZipArchive, ZipWriter};
 
@@ -29,32 +29,12 @@ pub(crate) struct OdfPackage {
 
 impl OdfPackage {
     pub(crate) fn read(bytes: &[u8]) -> Result<Self, OfficeError> {
-        let mut archive = ZipArchive::new(Cursor::new(bytes)).map_err(zip_error)?;
-        if archive.is_empty() {
-            return Err(error("ODF package is empty"));
-        }
-        {
-            let first = archive.by_index(0).map_err(zip_error)?;
-            let first_name = first.name().replace('\\', "/");
-            if first_name != "mimetype" || first.compression() != CompressionMethod::Stored {
-                return Err(error(
-                    "ODF package must put the uncompressed mimetype entry first",
-                ));
-            }
-        }
+        Self::read_with_limits(bytes, &ZipLimits::office())
+    }
 
-        let mut entries = BTreeMap::new();
-        for index in 0..archive.len() {
-            let mut file = archive.by_index(index).map_err(zip_error)?;
-            if file.is_dir() {
-                continue;
-            }
-            let name = file.name().replace('\\', "/");
-            let mut data = Vec::new();
-            file.read_to_end(&mut data)
-                .map_err(|err| error(format!("could not read zip entry {name}: {err}")))?;
-            entries.insert(name, data);
-        }
+    pub(crate) fn read_with_limits(bytes: &[u8], limits: &ZipLimits) -> Result<Self, OfficeError> {
+        validate_mimetype_first(bytes)?;
+        let entries = read_zip_entries(bytes, limits)?;
 
         let mimetype = std::str::from_utf8(
             entries
@@ -185,4 +165,19 @@ pub(crate) fn error(message: impl Into<String>) -> OfficeError {
 
 fn zip_error(error: zip::result::ZipError) -> OfficeError {
     self::error(format!("invalid ODF zip package: {error}"))
+}
+
+fn validate_mimetype_first(bytes: &[u8]) -> Result<(), OfficeError> {
+    let mut archive = ZipArchive::new(Cursor::new(bytes)).map_err(zip_error)?;
+    if archive.is_empty() {
+        return Err(error("ODF package is empty"));
+    }
+    let first = archive.by_index(0).map_err(zip_error)?;
+    let first_name = first.name().replace('\\', "/");
+    if first_name != "mimetype" || first.compression() != CompressionMethod::Stored {
+        return Err(error(
+            "ODF package must put the uncompressed mimetype entry first",
+        ));
+    }
+    Ok(())
 }

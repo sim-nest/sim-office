@@ -1,11 +1,11 @@
 //! ZIP package helpers for OOXML containers.
 
 use std::collections::BTreeMap;
-use std::io::{Cursor, Read, Write};
+use std::io::{Cursor, Write};
 
-use sim_lib_doc_core::OfficeError;
+use sim_lib_doc_core::{OfficeError, ZipLimits, read_zip_entries};
 use zip::write::SimpleFileOptions;
-use zip::{CompressionMethod, ZipArchive, ZipWriter};
+use zip::{CompressionMethod, ZipWriter};
 
 const OLE_COMPOUND_HEADER: &[u8] = b"\xD0\xCF\x11\xE0";
 
@@ -25,21 +25,18 @@ pub(crate) struct OoxmlPackage {
 impl OoxmlPackage {
     /// Reads a ZIP-backed OOXML package.
     pub(crate) fn read(bytes: &[u8], extension: &str) -> Result<Self, OfficeError> {
+        Self::read_with_limits(bytes, extension, &ZipLimits::office())
+    }
+
+    pub(crate) fn read_with_limits(
+        bytes: &[u8],
+        extension: &str,
+        limits: &ZipLimits,
+    ) -> Result<Self, OfficeError> {
         if bytes.starts_with(OLE_COMPOUND_HEADER) {
             return Err(ole_error(extension));
         }
-        let mut archive = ZipArchive::new(Cursor::new(bytes)).map_err(zip_error)?;
-        let mut entries = BTreeMap::new();
-        for index in 0..archive.len() {
-            let mut file = archive.by_index(index).map_err(zip_error)?;
-            if file.is_dir() {
-                continue;
-            }
-            let mut data = Vec::new();
-            file.read_to_end(&mut data)
-                .map_err(|err| error(format!("could not read zip entry {}: {err}", file.name())))?;
-            entries.insert(file.name().replace('\\', "/"), data);
-        }
+        let entries = read_zip_entries(bytes, limits)?;
         let package = Self { entries };
         package.require(CONTENT_TYPES)?;
         package.require(ROOT_RELS)?;

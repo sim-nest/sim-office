@@ -12,6 +12,7 @@ pub mod model;
 pub mod place;
 pub mod projection;
 pub mod shape;
+pub mod zip_package;
 
 pub use caps::{
     CREDENTIALS_CAPABILITY, NET_CONNECT_CAPABILITY, OfficeCapabilityProfile,
@@ -30,6 +31,7 @@ pub use projection::{
     TAG_STATEMENT_KIND, TAG_TARGET, project,
 };
 pub use shape::{DocKindShape, doc_shape};
+pub use zip_package::{ZipLimits, read_zip_entries};
 
 /// Cookbook recipes for this lib, embedded at build time.
 pub static RECIPES: sim_cookbook::EmbeddedDir =
