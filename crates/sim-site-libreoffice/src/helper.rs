@@ -12,6 +12,7 @@ use crate::site::LIBREOFFICE_SITE_ID;
 
 /// Environment gate required before a live LibreOffice helper may spawn.
 pub const LIBREOFFICE_BRIDGE_ENV: &str = "SIM_OFFICE_LIBREOFFICE_BRIDGE";
+const OWNED_TEMP_PREFIX: &str = "sim-site-libreoffice-";
 
 #[cfg(test)]
 trait GrantOutcome {
@@ -244,7 +245,16 @@ fn redact_path(message: &str, path: &Path) -> String {
 
 fn path_is_in_temp(path: &Path) -> bool {
     let temp = std::env::temp_dir();
-    path.starts_with(&temp)
+    let Ok(relative) = path.strip_prefix(&temp) else {
+        return false;
+    };
+    relative.components().next().is_some_and(|component| {
+        matches!(
+            component,
+            std::path::Component::Normal(name)
+                if name.to_string_lossy().starts_with(OWNED_TEMP_PREFIX)
+        )
+    })
 }
 
 #[cfg(test)]
@@ -339,6 +349,20 @@ mod tests {
         assert!(!rendered.contains("/home/bo/private/file.ods"));
     }
 
+    #[test]
+    fn redaction_leaves_only_owned_temp_paths_visible() {
+        let owned = temp_path("input.ods");
+        let owned_message = format!("could not open {}", owned.display());
+        assert_eq!(redact_path(&owned_message, &owned), owned_message);
+
+        let arbitrary_temp = std::env::temp_dir().join("private-file.ods");
+        let arbitrary_message = format!("could not open {}", arbitrary_temp.display());
+        let redacted = redact_path(&arbitrary_message, &arbitrary_temp);
+
+        assert!(redacted.contains("<redacted-path>"));
+        assert!(!redacted.contains(&arbitrary_temp.display().to_string()));
+    }
+
     fn fake_helper(name: &str, reply: &str) -> PathBuf {
         let path = temp_path(&format!("{name}-helper.sh"));
         let script = format!("#!/bin/sh\nread _line\nprintf '%s\\n' '{reply}'\n");
@@ -352,7 +376,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        std::env::temp_dir().join(format!("sim-site-libreoffice-{stamp}-{name}"))
+        std::env::temp_dir().join(format!("{OWNED_TEMP_PREFIX}{stamp}-{name}"))
     }
 
     #[cfg(unix)]
