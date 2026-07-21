@@ -1,0 +1,72 @@
+schema = "sim.features"
+
+[enforcement.audience]
+user = "strict"
+code = "advisory"
+framework = "advisory"
+
+[enforcement.surface]
+cli = "strict"
+view = "strict"
+docs = "advisory"
+
+[enforcement.route]
+major_entrypoints = "advisory"
+frameworks = "advisory"
+
+[[feature]]
+id = "feature/sim-office/generated-docs"
+title = "Repository documentation surface"
+summary = "Publish generated package, card, recipe, and index facts for office documents, sites, and codecs."
+owner = "crate/xtask"
+audiences = ["code"]
+guidance = "Use this row when checking the generated documentation and index lane for the office repo."
+claims_anchors = [
+  "anchor/cli/xtask",
+  "anchor/doc/generated/feature-map",
+  "anchor/doc/generated/sim-index-fragment",
+]
+claims_surfaces = [
+  "cli/xtask",
+  "docs/sim-office/generated",
+]
+
+[[feature]]
+id = "feature/sim-office/document-codecs"
+title = "Document codec workflows"
+summary = "Round-trip OOXML, ODF, MSPDI, deck, sheet, and markup documents through office codec recipes."
+owner = "crate/sim-lib-office-pack"
+audiences = ["user", "code"]
+guidance = "Use this row when choosing a document codec or checking that an office file round-trips."
+
+[[feature]]
+id = "feature/sim-office/document-surfaces"
+title = "Document view surfaces"
+summary = "Project document, markup, and suite descriptors into view surfaces for review and editing."
+owner = "crate/sim-lib-doc-surface"
+audiences = ["user", "code", "framework"]
+guidance = "Use this row when rendering an office document or suite preview."
+claims_surfaces = [
+  "view/sim-lib-doc-core",
+  "view/sim-lib-doc-markup",
+  "view/sim-lib-doc-surface",
+]
+
+[[feature]]
+id = "feature/sim-office/office-site-workflows"
+title = "Office site workflows"
+summary = "Model document stores, mail and calendar summaries, planning data, and enterprise site reads."
+owner = "crate/sim-lib-doc-site"
+audiences = ["user", "code"]
+guidance = "Use this row when connecting office documents to modeled project, mail, Graph, or SharePoint sites."
+
+[[route]]
+id = "route/review-office-document"
+task = "Review an office document"
+audiences = ["user", "code"]
+steps = [
+  { feature = "feature/sim-office/document-codecs", why = "The codec row chooses the file format and round-trip path." },
+  { feature = "feature/sim-office/document-surfaces", why = "The surface row renders the document into a reviewable view." },
+  { feature = "feature/sim-office/office-site-workflows", why = "The site row connects the document to modeled workplace sources." },
+  { specimen = "recipe/sim-office/crates/sim-lib-doc-surface/01-basics/suite-surface-descriptor", why = "The suite-surface recipe is the shortest surface example." },
+]
