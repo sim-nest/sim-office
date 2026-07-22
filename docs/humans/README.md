@@ -18,9 +18,9 @@ This generated lane consumes `docs/generated/sim-index-fragment.sx`. Global inde
 | Feature | Subject | Specimens | Summary |
 | --- | --- | ---: | --- |
 | `feature/sim-office/generated-docs` | `crate/xtask` | 0 | Publish generated package, card, recipe, and index facts for office documents, sites, and codecs. |
-| `feature/sim-office/document-codecs` | `crate/sim-lib-office-pack` | 0 | Round-trip OOXML, ODF, MSPDI, deck, sheet, and markup documents through office codec recipes. |
-| `feature/sim-office/document-surfaces` | `crate/sim-lib-doc-surface` | 0 | Project document, markup, and suite descriptors into view surfaces for review and editing. |
-| `feature/sim-office/office-site-workflows` | `crate/sim-lib-doc-site` | 0 | Model document stores, mail and calendar summaries, planning data, and enterprise site reads. |
+| `feature/sim-office/document-codecs` | `crate/sim-lib-office-pack` | 1 | Round-trip OOXML, ODF, MSPDI, deck, sheet, and markup documents through office codec recipes. |
+| `feature/sim-office/document-surfaces` | `crate/sim-lib-doc-surface` | 1 | Project document, markup, and suite descriptors into view surfaces for review and editing. |
+| `feature/sim-office/office-site-workflows` | `crate/sim-lib-doc-site` | 1 | Model document stores, mail and calendar summaries, planning data, and enterprise site reads. |
 
 ## Surfaces
 
@@ -144,4 +144,610 @@ This generated lane consumes `docs/generated/sim-index-fragment.sx`. Global inde
 
 ## Worked Examples
 
-No checked runnable feature specimens are present in this repository fragment.
+### `feature/sim-office/document-codecs`
+
+Specimen `spec-test/sim-office/crates/sim-codec-odf/src/tests` is checked by `cargo test`.
+
+Source `crates/sim-codec-odf/src/tests.rs`:
+
+```rust
+use std::collections::BTreeMap;
+use std::io::{Cursor, Write};
+use std::sync::Arc;
+
+use sim_kernel::{Cx, DefaultFactory, NoopEvalPolicy};
+use sim_lib_deck::{Deck, Slide, SlideBlock, deck_to_doc, doc_to_deck};
+use sim_lib_doc_core::{DocCodec, DocCodecOptions, DocId, ExternalRef};
+use sim_lib_sheet::{
+    CellRef, CellValue, Sheet, doc_to_sheet, rational_from_str, rational_to_canonical, sheet_to_doc,
+};
+use zip::write::SimpleFileOptions;
+use zip::{CompressionMethod, ZipArchive, ZipWriter};
+
+use super::*;
+use crate::package::{
+    CONTENT_XML, MANIFEST_XML, ODP_MIMETYPE, ODS_MIMETYPE, OFFICE_NS, STYLES_XML, TABLE_NS,
+    manifest_xml, styles_xml, write_package,
+};
+
+// conformance: document codecs round-trip sheet and deck office packages.
+
+fn cx() -> Cx {
+    Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
+}
+
+fn options(cx: &mut Cx) -> DocCodecOptions {
+    DocCodecOptions::new(cx.factory().nil().unwrap())
+}
+
+#[test]
+fn ods_round_trips_sheet_and_writes_mimetype_first() {
+    let mut cx = cx();
+    let mut sheet = Sheet::new("Sheet1");
+    sheet.set_cell(
+        CellRef::parse("A1").unwrap(),
+        CellValue::Number(rational_from_str(&mut cx, "5/2").unwrap()),
+    );
+    sheet.set_cell(
+        CellRef::parse("C2").unwrap(),
+        CellValue::Text("ready".to_owned()),
+    );
+    sheet.set_cell(CellRef::parse("D3").unwrap(), CellValue::Bool(true));
+    let doc = sheet_to_doc(&mut cx, DocId::new("sheet-1"), &sheet).unwrap();
+    let codec = OdfCodec;
+
+    let encode_options = options(&mut cx);
+    let (bytes, encode_report) = codec.encode(&mut cx, &doc, &encode_options).unwrap();
+    assert!(encode_report.is_lossless());
+    assert_mimetype_first(&bytes, ODS_MIMETYPE);
+
+    let decode_options = options(&mut cx);
+    let (decoded, decode_report) = codec.decode(&mut cx, &bytes, &decode_options).unwrap();
+    assert!(decode_report.is_lossless());
+    let decoded_sheet = doc_to_sheet(&mut cx, &decoded).unwrap();
+    let CellValue::Number(a1) = decoded_sheet.cell(&CellRef::parse("A1").unwrap()) else {
+        panic!("expected A1 number");
+    };
+    assert_eq!(rational_to_canonical(&mut cx, &a1).unwrap(), "5/2");
+    assert!(matches!(
+        decoded_sheet.cell(&CellRef::parse("C2").unwrap()),
+        CellValue::Text(text) if text == "ready"
+    ));
+    assert!(matches!(
+        decoded_sheet.cell(&CellRef::parse("D3").unwrap()),
+        CellValue::Bool(true)
+    ));
+}
+
+#[test]
+fn odp_round_trips_deck() {
+    let mut cx = cx();
+    let mut deck = Deck::new("Project Update");
+    let mut slide = Slide::new("intro", "Status");
+    slide.push_block(SlideBlock::Heading("Status".to_owned()));
+    slide.push_block(SlideBlock::BulletList(vec![
+        "ODF export".to_owned(),
+        "Portable deck blocks".to_owned(),
+    ]));
+    slide.push_block(SlideBlock::Table {
+        columns: vec!["Metric".to_owned(), "Value".to_owned()],
+        rows: vec![vec!["Budget".to_owned(), "Green".to_owned()]],
+    });
+    slide.push_block(SlideBlock::ImageRef(ExternalRef::new(
+        "site/msgraph",
+        "drive-item-1",
+        Some("etag-1".to_owned()),
+        Some("https://example.com/image".to_owned()),
+    )));
+    deck.push_slide(slide);
+    let doc = deck_to_doc(&mut cx, DocId::new("deck-1"), &deck).unwrap();
+    let codec = OdfCodec;
+
+    let encode_options = options(&mut cx);
+    let (bytes, encode_report) = codec.encode(&mut cx, &doc, &encode_options).unwrap();
+    assert!(encode_report.is_lossless());
+    assert_mimetype_first(&bytes, ODP_MIMETYPE);
+
+    let decode_options = options(&mut cx);
+    let (decoded, decode_report) = codec.decode(&mut cx, &bytes, &decode_options).unwrap();
+    let decoded_deck = doc_to_deck(&mut cx, &decoded).unwrap();
+
+    assert!(decode_report.is_lossless());
+    assert_eq!(decoded_deck, deck);
+}
+
+#[test]
+fn compressed_first_mimetype_is_rejected() {
+    let mut cx = cx();
+    let decode_options = options(&mut cx);
+    let bytes = package_with_compressed_mimetype();
+
+    let err = OdfCodec
+        .decode(&mut cx, &bytes, &decode_options)
+        .unwrap_err();
+
+    assert!(err.to_string().contains("uncompressed mimetype"));
+}
+
+#[test]
+fn ods_formula_without_sim_metadata_preserves_formula() {
+    let mut cx = cx();
+    let bytes = ods_package(&format!(
+        r#"<?xml version="1.0" encoding="UTF-8"?><office:document-content xmlns:office="{OFFICE_NS}" xmlns:table="{TABLE_NS}" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" office:version="1.2"><office:body><office:spreadsheet><table:table table:name="Formulas"><table:table-row><table:table-cell office:value-type="string" table:formula="of:=A1+B1"><text:p>999</text:p></table:table-cell></table:table-row></table:table></office:spreadsheet></office:body></office:document-content>"#
+    ));
+    let decode_options = options(&mut cx);
+
+    let (decoded, report) = OdfCodec.decode(&mut cx, &bytes, &decode_options).unwrap();
+    let sheet = doc_to_sheet(&mut cx, &decoded).unwrap();
+
+    assert!(report.is_lossless());
+    assert!(matches!(
+        sheet.cell(&CellRef::parse("A1").unwrap()),
+        CellValue::Formula(formula) if formula == "=A1+B1"
+    ));
+}
+
+#[test]
+fn recipes_are_embedded() {
+    let cards = sim_cookbook::recipes_from_embedded(RECIPES).unwrap();
+
+    assert!(cards.iter().any(|card| card.id.ends_with("ods-round-trip")));
+    assert!(cards.iter().any(|card| card.id.ends_with("odp-round-trip")));
+}
+
+fn ods_package(content_xml: &str) -> Vec<u8> {
+    let mut entries = BTreeMap::new();
+    entries.insert(CONTENT_XML.to_owned(), content_xml.to_owned());
+    entries.insert(STYLES_XML.to_owned(), styles_xml());
+    entries.insert(MANIFEST_XML.to_owned(), manifest_xml(ODS_MIMETYPE));
+    write_package(ODS_MIMETYPE, entries).unwrap()
+}
+
+fn assert_mimetype_first(bytes: &[u8], expected: &str) {
+    let mut archive = ZipArchive::new(Cursor::new(bytes)).unwrap();
+    {
+        let mut first = archive.by_index(0).unwrap();
+        assert_eq!(first.name(), "mimetype");
+        assert_eq!(first.compression(), CompressionMethod::Stored);
+        let mut value = String::new();
+        std::io::Read::read_to_string(&mut first, &mut value).unwrap();
+        assert_eq!(value, expected);
+    }
+
+    let mut names = Vec::new();
+    for index in 0..archive.len() {
+        names.push(archive.by_index(index).unwrap().name().to_owned());
+    }
+    for required in [CONTENT_XML, MANIFEST_XML, STYLES_XML] {
+        assert!(
+            names.iter().any(|name| name == required),
+            "missing {required}"
+        );
+    }
+}
+
+fn package_with_compressed_mimetype() -> Vec<u8> {
+    let mut cursor = Cursor::new(Vec::new());
+    {
+        let mut writer = ZipWriter::new(&mut cursor);
+        let compressed =
+            SimpleFileOptions::default().compression_method(CompressionMethod::Deflated);
+        writer.start_file("mimetype", compressed).unwrap();
+        writer.write_all(ODS_MIMETYPE.as_bytes()).unwrap();
+        writer.start_file(CONTENT_XML, compressed).unwrap();
+        writer.write_all(b"<office:document-content/>").unwrap();
+        writer.finish().unwrap();
+    }
+    cursor.into_inner()
+}
+```
+
+### `feature/sim-office/document-surfaces`
+
+Specimen `spec-test/sim-office/crates/sim-lib-doc-surface/src/scene` is checked by `cargo test`.
+
+Source `crates/sim-lib-doc-surface/src/scene.rs`:
+
+```rust
+//! Scene projection for suite document panes.
+
+use std::collections::BTreeMap;
+
+use sim_kernel::{Cx, Expr, Value};
+use sim_lib_doc_core::{
+    Doc, DocId, OfficeError, ProjectionRequest, SurfaceCaps, TAG_FIDELITY, TAG_LENS, TAG_TARGET,
+    project,
+};
+use sim_lib_scene::{node, sym, validate_scene};
+
+/// One document pane requested by a suite surface.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SuitePane {
+    /// Document id shown in this pane.
+    pub doc: DocId,
+    /// Open surface caps used to project the document.
+    pub caps: SurfaceCaps,
+}
+
+impl SuitePane {
+    /// Build a suite pane request.
+    #[must_use]
+    pub fn new(doc: DocId, caps: SurfaceCaps) -> Self {
+        Self { doc, caps }
+    }
+}
+
+/// Project documents into a deterministic Scene value for suite hosts.
+///
+/// When `panes` is empty, every document is rendered once in stable document-id
+/// order with default screen caps. When `panes` is supplied, pane order is the
+/// caller's layout order while document lookup stays deterministic.
+pub fn suite_scene(cx: &mut Cx, panes: &[SuitePane], docs: &[Doc]) -> Result<Value, OfficeError> {
+    let docs_by_id = docs_by_id(docs);
+    let active_panes = active_panes(panes, docs);
+    let mut children = Vec::with_capacity(active_panes.len());
+    for pane in &active_panes {
+        let doc = docs_by_id.get(&pane.doc).copied().ok_or_else(|| {
+            OfficeError::Surface(format!("unknown suite pane doc {}", pane.doc.0))
+        })?;
+        children.push(pane_scene(cx, pane, doc)?);
+    }
+    let scene = node(
+        "stack",
+        vec![
+            ("id", sym("office-suite")),
+            ("role", sym("suite")),
+            ("dir", sym("column")),
+            ("children", Expr::List(children)),
+        ],
+    );
+    validate_scene(&scene)
+        .map_err(|error| OfficeError::Surface(format!("suite scene did not validate: {error}")))?;
+    cx.factory().expr(scene).map_err(OfficeError::from)
+}
+
+fn docs_by_id(docs: &[Doc]) -> BTreeMap<DocId, &Doc> {
+    docs.iter().map(|doc| (doc.id.clone(), doc)).collect()
+}
+
+fn active_panes(panes: &[SuitePane], docs: &[Doc]) -> Vec<SuitePane> {
+    if !panes.is_empty() {
+        return panes.to_vec();
+    }
+    let mut docs: Vec<&Doc> = docs.iter().collect();
+    docs.sort_by(|left, right| left.id.cmp(&right.id));
+    docs.into_iter()
+        .map(|doc| {
+            SuitePane::new(
+                doc.id.clone(),
+                SurfaceCaps::new()
+                    .target("screen")
+                    .lens("formatted")
+                    .fidelity("standard"),
+            )
+        })
+        .collect()
+}
+
+fn pane_scene(cx: &mut Cx, pane: &SuitePane, doc: &Doc) -> Result<Expr, OfficeError> {
+    let projected = project(cx, &ProjectionRequest::new(doc, &pane.caps))?;
+    let projected = projected.object().as_expr(cx).map_err(OfficeError::from)?;
+    Ok(node(
+        "box",
+        vec![
+            ("id", Expr::String(pane.doc.0.clone())),
+            ("role", sym("suite-pane")),
+            (
+                "children",
+                Expr::List(vec![
+                    sim_lib_scene::text_node(format!("{} {}", doc.kind.0, doc.id.0)),
+                    caps_summary(&pane.caps),
+                    node(
+                        "embed",
+                        vec![
+                            ("lens", sym("view:default")),
+                            ("scene", projection_scene(projected)),
+                        ],
+                    ),
+                ]),
+            ),
+        ],
+    ))
+}
+
+fn caps_summary(caps: &SurfaceCaps) -> Expr {
+    let lens = caps.get(TAG_LENS).unwrap_or("formatted");
+    let target = caps.get(TAG_TARGET).unwrap_or("screen");
+    let fidelity = caps.get(TAG_FIDELITY).unwrap_or("standard");
+    sim_lib_scene::badge("projection", &format!("{target}/{lens}/{fidelity}"))
+}
+
+fn projection_scene(projected: Expr) -> Expr {
+    node(
+        "box",
+        vec![
+            ("role", sym("projection")),
+            (
+                "children",
+                Expr::List(vec![sim_lib_scene::text_node(format!("{projected:?}"))]),
+            ),
+        ],
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+
+    use sim_kernel::{DefaultFactory, NoopEvalPolicy};
+    use sim_lib_doc_core::{DocKind, ProjectionCaps};
+
+    use super::*;
+
+    // conformance: document surfaces project suite panes into checked scenes.
+
+    fn cx() -> Cx {
+        Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
+    }
+
+    fn doc(cx: &mut Cx, id: &str, kind: &str, body: &str) -> Doc {
+        Doc::new(
+            DocKind::new(kind),
+            DocId::new(id),
+            cx.factory().string(body.to_owned()).unwrap(),
+            vec![],
+        )
+    }
+
+    fn expr_of(cx: &mut Cx, value: Value) -> Expr {
+        value.object().as_expr(cx).unwrap()
+    }
+
+    fn child_ids(scene: &Expr) -> Vec<String> {
+        let children = field(scene, "children").and_then(|value| match value {
+            Expr::List(children) => Some(children),
+            _ => None,
+        });
+        children
+            .into_iter()
+            .flatten()
+            .filter_map(|child| match field(child, "id") {
+                Some(Expr::String(id)) => Some(id.clone()),
+                _ => None,
+            })
+            .collect()
+    }
+
+    fn field<'a>(expr: &'a Expr, name: &str) -> Option<&'a Expr> {
+        let Expr::Map(entries) = expr else {
+            return None;
+        };
+        entries.iter().find_map(|(key, value)| match key {
+            Expr::Symbol(symbol) if symbol.namespace.is_none() && symbol.name.as_ref() == name => {
+                Some(value)
+            }
+            _ => None,
+        })
+    }
+
+    #[test]
+    fn mixed_docs_produce_stable_node_order() {
+        let mut cx = cx();
+        let docs = vec![
+            doc(&mut cx, "doc-b", "report", "b"),
+            doc(&mut cx, "doc-a", "article", "a"),
+        ];
+
+        let first_value = suite_scene(&mut cx, &[], &docs).unwrap();
+        let first = expr_of(&mut cx, first_value);
+        let second_value = suite_scene(&mut cx, &[], &docs).unwrap();
+        let second = expr_of(&mut cx, second_value);
+
+        sim_lib_scene::validate_scene(&first).unwrap();
+        assert_eq!(first, second);
+        assert_eq!(child_ids(&first), ["doc-a", "doc-b"]);
+    }
+
+    #[test]
+    fn requested_panes_keep_layout_order() {
+        let mut cx = cx();
+        let docs = vec![
+            doc(&mut cx, "doc-a", "article", "a"),
+            doc(&mut cx, "doc-b", "report", "b"),
+        ];
+        let panes = vec![
+            SuitePane::new(DocId::new("doc-b"), ProjectionCaps::new().target("deck")),
+            SuitePane::new(DocId::new("doc-a"), ProjectionCaps::new().target("screen")),
+        ];
+
+        let scene_value = suite_scene(&mut cx, &panes, &docs).unwrap();
+        let scene = expr_of(&mut cx, scene_value);
+
+        assert_eq!(child_ids(&scene), ["doc-b", "doc-a"]);
+    }
+
+    #[test]
+    fn headless_view_doc_fixture_accepts_suite_scene_as_cached_embed() {
+        let mut cx = cx();
+        let docs = vec![doc(&mut cx, "doc-a", "article", "a")];
+        let scene_value = suite_scene(&mut cx, &[], &docs).unwrap();
+        let scene = expr_of(&mut cx, scene_value);
+        sim_lib_scene::validate_scene(&scene).unwrap();
+
+        let block = sim_lib_view_doc::embed_block(Expr::String("suite".to_owned()), "view:default");
+        let cached = sim_lib_view_doc::with_cache(block, scene);
+        let article = sim_lib_view_doc::article("Suite", vec![cached]);
+        let formatted = sim_lib_view_doc::article_formatted(&article);
+
+        sim_lib_scene::validate_scene(&formatted).unwrap();
+    }
+}
+```
+
+### `feature/sim-office/office-site-workflows`
+
+Specimen `spec-test/sim-office/crates/sim-site-dalux/src/tests` is checked by `cargo test`.
+
+Source `crates/sim-site-dalux/src/tests.rs`:
+
+```rust
+use std::sync::Arc;
+
+use serde_json::json;
+use sim_kernel::{Cx, DefaultFactory, ExportKind, ExportState, NoopEvalPolicy, RuntimeId};
+use sim_lib_doc_core::{CREDENTIALS_CAPABILITY, NET_CONNECT_CAPABILITY};
+use sim_lib_doc_site::site_symbol;
+
+use crate::*;
+
+// conformance: office site workflows model site placement and document exchange.
+
+fn test_context() -> Cx {
+    Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
+}
+
+fn text_at(sheet: &sim_lib_sheet::Sheet, cell: &str) -> String {
+    match sheet.cell(&sim_lib_sheet::CellRef::parse(cell).unwrap()) {
+        sim_lib_sheet::CellValue::Text(value) => value,
+        other => panic!("expected text at {cell}, got {other:?}"),
+    }
+}
+
+#[test]
+fn live_site_carries_dalux_capabilities() {
+    let site = live_dalux_site();
+    let caps: Vec<_> = site
+        .required_caps
+        .iter()
+        .map(|capability| capability.as_str().to_owned())
+        .collect();
+
+    assert_eq!(site.site_id, DALUX_SITE_ID);
+    assert!(!site.default_modeled);
+    assert_eq!(caps, vec![NET_CONNECT_CAPABILITY, CREDENTIALS_CAPABILITY]);
+}
+
+#[test]
+fn site_registers_as_export_site() {
+    let mut cx = test_context();
+
+    let record = register_dalux_site(&mut cx, true).unwrap();
+
+    assert_eq!(record.kind, ExportKind::named(ExportKind::SITE));
+    assert_eq!(record.symbol, site_symbol(DALUX_SITE_ID));
+    assert!(matches!(
+        record.state,
+        ExportState::Resolved {
+            id: RuntimeId::Site(_)
+        }
+    ));
+    assert!(
+        cx.registry()
+            .site_by_symbol(&site_symbol(DALUX_SITE_ID))
+            .is_some()
+    );
+}
+
+#[test]
+fn recipes_are_embedded() {
+    let cards = sim_cookbook::recipes_from_embedded(RECIPES).unwrap();
+
+    assert!(
+        cards
+            .iter()
+            .any(|card| card.id.ends_with("dalux-modeled-items"))
+    );
+}
+
+#[test]
+fn company_api_key_provider_is_rejected() {
+    let provider = StaticDaluxCredentialProvider::company_api_key("old-key");
+
+    assert!(matches!(
+        provider.access_token(),
+        Err(DaluxError::CompanyApiKeyUnsupported)
+    ));
+}
+
+#[test]
+fn modeled_project_items_become_dalux_doc() {
+    let mut cx = test_context();
+    let client = DaluxClient::modeled(
+        ModeledDalux::with_json(
+            "/projects/project-1/items",
+            json!({
+                "items": [
+                    {
+                        "id": "item-1",
+                        "title": "Door review",
+                        "status": "open",
+                        "location": "Level 2",
+                        "note": "Check frame",
+                        "updatedAt": "2026-07-13T10:00:00Z",
+                        "webUrl": "https://example.com/dalux/items/item-1"
+                    }
+                ]
+            }),
+        ),
+        StaticDaluxCredentialProvider::new("token-1"),
+    );
+
+    let doc = get_project_items(&mut cx, &client, "project-1").unwrap();
+    let sheet = sim_lib_sheet::doc_to_sheet(&mut cx, &doc).unwrap();
+
+    assert_eq!(doc.id.as_str(), "site/dalux/projects/project-1/items");
+    assert_eq!(text_at(&sheet, "A2"), "item-1");
+    assert_eq!(text_at(&sheet, "B2"), "Door review");
+}
+
+#[test]
+fn modeled_patch_sends_only_note_field() {
+    let mut cx = test_context();
+    let client = DaluxClient::modeled(
+        ModeledDalux::new().with_patch(
+            "/items/item-1",
+            json!({ "note": "Reviewed in SIM" }),
+            ModeledResponse::ok(json!({
+                "id": "item-1",
+                "updatedAt": "2026-07-13T11:00:00Z",
+                "webUrl": "https://example.com/dalux/items/item-1"
+            })),
+        ),
+        StaticDaluxCredentialProvider::new("token-1"),
+    );
+
+    let external = patch_item_note(&mut cx, &client, "item-1", "Reviewed in SIM").unwrap();
+
+    assert_eq!(external.backend, DALUX_SITE_ID);
+    assert_eq!(external.external_id, "items/item-1");
+    assert_eq!(external.version.as_deref(), Some("2026-07-13T11:00:00Z"));
+}
+
+#[test]
+fn errors_redact_tokens_and_long_project_names() {
+    let mut cx = test_context();
+    let token = "secret-token";
+    let long_name = format!("project-{}", "x".repeat(140));
+    let client = DaluxClient::modeled(
+        ModeledDalux::with_status(
+            "/projects/project-1/items",
+            403,
+            json!({
+                "token": token,
+                "projectName": long_name,
+                "message": "denied"
+            }),
+        ),
+        StaticDaluxCredentialProvider::new(token),
+    );
+
+    let error = get_project_items(&mut cx, &client, "project-1")
+        .unwrap_err()
+        .to_string();
+
+    assert!(!error.contains(token));
+    assert!(!error.contains(&long_name));
+    assert!(error.contains("[redacted-token]"));
+    assert!(error.contains("[redacted-long-field]"));
+}
+```

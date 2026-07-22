@@ -7,6 +7,8 @@ use sim_lib_doc_site::site_symbol;
 
 use crate::*;
 
+// conformance: office site workflows model site placement and document exchange.
+
 fn test_context() -> Cx {
     Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
 }

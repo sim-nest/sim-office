@@ -133,6 +133,8 @@ mod tests {
 
     use super::*;
 
+    // conformance: document surfaces project suite panes into checked scenes.
+
     fn cx() -> Cx {
         Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
     }

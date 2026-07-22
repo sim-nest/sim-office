@@ -17,6 +17,8 @@ use crate::package::{
     manifest_xml, styles_xml, write_package,
 };
 
+// conformance: document codecs round-trip sheet and deck office packages.
+
 fn cx() -> Cx {
     Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
 }
