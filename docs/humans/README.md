@@ -153,9 +153,8 @@ Source `crates/sim-codec-odf/src/tests.rs`:
 ```rust
 use std::collections::BTreeMap;
 use std::io::{Cursor, Write};
-use std::sync::Arc;
 
-use sim_kernel::{Cx, DefaultFactory, NoopEvalPolicy};
+use sim_kernel::{Cx, testing::bare_cx as cx};
 use sim_lib_deck::{Deck, Slide, SlideBlock, deck_to_doc, doc_to_deck};
 use sim_lib_doc_core::{DocCodec, DocCodecOptions, DocId, ExternalRef};
 use sim_lib_sheet::{
@@ -171,10 +170,6 @@ use crate::package::{
 };
 
 // conformance: document codecs round-trip sheet and deck office packages.
-
-fn cx() -> Cx {
-    Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
-}
 
 fn options(cx: &mut Cx) -> DocCodecOptions {
     DocCodecOptions::new(cx.factory().nil().unwrap())
@@ -477,18 +472,13 @@ fn projection_scene(projected: Expr) -> Expr {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
-
-    use sim_kernel::{DefaultFactory, NoopEvalPolicy};
+    use sim_kernel::testing::bare_cx as cx;
     use sim_lib_doc_core::{DocKind, ProjectionCaps};
+    use sim_value::access::field;
 
     use super::*;
 
     // conformance: document surfaces project suite panes into checked scenes.
-
-    fn cx() -> Cx {
-        Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
-    }
 
     fn doc(cx: &mut Cx, id: &str, kind: &str, body: &str) -> Doc {
         Doc::new(
@@ -516,18 +506,6 @@ mod tests {
                 _ => None,
             })
             .collect()
-    }
-
-    fn field<'a>(expr: &'a Expr, name: &str) -> Option<&'a Expr> {
-        let Expr::Map(entries) = expr else {
-            return None;
-        };
-        entries.iter().find_map(|(key, value)| match key {
-            Expr::Symbol(symbol) if symbol.namespace.is_none() && symbol.name.as_ref() == name => {
-                Some(value)
-            }
-            _ => None,
-        })
     }
 
     #[test]

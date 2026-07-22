@@ -104,18 +104,12 @@ fn set_cell_from_expr(cx: &mut Cx, expr: &Expr) -> Result<(CellRef, CellValue), 
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
-
-    use sim_kernel::{Cx, DefaultFactory, NoopEvalPolicy};
+    use sim_kernel::testing::bare_cx as cx;
     use sim_lib_doc_core::invert;
 
     use crate::{rational_from_str, rational_to_canonical};
 
     use super::*;
-
-    fn cx() -> Cx {
-        Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
-    }
 
     #[test]
     fn sheet_docs_round_trip() {

@@ -126,18 +126,13 @@ fn projection_scene(projected: Expr) -> Expr {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
-
-    use sim_kernel::{DefaultFactory, NoopEvalPolicy};
+    use sim_kernel::testing::bare_cx as cx;
     use sim_lib_doc_core::{DocKind, ProjectionCaps};
+    use sim_value::access::field;
 
     use super::*;
 
     // conformance: document surfaces project suite panes into checked scenes.
-
-    fn cx() -> Cx {
-        Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
-    }
 
     fn doc(cx: &mut Cx, id: &str, kind: &str, body: &str) -> Doc {
         Doc::new(
@@ -165,18 +160,6 @@ mod tests {
                 _ => None,
             })
             .collect()
-    }
-
-    fn field<'a>(expr: &'a Expr, name: &str) -> Option<&'a Expr> {
-        let Expr::Map(entries) = expr else {
-            return None;
-        };
-        entries.iter().find_map(|(key, value)| match key {
-            Expr::Symbol(symbol) if symbol.namespace.is_none() && symbol.name.as_ref() == name => {
-                Some(value)
-            }
-            _ => None,
-        })
     }
 
     #[test]

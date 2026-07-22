@@ -1,6 +1,4 @@
-use std::sync::Arc;
-
-use sim_kernel::{Cx, DefaultFactory, NoopEvalPolicy};
+use sim_kernel::testing::bare_cx as cx;
 use sim_lib_doc_core::{DocId, Evidence, ExternalRef, LinkRole};
 use sim_lib_ledger_close::{FinancialStatements, StatementNote, StatementRow, StatementTable};
 
@@ -70,10 +68,6 @@ fn outlook_preview_rejects_missing_recipients() {
     let err = plan_archive_with_cx(&mut cx, &pack(), &targets).unwrap_err();
 
     assert!(err.to_string().contains("recipients must be non-empty"));
-}
-
-fn cx() -> Cx {
-    Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
 }
 
 fn pack() -> AnnualAccountsPack {

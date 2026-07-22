@@ -1,16 +1,11 @@
-use std::sync::Arc;
-
 use sim_kernel::{
-    CapabilityName, Consistency, Cx, DefaultFactory, EvalMode, EvalRequest, ExportKind,
-    ExportState, Expr, NoopEvalPolicy, RuntimeId, Symbol,
+    CapabilityName, Consistency, EvalMode, EvalRequest, ExportKind, ExportState, Expr, RuntimeId,
+    Symbol, testing::bare_cx as cx,
 };
 use sim_lib_doc_core::{DocKind, DocSite, NET_CONNECT_CAPABILITY, OfficeError, invert};
+use sim_value::build::entry;
 
 use crate::{DOC_SITE_DOMAIN, SiteOp, SiteReply, realize_site_op, register_site, site_symbol};
-
-fn cx() -> Cx {
-    Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
-}
 
 fn modeled_site() -> DocSite {
     DocSite::new(
@@ -81,8 +76,8 @@ fn eval_fabric_read_uses_registered_runtime() {
             &mut cx,
             EvalRequest {
                 expr: Expr::Map(vec![
-                    symbol_field("op", Expr::String("read".to_owned())),
-                    symbol_field("path", Expr::String("/cassette".to_owned())),
+                    entry("op", Expr::String("read".to_owned())),
+                    entry("path", Expr::String("/cassette".to_owned())),
                 ]),
                 result_shape: None,
                 required_capabilities: Vec::new(),
@@ -146,8 +141,13 @@ fn preview_write_returns_edit_without_mutating_backend() {
     assert_eq!(invert(&invert(&edit)), edit);
 }
 
-fn symbol_field(name: &str, value: Expr) -> (Expr, Expr) {
-    (Expr::Symbol(Symbol::new(name)), value)
+#[test]
+fn canonical_entry_matches_document_site_field_shape() {
+    let value = Expr::String("site/msgraph".to_owned());
+    assert_eq!(
+        entry("site-id", value.clone()),
+        (Expr::Symbol(Symbol::new("site-id")), value)
+    );
 }
 
 fn map_string(expr: &Expr, name: &str) -> Option<String> {

@@ -13,6 +13,7 @@ homepage = "https://github.com/sim-nest/sim-office"
 sim-cookbook = { version = "0.1.0" }
 sim-kernel = { version = "0.1.0" }
 sim-lib-doc-core = { version = "0.1.0", path = "../sim-lib-doc-core" }
+sim-value = { version = "0.1.0" }
 
 [build-dependencies]
 sim-cookbook = { version = "0.1.0" }

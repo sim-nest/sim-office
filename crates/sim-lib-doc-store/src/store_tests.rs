@@ -1,14 +1,8 @@
-use std::sync::Arc;
-
-use sim_kernel::{Cx, DefaultFactory, Expr, NoopEvalPolicy, Value};
+use sim_kernel::{Cx, Expr, Value, testing::bare_cx as cx};
 use sim_lib_doc_core::{Doc, DocId, DocKind, Edit, Evidence, ExternalRef, LinkRole};
 use tempfile::TempDir;
 
 use crate::{DocStore, evidence};
-
-fn cx() -> Cx {
-    Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
-}
 
 fn store() -> (TempDir, DocStore) {
     let dir = tempfile::tempdir().unwrap();

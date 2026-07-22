@@ -8,6 +8,7 @@ use sim_kernel::{
     Result as KernelResult, RuntimeId, Symbol, Value,
 };
 use sim_lib_doc_core::{DocId, DocKind, DocSite, Edit, OfficeError};
+use sim_value::build::entry;
 
 /// Domain string used for preview edits emitted by document sites.
 pub const DOC_SITE_DOMAIN: &str = "office/doc-site";
@@ -115,12 +116,12 @@ impl DocSiteRuntime {
 
     fn metadata_expr(&self) -> Expr {
         Expr::Map(vec![
-            symbol_field(
+            entry(
                 "kind",
                 Expr::Symbol(Symbol::qualified("office", "doc-site")),
             ),
-            symbol_field("site-id", Expr::String(self.site.site_id.clone())),
-            symbol_field(
+            entry("site-id", Expr::String(self.site.site_id.clone())),
+            entry(
                 "kinds",
                 Expr::List(
                     self.site
@@ -130,7 +131,7 @@ impl DocSiteRuntime {
                         .collect(),
                 ),
             ),
-            symbol_field(
+            entry(
                 "required-caps",
                 Expr::List(
                     self.site
@@ -140,7 +141,7 @@ impl DocSiteRuntime {
                         .collect(),
                 ),
             ),
-            symbol_field("modeled", Expr::Bool(self.site.default_modeled)),
+            entry("modeled", Expr::Bool(self.site.default_modeled)),
         ])
     }
 
@@ -372,10 +373,6 @@ fn expr_field<'a>(entries: &'a [(Expr, Expr)], name: &str) -> Option<&'a Expr> {
         Expr::String(text) if text == name => Some(value),
         _ => None,
     })
-}
-
-fn symbol_field(name: &str, value: Expr) -> (Expr, Expr) {
-    (Expr::Symbol(Symbol::new(name)), value)
 }
 
 fn datum_field(name: &str, value: Datum) -> (Datum, Datum) {

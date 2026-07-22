@@ -1,0 +1,21 @@
+# Public audit allowlist for sim-office.
+#
+# Format:
+# kind|path-glob|line-regex|reason
+#
+# Keep entries exact: use the narrow file or commit label, the specific matched
+# token, and the reason the text is safe on the public surface.
+
+secret-pattern|crates/sim-lib-mail/src/redact.rs|quarterly-plan-secret|Mail redaction fixture uses a non-secret placeholder string.
+local-path|crates/sim-site-libreoffice/src/helper.rs|/home/bo/private/file\.ods|LibreOffice redaction tests use a fake local path to prove error rendering removes it.
+email|crates/sim-site-powerproject/src/dataverse.rs|msdyn_project@odata\.bind|Dataverse OData field name is an API property, not an email address.
+
+local-path|commit:ec4825d5519778b1383647f30a0d02f0305b86da|/home/bo/projects/.*|Immutable commit text records operator-local validation paths, not package data.
+local-path|commit:e3db8ee35f1723c9c3f9eef5dfb4ffe832aef657|/home/bo/projects/.*|Immutable commit text records operator-local validation paths, not package data.
+local-path|commit:1bf9492eae776948af08e44446327aee7b098a76|/home/bo/projects/.*|Immutable commit text records operator-local validation paths, not package data.
+local-path|commit:007a0d181939e15bdd5fd8b5d5500e06aa42615f|/home/bo/projects/.*|Immutable commit text records operator-local validation paths, not package data.
+local-path|commit:8bef9a25d8c6a6531a67678351e66ca2a1e10fc9|/home/bo/projects/.*|Immutable commit text records operator-local validation paths, not package data.
+local-path|commit:b6414a8bffb091ffb616b6b479838e02b97603a2|/home/bo/projects/.*|Immutable commit text records operator-local validation paths, not package data.
+local-path|commit:27f955fa894f5e67a40ee47770fb1e2c83802048|/home/bo/projects/.*|Immutable commit text records operator-local validation paths, not package data.
+local-path|commit:ce5896f2a5f68e406e0b4f176e363d4083ff8cee|/home/bo/projects/.*|Immutable commit text records operator-local validation paths, not package data.
+local-path|commit:eb2239771c50de7443a924738dda6c3dff33c719|/home/bo/projects/.*|Immutable commit text records operator-local validation paths, not package data.
