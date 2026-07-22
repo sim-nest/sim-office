@@ -21,6 +21,7 @@ sim-cookbook = { version = "0.1.0" }
 
 [dev-dependencies]
 sim-lib-view-doc = { version = "0.1.2" }
+sim-value = { version = "0.1.0" }
 
 [lints]
 workspace = true

@@ -128,6 +128,7 @@ fn projection_scene(projected: Expr) -> Expr {
 mod tests {
     use sim_kernel::testing::bare_cx as cx;
     use sim_lib_doc_core::{DocKind, ProjectionCaps};
+    use sim_value::access::field;
 
     use super::*;
 
@@ -159,18 +160,6 @@ mod tests {
                 _ => None,
             })
             .collect()
-    }
-
-    fn field<'a>(expr: &'a Expr, name: &str) -> Option<&'a Expr> {
-        let Expr::Map(entries) = expr else {
-            return None;
-        };
-        entries.iter().find_map(|(key, value)| match key {
-            Expr::Symbol(symbol) if symbol.namespace.is_none() && symbol.name.as_ref() == name => {
-                Some(value)
-            }
-            _ => None,
-        })
     }
 
     #[test]
