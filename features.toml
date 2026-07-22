@@ -9,6 +9,8 @@ framework = "advisory"
 cli = "strict"
 view = "strict"
 docs = "advisory"
+syntax = "strict"
+wire = "strict"
 
 [enforcement.route]
 major_entrypoints = "advisory"
@@ -38,6 +40,16 @@ summary = "Round-trip OOXML, ODF, MSPDI, deck, sheet, and markup documents throu
 owner = "crate/sim-lib-office-pack"
 audiences = ["user", "code"]
 guidance = "Use this row when choosing a document codec or checking that an office file round-trips."
+claims_anchors = [
+  "anchor/grammar/syntax/mspdi",
+  "anchor/grammar/syntax/odf",
+  "anchor/grammar/syntax/ooxml",
+]
+claims_surfaces = [
+  "syntax/mspdi",
+  "syntax/odf",
+  "syntax/ooxml",
+]
 
 [[feature]]
 id = "feature/sim-office/document-surfaces"
