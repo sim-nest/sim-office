@@ -1,0 +1,8 @@
+id = "ods-round-trip"
+title = "ODS round trip"
+codec = "lisp"
+setup = "setup.siml"
+purpose = "purpose.md"
+order = 10
+tags = ["office", "sheet", "ods", "odf", "codec", "sandbox-descriptor"]
+requires = ["office/sheet", "office/doc-core", "codec/odf"]

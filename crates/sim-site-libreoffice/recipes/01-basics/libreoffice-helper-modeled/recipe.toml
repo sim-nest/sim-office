@@ -1,0 +1,8 @@
+id = "libreoffice-helper-modeled"
+title = "LibreOffice helper modeled site"
+codec = "lisp"
+setup = "setup.siml"
+purpose = "purpose.md"
+order = 10
+tags = ["office", "libreoffice", "site", "helper", "sandbox-descriptor"]
+requires = ["office/doc-site", "site/libreoffice"]

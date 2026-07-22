@@ -1,0 +1,30 @@
+[package]
+name = "sim-site-msgraph"
+version = "0.1.0"
+edition = "2024"
+license = "MPL-2.0"
+description = "Microsoft Graph site adapter for SIM office documents."
+readme = "README.md"
+publish = false
+repository = "https://github.com/sim-nest/sim-office"
+homepage = "https://github.com/sim-nest/sim-office"
+
+[dependencies]
+serde_json = "1"
+sim-cookbook = { version = "0.1.0" }
+sim-kernel = { version = "0.1.0" }
+sim-lib-deck = { version = "0.1.0", path = "../sim-lib-deck" }
+sim-lib-doc-core = { version = "0.1.0", path = "../sim-lib-doc-core" }
+sim-lib-doc-site = { version = "0.1.0", path = "../sim-lib-doc-site" }
+sim-lib-mail = { version = "0.1.0", path = "../sim-lib-mail" }
+sim-lib-sheet = { version = "0.1.0", path = "../sim-lib-sheet" }
+ureq = "2"
+
+[build-dependencies]
+sim-cookbook = { version = "0.1.0" }
+
+[dev-dependencies]
+sim-kernel = { version = "0.1", features = ["test-support"] }
+
+[lints]
+workspace = true

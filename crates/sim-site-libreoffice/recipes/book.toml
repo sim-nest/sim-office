@@ -1,0 +1,5 @@
+book = "office/libreoffice-site"
+title = "LibreOffice Helper Site"
+summary = "Permissioned helper-process placement for LibreOffice office tasks."
+order = 417
+chapters = ["01-basics"]

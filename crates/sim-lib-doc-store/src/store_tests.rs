@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
 use sim_kernel::{Cx, DefaultFactory, Expr, NoopEvalPolicy, Value};
-use sim_lib_doc_core::{Doc, DocId, DocKind, Edit, ExternalRef};
+use sim_lib_doc_core::{Doc, DocId, DocKind, Edit, Evidence, ExternalRef, LinkRole};
 use tempfile::TempDir;
 
-use crate::DocStore;
+use crate::{DocStore, evidence};
 
 fn cx() -> Cx {
     Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
@@ -99,6 +99,97 @@ fn projected_edit_does_not_replace_saved_doc_body() {
     assert_eq!(
         value_expr(&mut cx, &loaded.body),
         Expr::String("ledger body before edit".to_owned())
+    );
+}
+
+#[test]
+fn evidence_links_reopen_ordered_without_payload_data() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("docs.sqlite");
+    let subject = DocId::new("site/powerproject/projects/p-1/tasks/17");
+    let mail_body = "private mail body must not be stored";
+    let project_data = "project item payload must not be stored";
+    let rows = vec![
+        Evidence::new(
+            subject.clone(),
+            ExternalRef::new(
+                "site/msgraph",
+                "messages/msg-1",
+                Some("change-key-1".to_owned()),
+                Some("https://graph.example/messages/msg-1".to_owned()),
+            ),
+            LinkRole::SourceDocument,
+            30,
+            Some("mail-etag-1".to_owned()),
+        ),
+        Evidence::new(
+            subject.clone(),
+            ExternalRef::new(
+                "site/sharepoint",
+                "sites/site-1/drive/items/file-9",
+                Some("sharepoint-etag-9".to_owned()),
+                Some("https://sharepoint.example/file-9".to_owned()),
+            ),
+            LinkRole::AccountingSupport,
+            10,
+            None,
+        ),
+        Evidence::new(
+            subject.clone(),
+            ExternalRef::new(
+                "site/dalux",
+                "items/issue-4",
+                Some("2026-07-13T10:00:00Z".to_owned()),
+                Some("https://dalux.example/items/issue-4".to_owned()),
+            ),
+            LinkRole::ProjectIssue,
+            20,
+            Some("dalux-updated-at".to_owned()),
+        ),
+        Evidence::new(
+            subject.clone(),
+            ExternalRef::new("ledger", "voucher/2026/0007", None, None),
+            LinkRole::AccountingSupport,
+            40,
+            Some("voucher-digest".to_owned()),
+        ),
+    ];
+
+    {
+        let store = DocStore::create(&path).unwrap();
+        for row in &rows {
+            evidence::attach(&store, row).unwrap();
+        }
+    }
+
+    let store = DocStore::create(&path).unwrap();
+    let loaded = evidence::evidence_for(&store, &subject).unwrap();
+
+    assert_eq!(
+        loaded
+            .iter()
+            .map(|row| row.captured_at_seq)
+            .collect::<Vec<_>>(),
+        vec![10, 20, 30, 40]
+    );
+    assert_eq!(loaded[0].evidence.backend, "site/sharepoint");
+    assert_eq!(loaded[1].evidence.backend, "site/dalux");
+    assert_eq!(loaded[2].evidence.backend, "site/msgraph");
+    assert_eq!(loaded[3].evidence.backend, "ledger");
+    assert!(loaded.iter().all(
+        |row| row.evidence.external_id != mail_body && row.evidence.external_id != project_data
+    ));
+
+    let bytes = std::fs::read(&path).unwrap();
+    assert!(
+        !bytes
+            .windows(mail_body.len())
+            .any(|window| window == mail_body.as_bytes())
+    );
+    assert!(
+        !bytes
+            .windows(project_data.len())
+            .any(|window| window == project_data.as_bytes())
     );
 }
 

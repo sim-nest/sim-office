@@ -1,0 +1,7 @@
+(expr:map
+  [kind office/libreoffice-site]
+  [operation register-helper]
+  [site site/libreoffice]
+  [requires process-spawn]
+  [default modeled]
+  [mode modeled])

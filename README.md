@@ -9,10 +9,21 @@ without learning office-file enums.
 
 | Crate | Role |
 | --- | --- |
+| `sim-codec-mspdi` | Microsoft Project XML schedule codec for local Gantt documents. |
+| `sim-codec-ooxml` | OOXML spreadsheet and presentation codecs for local office documents. |
+| `sim-lib-deck` | Local presentation deck records, document projection, and slide content blocks. |
 | `sim-lib-doc-core` | Ring-0 document records, document kind shapes, and embedded descriptor recipes. |
+| `sim-lib-doc-ledger` | Ring-3 bridge from office evidence to ledger draft previews. |
+| `sim-lib-gantt` | Local schedule plans, dependency analysis, and SQLite Gantt snapshots. |
+| `sim-lib-doc-markup` | Markup file codecs exposed as office `DocCodec` adapters for article documents. |
 | `sim-lib-doc-site` | Opaque site registration and modeled/live document placement calls. |
 | `sim-lib-doc-store` | Local SQLite document snapshots and ledger-sequenced edit projections. |
 | `sim-lib-doc-surface` | Scene projection and intent decoding for suite document panes. |
+| `sim-lib-office-pack` | Annual accounts pack previews for spreadsheets, decks, mail drafts, and archives. |
+| `sim-lib-sheet` | Exact local spreadsheet records, formulas, document projection, and cell edits. |
+| `sim-site-msgraph` | Microsoft Graph site adapter with modeled cassettes and gated live reads. |
+| `sim-site-powerproject` | Powerproject and Project for the web placements for Gantt documents. |
+| `sim-site-sharepoint` | SharePoint Graph list and drive placement for office documents. |
 
 ## Documentation
 
@@ -33,4 +44,5 @@ cargo test --workspace
 cargo clippy --workspace --all-targets -- -D warnings
 cargo doc --workspace --no-deps
 cargo run -p xtask -- simdoc --check
+cargo run -p xtask -- check-file-sizes
 ```

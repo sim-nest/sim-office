@@ -1,1 +1,7 @@
-(quote (office/doc-surface descriptor (scene suite) (intent edit-field) (edit set-cell)))
+(expr:map
+  [kind office/doc-surface-descriptor]
+  [operation project-suite-surface]
+  [scene suite]
+  [intent edit-field]
+  [edit set-cell]
+  [mode modeled])

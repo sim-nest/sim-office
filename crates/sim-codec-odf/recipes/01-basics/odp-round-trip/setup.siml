@@ -1,0 +1,9 @@
+(expr:map
+  [kind office/odf-round-trip]
+  [operation encode-decode]
+  [doc-kind office/deck]
+  [deck ProjectUpdate]
+  [slides [intro]]
+  [package ".odp"]
+  [decoded ProjectUpdate]
+  [mode modeled])

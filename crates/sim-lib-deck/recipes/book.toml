@@ -1,0 +1,5 @@
+book = "office/deck"
+title = "Presentation Domain"
+summary = "Local decks with slides, bullets, tables, and image references."
+order = 416
+chapters = ["01-basics"]

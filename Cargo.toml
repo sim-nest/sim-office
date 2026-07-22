@@ -1,10 +1,25 @@
 [workspace]
 resolver = "3"
 members = [
+  "crates/sim-codec-mspdi",
+  "crates/sim-codec-odf",
+  "crates/sim-codec-ooxml",
+  "crates/sim-lib-deck",
   "crates/sim-lib-doc-core",
+  "crates/sim-lib-doc-ledger",
+  "crates/sim-lib-gantt",
+  "crates/sim-lib-doc-markup",
   "crates/sim-lib-doc-site",
   "crates/sim-lib-doc-store",
   "crates/sim-lib-doc-surface",
+  "crates/sim-lib-mail",
+  "crates/sim-lib-office-pack",
+  "crates/sim-lib-sheet",
+  "crates/sim-site-dalux",
+  "crates/sim-site-libreoffice",
+  "crates/sim-site-msgraph",
+  "crates/sim-site-powerproject",
+  "crates/sim-site-sharepoint",
   "xtask",
 ]
 

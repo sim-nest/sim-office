@@ -1,0 +1,25 @@
+[package]
+name = "sim-lib-sheet"
+version = "0.1.0"
+edition = "2024"
+license = "MPL-2.0"
+description = "Exact spreadsheet domain model for SIM office documents."
+readme = "README.md"
+publish = false
+repository = "https://github.com/sim-nest/sim-office"
+homepage = "https://github.com/sim-nest/sim-office"
+
+[dependencies]
+num-bigint = "0.4"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sim-cookbook = { version = "0.1.0" }
+sim-kernel = { version = "0.1.0" }
+sim-lib-doc-core = { version = "0.1.0", path = "../sim-lib-doc-core" }
+sim-lib-numbers-rational = { version = "0.1.1" }
+
+[build-dependencies]
+sim-cookbook = { version = "0.1.0" }
+
+[lints]
+workspace = true

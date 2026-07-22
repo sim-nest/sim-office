@@ -1,5 +1,145 @@
 {
-  "schema": "sim.rustdoc-index.v1",
-  "repo": "sim-office",
-  "target_doc": "target/doc/"
+  "generator": "xtask repo-contract v1",
+  "packages": [
+    {
+      "crate_name": "sim_codec_mspdi",
+      "group": "workspace",
+      "manifest": "crates/sim-codec-mspdi/Cargo.toml",
+      "package": "sim-codec-mspdi",
+      "summary": "MSPDI XML codec for local Gantt schedule documents."
+    },
+    {
+      "crate_name": "sim_codec_odf",
+      "group": "workspace",
+      "manifest": "crates/sim-codec-odf/Cargo.toml",
+      "package": "sim-codec-odf",
+      "summary": "ODF package codecs for sheet and deck office documents."
+    },
+    {
+      "crate_name": "sim_codec_ooxml",
+      "group": "workspace",
+      "manifest": "crates/sim-codec-ooxml/Cargo.toml",
+      "package": "sim-codec-ooxml",
+      "summary": "OOXML spreadsheet and presentation codecs for SIM office documents."
+    },
+    {
+      "crate_name": "sim_lib_deck",
+      "group": "workspace",
+      "manifest": "crates/sim-lib-deck/Cargo.toml",
+      "package": "sim-lib-deck",
+      "summary": "Presentation deck domain for SIM office documents."
+    },
+    {
+      "crate_name": "sim_lib_doc_core",
+      "group": "workspace",
+      "manifest": "crates/sim-lib-doc-core/Cargo.toml",
+      "package": "sim-lib-doc-core",
+      "summary": "Office suite document core."
+    },
+    {
+      "crate_name": "sim_lib_doc_ledger",
+      "group": "workspace",
+      "manifest": "crates/sim-lib-doc-ledger/Cargo.toml",
+      "package": "sim-lib-doc-ledger",
+      "summary": "Ring-3 office bridge for ledger draft previews."
+    },
+    {
+      "crate_name": "sim_lib_doc_markup",
+      "group": "workspace",
+      "manifest": "crates/sim-lib-doc-markup/Cargo.toml",
+      "package": "sim-lib-doc-markup",
+      "summary": "Markup document codecs for office article documents."
+    },
+    {
+      "crate_name": "sim_lib_doc_site",
+      "group": "workspace",
+      "manifest": "crates/sim-lib-doc-site/Cargo.toml",
+      "package": "sim-lib-doc-site",
+      "summary": "Document site registration and modeled realize spine."
+    },
+    {
+      "crate_name": "sim_lib_doc_store",
+      "group": "workspace",
+      "manifest": "crates/sim-lib-doc-store/Cargo.toml",
+      "package": "sim-lib-doc-store",
+      "summary": "Local SQLite projections for SIM office documents."
+    },
+    {
+      "crate_name": "sim_lib_doc_surface",
+      "group": "workspace",
+      "manifest": "crates/sim-lib-doc-surface/Cargo.toml",
+      "package": "sim-lib-doc-surface",
+      "summary": "Scene and intent surface for office document panes."
+    },
+    {
+      "crate_name": "sim_lib_gantt",
+      "group": "workspace",
+      "manifest": "crates/sim-lib-gantt/Cargo.toml",
+      "package": "sim-lib-gantt",
+      "summary": "Local Gantt schedule plans for the SIM office suite."
+    },
+    {
+      "crate_name": "sim_lib_mail",
+      "group": "workspace",
+      "manifest": "crates/sim-lib-mail/Cargo.toml",
+      "package": "sim-lib-mail",
+      "summary": "Mail and calendar domain for SIM office documents."
+    },
+    {
+      "crate_name": "sim_lib_office_pack",
+      "group": "workspace",
+      "manifest": "crates/sim-lib-office-pack/Cargo.toml",
+      "package": "sim-lib-office-pack",
+      "summary": "Annual accounts pack planner for SIM office documents."
+    },
+    {
+      "crate_name": "sim_lib_sheet",
+      "group": "workspace",
+      "manifest": "crates/sim-lib-sheet/Cargo.toml",
+      "package": "sim-lib-sheet",
+      "summary": "Exact spreadsheet domain for SIM office documents."
+    },
+    {
+      "crate_name": "sim_site_dalux",
+      "group": "workspace",
+      "manifest": "crates/sim-site-dalux/Cargo.toml",
+      "package": "sim-site-dalux",
+      "summary": "Dalux API-identity site adapter for SIM office documents."
+    },
+    {
+      "crate_name": "sim_site_libreoffice",
+      "group": "workspace",
+      "manifest": "crates/sim-site-libreoffice/Cargo.toml",
+      "package": "sim-site-libreoffice",
+      "summary": "LibreOffice helper-process site for office documents."
+    },
+    {
+      "crate_name": "sim_site_msgraph",
+      "group": "workspace",
+      "manifest": "crates/sim-site-msgraph/Cargo.toml",
+      "package": "sim-site-msgraph",
+      "summary": "Microsoft Graph site adapter for SIM office documents."
+    },
+    {
+      "crate_name": "sim_site_powerproject",
+      "group": "workspace",
+      "manifest": "crates/sim-site-powerproject/Cargo.toml",
+      "package": "sim-site-powerproject",
+      "summary": "Powerproject and Project for the web placement for SIM Gantt documents."
+    },
+    {
+      "crate_name": "sim_site_sharepoint",
+      "group": "workspace",
+      "manifest": "crates/sim-site-sharepoint/Cargo.toml",
+      "package": "sim-site-sharepoint",
+      "summary": "SharePoint placement through Microsoft Graph."
+    },
+    {
+      "crate_name": "xtask",
+      "group": "workspace",
+      "manifest": "xtask/Cargo.toml",
+      "package": "xtask",
+      "summary": "SIM workspace package for xtask."
+    }
+  ]
 }

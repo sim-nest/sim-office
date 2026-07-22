@@ -1,0 +1,9 @@
+(expr:map
+  [kind office/xlsx-round-trip]
+  [operation encode-decode]
+  [doc-kind office/sheet]
+  [sheet Sheet1]
+  [cells [A1 "1" B1 "5/2"]]
+  [package ".xlsx"]
+  [decoded Sheet1]
+  [mode modeled])

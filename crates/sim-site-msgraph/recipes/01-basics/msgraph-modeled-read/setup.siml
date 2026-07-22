@@ -1,0 +1,7 @@
+(expr:map
+  [kind office/msgraph-site]
+  [operation read-modeled-path]
+  [site site/msgraph]
+  [path "/me/drive/root"]
+  [answer cassette]
+  [mode modeled])

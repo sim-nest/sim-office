@@ -1,0 +1,3 @@
+title = "Basics"
+summary = "Read SharePoint lists and drive folders, with REST fallback descriptors."
+order = 100

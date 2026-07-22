@@ -1,0 +1,7 @@
+(expr:map
+  [kind office/powerproject-site]
+  [operation plan-placement]
+  [site site/powerproject]
+  [receipt ole-export-1]
+  [target project-for-web]
+  [mode modeled])

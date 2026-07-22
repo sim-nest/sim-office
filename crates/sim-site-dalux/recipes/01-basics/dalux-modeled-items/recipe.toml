@@ -1,0 +1,8 @@
+id = "dalux-modeled-items"
+title = "Modeled Dalux items"
+codec = "lisp"
+setup = "setup.siml"
+purpose = "purpose.md"
+order = 10
+tags = ["office", "dalux", "site", "api-identity", "sandbox-descriptor"]
+requires = ["office/doc-site", "site/dalux", "codec/lisp"]

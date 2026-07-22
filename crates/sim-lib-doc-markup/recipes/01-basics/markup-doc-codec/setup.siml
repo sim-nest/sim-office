@@ -1,0 +1,9 @@
+(expr:map
+  [kind office/doc-markup-codec]
+  [operation decode-encode]
+  [decode "codec:markup/markdown"]
+  [source "article.md"]
+  [doc-kind article]
+  [encode "codec:markup/typst"]
+  [target "article.typ"]
+  [mode modeled])

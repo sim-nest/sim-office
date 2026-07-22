@@ -1,0 +1,13 @@
+(expr:map
+  [kind office/mail-calendar-summary]
+  [operation summarize-mail-calendar]
+  [message msg-1]
+  [subject "Project update"]
+  [sender "ada@example.test"]
+  [body-preview "Short body preview"]
+  [attachment ["site/msgraph" "drive-item-1"]]
+  [event evt-1]
+  [event-title "Review"]
+  [event-window "2026-07-13T09:00:00Z..2026-07-13T10:00:00Z"]
+  [attendees ["ada@example.test" "bo@example.test"]]
+  [mode modeled])

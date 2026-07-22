@@ -1,0 +1,138 @@
+schema = "sim.features"
+
+[enforcement.audience]
+user = "strict"
+code = "strict"
+framework = "advisory"
+
+[enforcement.surface]
+cli = "strict"
+view = "strict"
+docs = "advisory"
+syntax = "strict"
+wire = "strict"
+
+[enforcement.specimen]
+user = "strict"
+framework = "strict"
+code = "advisory"
+
+[enforcement.route]
+major_entrypoints = "advisory"
+frameworks = "advisory"
+
+[[feature]]
+id = "feature/sim-office/generated-docs"
+title = "Repository documentation surface"
+summary = "Publish generated package, card, recipe, and index facts for office documents, sites, and codecs."
+owner = "crate/xtask"
+audiences = ["code"]
+guidance = "Use this row when checking the generated documentation and index lane for the office repo."
+claims_anchors = [
+  "anchor/cli/xtask",
+  "anchor/crate/xtask",
+  "anchor/doc/generated/feature-map",
+  "anchor/doc/generated/sim-index-fragment",
+]
+claims_surfaces = [
+  "cli/xtask",
+  "docs/sim-office/generated",
+]
+
+[[feature]]
+id = "feature/sim-office/document-codecs"
+title = "Document codec workflows"
+summary = "Round-trip OOXML, ODF, MSPDI, deck, sheet, and markup documents through office codec recipes."
+owner = "crate/sim-lib-office-pack"
+audiences = ["user", "code"]
+guidance = "Use this row when choosing a document codec or checking that an office file round-trips."
+claims_anchors = [
+  "anchor/crate/sim-codec-mspdi",
+  "anchor/crate/sim-codec-odf",
+  "anchor/crate/sim-codec-ooxml",
+  "anchor/crate/sim-lib-doc-markup",
+  "anchor/crate/sim-lib-office-pack",
+  "anchor/export/sim-codec-mspdi/codec/mspdi",
+  "anchor/export/sim-codec-odf/codec/odf",
+  "anchor/export/sim-codec-ooxml/codec/ooxml-pptx",
+  "anchor/export/sim-codec-ooxml/codec/ooxml-xlsx",
+  "anchor/export/sim-lib-doc-markup/codec/markup-doc/asciidoc",
+  "anchor/export/sim-lib-doc-markup/codec/markup-doc/latex",
+  "anchor/export/sim-lib-doc-markup/codec/markup-doc/markdown",
+  "anchor/export/sim-lib-doc-markup/codec/markup-doc/typst",
+  "anchor/export/sim-lib-doc-markup/codec/markup-doc/unknown",
+  "anchor/grammar/syntax/mspdi",
+  "anchor/grammar/syntax/odf",
+  "anchor/grammar/syntax/ooxml",
+]
+claims_surfaces = [
+  "syntax/mspdi",
+  "syntax/odf",
+  "syntax/ooxml",
+]
+claims_specimens = [
+  "spec-test/sim-office/crates/sim-codec-odf/src/tests",
+]
+
+[[feature]]
+id = "feature/sim-office/document-surfaces"
+title = "Document view surfaces"
+summary = "Project document, markup, and suite descriptors into view surfaces for review and editing."
+owner = "crate/sim-lib-doc-surface"
+audiences = ["user", "code", "framework"]
+guidance = "Use this row when rendering an office document or suite preview."
+claims_anchors = [
+  "anchor/crate/sim-lib-deck",
+  "anchor/crate/sim-lib-doc-core",
+  "anchor/crate/sim-lib-doc-ledger",
+  "anchor/crate/sim-lib-doc-surface",
+  "anchor/crate/sim-lib-sheet",
+  "anchor/export/sim-lib-doc-surface/view-default",
+]
+claims_surfaces = [
+  "view/sim-lib-doc-core",
+  "view/sim-lib-doc-markup",
+  "view/sim-lib-doc-surface",
+]
+claims_specimens = [
+  "spec-test/sim-office/crates/sim-lib-doc-surface/src/scene",
+]
+
+[[feature]]
+id = "feature/sim-office/office-site-workflows"
+title = "Office site workflows"
+summary = "Model document stores, mail and calendar summaries, planning data, and enterprise site reads."
+owner = "crate/sim-lib-doc-site"
+audiences = ["user", "code"]
+guidance = "Use this row when connecting office documents to modeled project, mail, Graph, or SharePoint sites."
+claims_anchors = [
+  "anchor/crate/sim-lib-doc-site",
+  "anchor/crate/sim-lib-doc-store",
+  "anchor/crate/sim-lib-gantt",
+  "anchor/crate/sim-lib-mail",
+  "anchor/crate/sim-site-dalux",
+  "anchor/crate/sim-site-libreoffice",
+  "anchor/crate/sim-site-msgraph",
+  "anchor/crate/sim-site-powerproject",
+  "anchor/crate/sim-site-sharepoint",
+  "anchor/export/sim-lib-mail/site/msgraph",
+  "anchor/export/sim-site-dalux/site/dalux",
+  "anchor/export/sim-site-libreoffice/site/libreoffice",
+  "anchor/export/sim-site-msgraph/site/msgraph",
+  "anchor/export/sim-site-powerproject/site/powerproject",
+  "anchor/export/sim-site-sharepoint/site/sharepoint",
+]
+claims_specimens = [
+  "spec-test/sim-office/crates/sim-site-dalux/src/tests",
+]
+
+[[route]]
+id = "route/review-office-document"
+task = "Review an office document"
+audiences = ["user", "code"]
+steps = [
+  { feature = "feature/sim-office/document-codecs", why = "The codec row chooses the file format and round-trip path." },
+  { feature = "feature/sim-office/document-surfaces", why = "The surface row renders the document into a reviewable view." },
+  { feature = "feature/sim-office/office-site-workflows", why = "The site row connects the document to modeled workplace sources." },
+  { specimen = "recipe/sim-office/crates/sim-lib-doc-surface/01-basics/suite-surface-descriptor", why = "The suite-surface recipe is the shortest surface example." },
+]

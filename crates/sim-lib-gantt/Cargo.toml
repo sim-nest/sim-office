@@ -1,0 +1,27 @@
+[package]
+name = "sim-lib-gantt"
+version = "0.1.0"
+edition = "2024"
+license = "MPL-2.0"
+description = "Local Gantt schedule model and SQLite backend for SIM office plans."
+readme = "README.md"
+publish = false
+repository = "https://github.com/sim-nest/sim-office"
+homepage = "https://github.com/sim-nest/sim-office"
+
+[dependencies]
+rusqlite = { version = "0.31", features = ["bundled"] }
+sim-cookbook = { version = "0.1.0" }
+sim-kernel = { version = "0.1.0" }
+sim-lib-discrete-graph = { version = "0.1.2" }
+thiserror = "1"
+time = "0.3"
+
+[build-dependencies]
+sim-cookbook = { version = "0.1.0" }
+
+[dev-dependencies]
+tempfile = "3"
+
+[lints]
+workspace = true

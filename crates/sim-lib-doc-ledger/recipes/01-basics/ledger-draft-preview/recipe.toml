@@ -1,0 +1,8 @@
+id = "ledger-draft-preview"
+title = "Ledger draft preview"
+codec = "lisp"
+setup = "setup.siml"
+purpose = "purpose.md"
+order = 10
+tags = ["office", "ledger", "draft", "preview", "evidence", "sandbox-descriptor"]
+requires = ["office/doc-ledger", "office/doc-core", "ledger/books", "codec/lisp"]

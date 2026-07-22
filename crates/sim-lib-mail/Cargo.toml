@@ -1,0 +1,24 @@
+[package]
+name = "sim-lib-mail"
+version = "0.1.0"
+edition = "2024"
+license = "MPL-2.0"
+description = "Mail and calendar domain model for SIM office documents."
+readme = "README.md"
+publish = false
+repository = "https://github.com/sim-nest/sim-office"
+homepage = "https://github.com/sim-nest/sim-office"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sim-cookbook = { version = "0.1.0" }
+sim-kernel = { version = "0.1.0" }
+sim-lib-doc-core = { version = "0.1.0", path = "../sim-lib-doc-core" }
+time = { version = "0.3", features = ["formatting", "parsing"] }
+
+[build-dependencies]
+sim-cookbook = { version = "0.1.0" }
+
+[lints]
+workspace = true

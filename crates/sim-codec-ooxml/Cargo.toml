@@ -1,0 +1,25 @@
+[package]
+name = "sim-codec-ooxml"
+version = "0.1.0"
+edition = "2024"
+license = "MPL-2.0"
+description = "OOXML spreadsheet and presentation codecs for SIM office documents."
+readme = "README.md"
+publish = false
+repository = "https://github.com/sim-nest/sim-office"
+homepage = "https://github.com/sim-nest/sim-office"
+
+[dependencies]
+roxmltree = "0.21"
+sim-cookbook = { version = "0.1.0" }
+sim-kernel = { version = "0.1.0" }
+sim-lib-deck = { version = "0.1.0", path = "../sim-lib-deck" }
+sim-lib-doc-core = { version = "0.1.0", path = "../sim-lib-doc-core" }
+sim-lib-sheet = { version = "0.1.0", path = "../sim-lib-sheet" }
+zip = { version = "=2.4.2", default-features = false }
+
+[build-dependencies]
+sim-cookbook = { version = "0.1.0" }
+
+[lints]
+workspace = true

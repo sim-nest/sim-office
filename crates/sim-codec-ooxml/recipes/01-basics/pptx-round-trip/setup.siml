@@ -1,0 +1,11 @@
+(expr:map
+  [kind office/pptx-round-trip]
+  [operation encode-decode]
+  [doc-kind office/deck]
+  [deck "Project update"]
+  [slides [intro]]
+  [heading "Status"]
+  [bullets ["Done" "Next"]]
+  [package ".pptx"]
+  [decoded "Project update"]
+  [mode modeled])

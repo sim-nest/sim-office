@@ -1,0 +1,8 @@
+id = "sharepoint-rest-fallback"
+title = "SharePoint REST fallback"
+codec = "lisp"
+setup = "setup.siml"
+purpose = "purpose.md"
+order = 20
+tags = ["office", "sharepoint", "rest", "site", "fallback", "sandbox-descriptor"]
+requires = ["office/doc-site", "office/sheet", "site/sharepoint", "codec/lisp"]

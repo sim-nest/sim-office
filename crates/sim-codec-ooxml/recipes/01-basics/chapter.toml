@@ -1,0 +1,3 @@
+title = "Basics"
+order = 10
+summary = "Encode local office documents as OOXML packages and decode them back."

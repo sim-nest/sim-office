@@ -1,0 +1,7 @@
+(expr:map
+  [kind office/sharepoint-rest]
+  [operation rest-fallback]
+  [api "/_api/$batch"]
+  [method POST]
+  [precondition etag]
+  [mode modeled])

@@ -1,0 +1,3 @@
+book = "office/msgraph-site"
+title = "Microsoft Graph Site"
+summary = "Modeled Microsoft Graph document site calls with explicit live gates."

@@ -1,0 +1,5 @@
+book = "office/doc-ledger"
+title = "Document Ledger Bridge"
+summary = "Preview ledger draft posting from office evidence."
+order = 413
+chapters = ["01-basics"]

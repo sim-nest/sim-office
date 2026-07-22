@@ -16,6 +16,15 @@ pub const CREDENTIALS_CAPABILITY: &str = "credentials";
 /// Default capability posture for office placements.
 pub struct OfficeCapabilityProfile;
 
+macro_rules! grant_into_result {
+    ($grant:expr) => {{
+        #[allow(clippy::let_unit_value)]
+        let grant_result = $grant;
+        #[allow(clippy::unit_arg)]
+        grant_result.into_result()
+    }};
+}
+
 impl OfficeCapabilityProfile {
     /// Capabilities granted by the default office profile.
     #[must_use]
@@ -40,9 +49,25 @@ impl OfficeCapabilityProfile {
     /// Seats the default granted capabilities into a context.
     pub fn seat(seat: &GrantSeat, cx: &mut Cx) -> Result<(), OfficeError> {
         for capability in Self::granted() {
-            seat.grant(cx, capability);
+            grant_into_result!(seat.grant(cx, capability))?;
         }
         Ok(())
+    }
+}
+
+trait GrantOutcome {
+    fn into_result(self) -> Result<(), OfficeError>;
+}
+
+impl GrantOutcome for () {
+    fn into_result(self) -> Result<(), OfficeError> {
+        Ok(())
+    }
+}
+
+impl GrantOutcome for sim_kernel::Result<()> {
+    fn into_result(self) -> Result<(), OfficeError> {
+        self.map_err(OfficeError::from)
     }
 }
 

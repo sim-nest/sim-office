@@ -1,0 +1,8 @@
+id = "evidence-fact-graph"
+title = "Evidence fact graph"
+codec = "lisp"
+setup = "setup.siml"
+purpose = "purpose.md"
+order = 20
+tags = ["office", "document", "store", "evidence", "audit", "sandbox-descriptor"]
+requires = ["office/doc-store", "office/doc-core", "codec/lisp"]

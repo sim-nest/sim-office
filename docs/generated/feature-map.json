@@ -1,5 +1,116 @@
 {
-  "schema": "sim.feature-map.v1",
-  "repo": "sim-office",
-  "packages": []
+  "generator": "xtask repo-contract v1",
+  "packages": [
+    {
+      "features": [],
+      "group": "workspace",
+      "package": "sim-codec-mspdi"
+    },
+    {
+      "features": [],
+      "group": "workspace",
+      "package": "sim-codec-odf"
+    },
+    {
+      "features": [],
+      "group": "workspace",
+      "package": "sim-codec-ooxml"
+    },
+    {
+      "features": [],
+      "group": "workspace",
+      "package": "sim-lib-deck"
+    },
+    {
+      "features": [],
+      "group": "workspace",
+      "package": "sim-lib-doc-core"
+    },
+    {
+      "features": [],
+      "group": "workspace",
+      "package": "sim-lib-doc-ledger"
+    },
+    {
+      "features": [],
+      "group": "workspace",
+      "package": "sim-lib-doc-markup"
+    },
+    {
+      "features": [],
+      "group": "workspace",
+      "package": "sim-lib-doc-site"
+    },
+    {
+      "features": [],
+      "group": "workspace",
+      "package": "sim-lib-doc-store"
+    },
+    {
+      "features": [],
+      "group": "workspace",
+      "package": "sim-lib-doc-surface"
+    },
+    {
+      "features": [],
+      "group": "workspace",
+      "package": "sim-lib-gantt"
+    },
+    {
+      "features": [],
+      "group": "workspace",
+      "package": "sim-lib-mail"
+    },
+    {
+      "features": [],
+      "group": "workspace",
+      "package": "sim-lib-office-pack"
+    },
+    {
+      "features": [],
+      "group": "workspace",
+      "package": "sim-lib-sheet"
+    },
+    {
+      "features": [],
+      "group": "workspace",
+      "package": "sim-site-dalux"
+    },
+    {
+      "features": [],
+      "group": "workspace",
+      "package": "sim-site-libreoffice"
+    },
+    {
+      "features": [],
+      "group": "workspace",
+      "package": "sim-site-msgraph"
+    },
+    {
+      "features": [
+        {
+          "edges": [],
+          "name": "default",
+          "workspace_edges": []
+        },
+        {
+          "edges": [],
+          "name": "powerproject-ole",
+          "workspace_edges": []
+        }
+      ],
+      "group": "workspace",
+      "package": "sim-site-powerproject"
+    },
+    {
+      "features": [],
+      "group": "workspace",
+      "package": "sim-site-sharepoint"
+    },
+    {
+      "features": [],
+      "group": "workspace",
+      "package": "xtask"
+    }
+  ]
 }

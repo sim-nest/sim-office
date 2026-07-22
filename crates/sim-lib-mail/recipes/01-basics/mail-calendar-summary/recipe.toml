@@ -1,0 +1,8 @@
+id = "mail-calendar-summary"
+title = "Mail and calendar summary"
+codec = "lisp"
+setup = "setup.siml"
+purpose = "purpose.md"
+order = 10
+tags = ["office", "mail", "calendar", "privacy", "sandbox-descriptor"]
+requires = ["office/mail", "office/calendar", "office/doc-core", "codec/lisp"]

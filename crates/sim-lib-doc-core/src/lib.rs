@@ -6,11 +6,13 @@
 pub mod caps;
 pub mod edit;
 pub mod error;
+pub mod evidence;
 pub mod fidelity;
 pub mod model;
 pub mod place;
 pub mod projection;
 pub mod shape;
+pub mod zip_package;
 
 pub use caps::{
     CREDENTIALS_CAPABILITY, NET_CONNECT_CAPABILITY, OfficeCapabilityProfile,
@@ -18,6 +20,7 @@ pub use caps::{
 };
 pub use edit::{DomainEdit, Edit, invert};
 pub use error::OfficeError;
+pub use evidence::{Evidence, LinkRole};
 pub use fidelity::{FidelityReport, LossNote};
 pub use model::{
     DOC_KIND_ARTICLE, DOC_KIND_README, DOC_KIND_REPORT, Doc, DocId, DocKind, ExternalRef,
@@ -28,6 +31,7 @@ pub use projection::{
     TAG_STATEMENT_KIND, TAG_TARGET, project,
 };
 pub use shape::{DocKindShape, doc_shape};
+pub use zip_package::{ZipLimits, read_zip_entries};
 
 /// Cookbook recipes for this lib, embedded at build time.
 pub static RECIPES: sim_cookbook::EmbeddedDir =

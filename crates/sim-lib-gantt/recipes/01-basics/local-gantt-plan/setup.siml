@@ -1,0 +1,9 @@
+(expr:map
+  [kind office/gantt-plan]
+  [operation critical-path]
+  [plan plan-1]
+  [tasks [design build]]
+  [dates ["2026-07-01..2026-07-03" "2026-07-03..2026-07-05"]]
+  [links [finish-start]]
+  [critical [design build]]
+  [mode modeled])

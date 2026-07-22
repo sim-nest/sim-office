@@ -1,0 +1,5 @@
+book = "office/sharepoint-site"
+title = "SharePoint Site"
+summary = "Modeled SharePoint list, drive, and REST fallback operations."
+order = 421
+chapters = ["01-basics"]

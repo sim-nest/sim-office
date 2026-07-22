@@ -1,0 +1,8 @@
+(expr:map
+  [kind office/evidence-fact-graph]
+  [operation link-evidence]
+  [subject "site/powerproject/projects/p-1/tasks/17"]
+  [sources ["site/msgraph/messages/msg-1" "site/sharepoint/sites/site-1/drive/items/file-9"]]
+  [issue "site/dalux/items/issue-4"]
+  [voucher "ledger/voucher/2026/0007"]
+  [mode modeled])

@@ -1,0 +1,5 @@
+book = "office/odf"
+title = "ODF Office Codecs"
+summary = "Local .ods and .odp packages for sheet and deck documents."
+order = 416
+chapters = ["01-basics"]

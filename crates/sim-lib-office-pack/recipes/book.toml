@@ -1,0 +1,5 @@
+book = "office/pack"
+title = "Office Pack Planner"
+summary = "Preview annual accounts exports before live mail or archive actions."
+order = 414
+chapters = ["01-basics"]

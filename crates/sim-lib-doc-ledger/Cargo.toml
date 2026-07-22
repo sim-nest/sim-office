@@ -1,0 +1,42 @@
+[package]
+name = "sim-lib-doc-ledger"
+version = "0.1.0"
+edition = "2024"
+license = "MPL-2.0"
+description = "Ring-3 office bridge for ledger draft and statement previews."
+readme = "README.md"
+publish = false
+repository = "https://github.com/sim-nest/sim-office"
+homepage = "https://github.com/sim-nest/sim-office"
+
+[dependencies]
+sim-cookbook = { version = "0.1.0" }
+sim-kernel = { version = "0.1.0" }
+sim-lib-deck = { version = "0.1.0", path = "../sim-lib-deck" }
+sim-lib-doc-core = { version = "0.1.0", path = "../sim-lib-doc-core" }
+sim-lib-sheet = { version = "0.1.0", path = "../sim-lib-sheet" }
+
+[build-dependencies]
+sim-cookbook = { version = "0.1.0" }
+
+[dev-dependencies]
+tempfile = "3"
+time = "0.3"
+
+[lints]
+workspace = true
+
+[dependencies.sim-ledger]
+version = "0.1.0"
+git = "https://github.com/sim-nest/sim-ledger"
+rev = "a58f8890739dee30ee9baf73ea6b38cc1803ea01"
+
+[dependencies.sim-lib-ledger-close]
+version = "0.1.0"
+git = "https://github.com/sim-nest/sim-ledger"
+rev = "a58f8890739dee30ee9baf73ea6b38cc1803ea01"
+
+[dependencies.sim-lib-ledger-books]
+version = "0.1.0"
+git = "https://github.com/sim-nest/sim-ledger"
+rev = "a58f8890739dee30ee9baf73ea6b38cc1803ea01"
