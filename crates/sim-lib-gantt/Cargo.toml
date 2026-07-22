@@ -10,7 +10,7 @@ repository = "https://github.com/sim-nest/sim-office"
 homepage = "https://github.com/sim-nest/sim-office"
 
 [dependencies]
-rusqlite = { version = "0.31", features = ["bundled"] }
+rusqlite = { version = "0.40", features = ["bundled"] }
 sim-cookbook = { version = "0.1.0" }
 sim-kernel = { version = "0.1.0" }
 sim-lib-discrete-graph = { version = "0.1.2" }
