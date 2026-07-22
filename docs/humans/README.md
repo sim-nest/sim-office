@@ -726,7 +726,7 @@ fn modeled_patch_sends_only_note_field() {
 #[test]
 fn errors_redact_tokens_and_long_project_names() {
     let mut cx = test_context();
-    let token = "secret-token";
+    let token = "redacted-value";
     let long_name = format!("project-{}", "x".repeat(140));
     let client = DaluxClient::modeled(
         ModeledDalux::with_status(
