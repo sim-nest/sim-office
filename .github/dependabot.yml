@@ -13,6 +13,8 @@ updates:
         patterns: ["*"]
     ignore:
       - dependency-name: "sim-*"
+      - dependency-name: "rusqlite"
+      - dependency-name: "libsqlite3-sys"
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
