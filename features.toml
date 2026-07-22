@@ -2,7 +2,7 @@ schema = "sim.features"
 
 [enforcement.audience]
 user = "strict"
-code = "advisory"
+code = "strict"
 framework = "advisory"
 
 [enforcement.surface]
@@ -25,6 +25,7 @@ audiences = ["code"]
 guidance = "Use this row when checking the generated documentation and index lane for the office repo."
 claims_anchors = [
   "anchor/cli/xtask",
+  "anchor/crate/xtask",
   "anchor/doc/generated/feature-map",
   "anchor/doc/generated/sim-index-fragment",
 ]
@@ -41,6 +42,20 @@ owner = "crate/sim-lib-office-pack"
 audiences = ["user", "code"]
 guidance = "Use this row when choosing a document codec or checking that an office file round-trips."
 claims_anchors = [
+  "anchor/crate/sim-codec-mspdi",
+  "anchor/crate/sim-codec-odf",
+  "anchor/crate/sim-codec-ooxml",
+  "anchor/crate/sim-lib-doc-markup",
+  "anchor/crate/sim-lib-office-pack",
+  "anchor/export/sim-codec-mspdi/codec/mspdi",
+  "anchor/export/sim-codec-odf/codec/odf",
+  "anchor/export/sim-codec-ooxml/codec/ooxml-pptx",
+  "anchor/export/sim-codec-ooxml/codec/ooxml-xlsx",
+  "anchor/export/sim-lib-doc-markup/codec/markup-doc/asciidoc",
+  "anchor/export/sim-lib-doc-markup/codec/markup-doc/latex",
+  "anchor/export/sim-lib-doc-markup/codec/markup-doc/markdown",
+  "anchor/export/sim-lib-doc-markup/codec/markup-doc/typst",
+  "anchor/export/sim-lib-doc-markup/codec/markup-doc/unknown",
   "anchor/grammar/syntax/mspdi",
   "anchor/grammar/syntax/odf",
   "anchor/grammar/syntax/ooxml",
@@ -58,6 +73,14 @@ summary = "Project document, markup, and suite descriptors into view surfaces fo
 owner = "crate/sim-lib-doc-surface"
 audiences = ["user", "code", "framework"]
 guidance = "Use this row when rendering an office document or suite preview."
+claims_anchors = [
+  "anchor/crate/sim-lib-deck",
+  "anchor/crate/sim-lib-doc-core",
+  "anchor/crate/sim-lib-doc-ledger",
+  "anchor/crate/sim-lib-doc-surface",
+  "anchor/crate/sim-lib-sheet",
+  "anchor/export/sim-lib-doc-surface/view-default",
+]
 claims_surfaces = [
   "view/sim-lib-doc-core",
   "view/sim-lib-doc-markup",
@@ -71,6 +94,23 @@ summary = "Model document stores, mail and calendar summaries, planning data, an
 owner = "crate/sim-lib-doc-site"
 audiences = ["user", "code"]
 guidance = "Use this row when connecting office documents to modeled project, mail, Graph, or SharePoint sites."
+claims_anchors = [
+  "anchor/crate/sim-lib-doc-site",
+  "anchor/crate/sim-lib-doc-store",
+  "anchor/crate/sim-lib-gantt",
+  "anchor/crate/sim-lib-mail",
+  "anchor/crate/sim-site-dalux",
+  "anchor/crate/sim-site-libreoffice",
+  "anchor/crate/sim-site-msgraph",
+  "anchor/crate/sim-site-powerproject",
+  "anchor/crate/sim-site-sharepoint",
+  "anchor/export/sim-lib-mail/site/msgraph",
+  "anchor/export/sim-site-dalux/site/dalux",
+  "anchor/export/sim-site-libreoffice/site/libreoffice",
+  "anchor/export/sim-site-msgraph/site/msgraph",
+  "anchor/export/sim-site-powerproject/site/powerproject",
+  "anchor/export/sim-site-sharepoint/site/sharepoint",
+]
 
 [[route]]
 id = "route/review-office-document"
