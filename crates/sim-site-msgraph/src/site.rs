@@ -54,16 +54,10 @@ pub fn register_msgraph_site(
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
-
-    use sim_kernel::{DefaultFactory, ExportKind, ExportState, NoopEvalPolicy, RuntimeId};
+    use sim_kernel::{ExportKind, ExportState, RuntimeId, testing::bare_cx as cx};
     use sim_lib_doc_site::site_symbol;
 
     use super::*;
-
-    fn cx() -> Cx {
-        Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
-    }
 
     #[test]
     fn msgraph_site_carries_live_capabilities() {

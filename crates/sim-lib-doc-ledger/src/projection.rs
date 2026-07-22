@@ -122,9 +122,7 @@ fn office_error(error: impl std::fmt::Display) -> OfficeError {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
-
-    use sim_kernel::{Cx, DefaultFactory, NoopEvalPolicy};
+    use sim_kernel::{Cx, testing::bare_cx as cx};
     use sim_lib_deck::SlideBlock;
     use sim_lib_ledger_close::{FinancialStatements, StatementNote, StatementRow, StatementTable};
     use sim_lib_sheet::{CellRef, CellValue, rational_to_canonical};
@@ -151,10 +149,6 @@ mod tests {
         let error = statements_to_deck(&statements).unwrap_err();
 
         assert!(error.to_string().contains("statement total"));
-    }
-
-    fn cx() -> Cx {
-        Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
     }
 
     fn statements() -> FinancialStatements {

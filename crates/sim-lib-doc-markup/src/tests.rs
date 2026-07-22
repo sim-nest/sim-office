@@ -1,9 +1,7 @@
-use std::sync::Arc;
-
 use sim_codec_doc::{
     BackendId, Inline, MarkupBlock, MarkupDoc, MarkupEdit, MarkupFidelity, MarkupLoss,
 };
-use sim_kernel::{Cx, DefaultFactory, Expr, NoopEvalPolicy, Symbol};
+use sim_kernel::{Cx, Expr, Symbol, testing::bare_cx as cx};
 use sim_lib_doc_core::{Doc, DocCodec, DocCodecOptions, DocId, DocKind, SurfaceCaps};
 use sim_lib_doc_store::DocStore;
 use sim_lib_intent::{Origin, intent};
@@ -14,10 +12,6 @@ use crate::{
     load_article_doc, markup_suite_scene, office_fidelity, preferred_backend, save_article_doc,
     with_preferred_backend,
 };
-
-fn cx() -> Cx {
-    Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
-}
 
 fn default_options(cx: &mut Cx) -> DocCodecOptions {
     DocCodecOptions::new(cx.factory().nil().unwrap())

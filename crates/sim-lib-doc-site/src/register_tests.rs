@@ -1,17 +1,11 @@
-use std::sync::Arc;
-
 use sim_kernel::{
-    CapabilityName, Consistency, Cx, DefaultFactory, EvalMode, EvalRequest, ExportKind,
-    ExportState, Expr, NoopEvalPolicy, RuntimeId, Symbol,
+    CapabilityName, Consistency, EvalMode, EvalRequest, ExportKind, ExportState, Expr, RuntimeId,
+    Symbol, testing::bare_cx as cx,
 };
 use sim_lib_doc_core::{DocKind, DocSite, NET_CONNECT_CAPABILITY, OfficeError, invert};
 use sim_value::build::entry;
 
 use crate::{DOC_SITE_DOMAIN, SiteOp, SiteReply, realize_site_op, register_site, site_symbol};
-
-fn cx() -> Cx {
-    Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
-}
 
 fn modeled_site() -> DocSite {
     DocSite::new(

@@ -259,16 +259,10 @@ fn origin_value(cx: &mut Cx, doc: &Doc) -> Result<(Symbol, Value), OfficeError> 
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
-
-    use sim_kernel::{DefaultFactory, Expr, NoopEvalPolicy};
+    use sim_kernel::{Expr, testing::bare_cx as cx};
 
     use super::*;
     use crate::{DocId, DocKind};
-
-    fn cx() -> Cx {
-        Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
-    }
 
     fn doc(cx: &mut Cx) -> Doc {
         Doc::new(

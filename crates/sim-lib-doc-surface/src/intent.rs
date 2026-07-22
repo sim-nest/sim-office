@@ -105,18 +105,12 @@ fn cell_op(kind: &str, cell: &str, value: Expr) -> Expr {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
-
-    use sim_kernel::{DefaultFactory, NoopEvalPolicy};
+    use sim_kernel::testing::bare_cx as cx;
     use sim_lib_doc_core::{DocKind, SurfaceCaps};
     use sim_lib_intent::{Origin, intent};
 
     use super::*;
     use crate::{SuitePane, suite_scene};
-
-    fn cx() -> Cx {
-        Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
-    }
 
     fn doc(cx: &mut Cx) -> Doc {
         Doc::new(

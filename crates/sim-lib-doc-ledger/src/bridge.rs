@@ -146,9 +146,7 @@ fn ledger_error(error: sim_lib_ledger_books::BooksError) -> OfficeError {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
-
-    use sim_kernel::{Cx, DefaultFactory, Expr, NoopEvalPolicy};
+    use sim_kernel::{Cx, Expr, testing::bare_cx as cx};
     use sim_ledger::{Amount, LedgerSet, Posting};
     use sim_lib_doc_core::ExternalRef;
     use sim_lib_ledger_books::LedgerEvidenceRef;
@@ -222,10 +220,6 @@ mod tests {
         assert_eq!(evidence.external_id, "sites/site-1/drive/items/file-9");
         assert_eq!(evidence.version.as_deref(), Some("etag-9"));
         assert_eq!(evidence.immutable_hint.as_deref(), Some("digest-9"));
-    }
-
-    fn cx() -> Cx {
-        Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
     }
 
     fn value_expr(cx: &mut Cx, value: &Value) -> Expr {

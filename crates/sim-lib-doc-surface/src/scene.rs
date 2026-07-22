@@ -126,18 +126,12 @@ fn projection_scene(projected: Expr) -> Expr {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
-
-    use sim_kernel::{DefaultFactory, NoopEvalPolicy};
+    use sim_kernel::testing::bare_cx as cx;
     use sim_lib_doc_core::{DocKind, ProjectionCaps};
 
     use super::*;
 
     // conformance: document surfaces project suite panes into checked scenes.
-
-    fn cx() -> Cx {
-        Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
-    }
 
     fn doc(cx: &mut Cx, id: &str, kind: &str, body: &str) -> Doc {
         Doc::new(

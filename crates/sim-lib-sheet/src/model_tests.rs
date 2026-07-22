@@ -1,12 +1,6 @@
-use std::sync::Arc;
-
-use sim_kernel::{Cx, DefaultFactory, NoopEvalPolicy};
+use sim_kernel::testing::bare_cx as cx;
 
 use super::*;
-
-fn cx() -> Cx {
-    Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
-}
 
 #[test]
 fn cell_ref_round_trips_a1_notation() {
