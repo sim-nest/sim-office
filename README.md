@@ -9,7 +9,6 @@ without learning office-file enums.
 
 | Crate | Role |
 | --- | --- |
-| `sim-codec-mspdi` | Microsoft Project XML schedule codec for local Gantt documents. |
 | `sim-codec-ooxml` | OOXML spreadsheet and presentation codecs for local office documents. |
 | `sim-lib-deck` | Local presentation deck records, document projection, and slide content blocks. |
 | `sim-lib-doc-core` | Ring-0 document records, document kind shapes, and embedded descriptor recipes. |

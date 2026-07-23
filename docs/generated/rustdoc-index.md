@@ -4,7 +4,6 @@
 
 | Package | Group | Summary |
 | --- | --- | --- |
-| `sim-codec-mspdi` | `workspace` | MSPDI XML codec for local Gantt schedule documents. |
 | `sim-codec-odf` | `workspace` | ODF package codecs for sheet and deck office documents. |
 | `sim-codec-ooxml` | `workspace` | OOXML spreadsheet and presentation codecs for SIM office documents. |
 | `sim-lib-deck` | `workspace` | Presentation deck domain for SIM office documents. |

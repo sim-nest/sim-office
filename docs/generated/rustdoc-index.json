@@ -2,13 +2,6 @@
   "generator": "xtask repo-contract v1",
   "packages": [
     {
-      "crate_name": "sim_codec_mspdi",
-      "group": "workspace",
-      "manifest": "crates/sim-codec-mspdi/Cargo.toml",
-      "package": "sim-codec-mspdi",
-      "summary": "MSPDI XML codec for local Gantt schedule documents."
-    },
-    {
       "crate_name": "sim_codec_odf",
       "group": "workspace",
       "manifest": "crates/sim-codec-odf/Cargo.toml",

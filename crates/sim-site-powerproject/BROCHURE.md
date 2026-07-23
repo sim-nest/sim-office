@@ -16,6 +16,6 @@ prove that exported MSPDI still returns to the same Gantt surface.
 
 ## Where it fits
 
-It sits beside the MSPDI codec and the local Gantt library in `sim-office`. Use
+It uses the construction-owned MSPDI codec and the local Gantt library. Use
 it when a schedule needs a Powerproject desktop export, a Project for the web
 update plan, or a deterministic receipt for review.

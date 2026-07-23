@@ -1,5 +1,5 @@
 {
-  "card_count": 21,
+  "card_count": 20,
   "cards": [
     {
       "id": "browse/catalog",
@@ -80,12 +80,6 @@
       "summary": "Modeled Microsoft Graph document site calls with explicit live gates."
     },
     {
-      "id": "cookbook/office/mspdi",
-      "kind": "cookbook-recipe",
-      "owner": "sim-codec-mspdi",
-      "summary": "Microsoft Project XML exchange for local Gantt documents."
-    },
-    {
       "id": "cookbook/office/odf",
       "kind": "cookbook-recipe",
       "owner": "sim-codec-odf",
@@ -137,7 +131,6 @@
   ],
   "groups": {
     "workspace": [
-      "sim-codec-mspdi",
       "sim-codec-odf",
       "sim-codec-ooxml",
       "sim-lib-deck",
@@ -161,61 +154,8 @@
   },
   "non_citizen_exemption_count": 0,
   "non_citizen_exemptions": [],
-  "package_count": 20,
+  "package_count": 19,
   "packages": [
-    {
-      "crate_name": "sim_codec_mspdi",
-      "dependencies": [
-        {
-          "kind": "normal",
-          "optional": false,
-          "package": "sim-lib-doc-core",
-          "rename": null,
-          "target": null
-        },
-        {
-          "kind": "normal",
-          "optional": false,
-          "package": "sim-lib-gantt",
-          "rename": null,
-          "target": null
-        }
-      ],
-      "description": "MSPDI schedule codec for SIM office Gantt documents.",
-      "features": [],
-      "group": "workspace",
-      "manifest": "crates/sim-codec-mspdi/Cargo.toml",
-      "name": "sim-codec-mspdi",
-      "publish": "false",
-      "root": "crates/sim-codec-mspdi",
-      "rustdoc_summary": "MSPDI XML codec for local Gantt schedule documents.",
-      "target_kinds": [
-        "custom-build",
-        "lib"
-      ],
-      "targets": [
-        {
-          "crate_types": [
-            "lib"
-          ],
-          "kind": [
-            "lib"
-          ],
-          "name": "sim_codec_mspdi",
-          "src": "crates/sim-codec-mspdi/src/lib.rs"
-        },
-        {
-          "crate_types": [
-            "bin"
-          ],
-          "kind": [
-            "custom-build"
-          ],
-          "name": "build-script-build",
-          "src": "crates/sim-codec-mspdi/build.rs"
-        }
-      ]
-    },
     {
       "crate_name": "sim_codec_odf",
       "dependencies": [
@@ -1096,13 +1036,6 @@
         {
           "kind": "normal",
           "optional": false,
-          "package": "sim-codec-mspdi",
-          "rename": null,
-          "target": null
-        },
-        {
-          "kind": "normal",
-          "optional": false,
           "package": "sim-lib-doc-core",
           "rename": null,
           "target": null
@@ -1268,10 +1201,10 @@
     "generated_by": "cargo run -p xtask -- simdoc",
     "generation_timestamp": "2026-07-14T22:53:58+02:00",
     "generator": "xtask repo-contract v1",
-    "git_commit": "017744f0e88bb1bfd59a8c514a0e51ea097a4ea2",
+    "git_commit": "0a740e577565c0a40e00d90e96f7c461dab77222",
     "repo": "sim-office",
     "schema": "sim.provenance.v1",
-    "source_commit": "017744f0e88bb1bfd59a8c514a0e51ea097a4ea2",
+    "source_commit": "0a740e577565c0a40e00d90e96f7c461dab77222",
     "source_remote": "https://github.com/sim-nest/sim-office",
     "validation_commands": [
       "cargo fmt --all --check",
@@ -1284,20 +1217,11 @@
       "cargo run -p xtask -- validation-matrix --check --repo .",
       "cargo run -p xtask -- crate-catalog --check --repo ."
     ],
-    "workspace_hash": "1b6b855c39e761da",
+    "workspace_hash": "4909d190b24923b2",
     "workspace_hash_algorithm": "fnv1a64",
-    "workspace_hash_input_count": 183,
+    "workspace_hash_input_count": 174,
     "workspace_hash_inputs": [
       "Cargo.toml",
-      "crates/sim-codec-mspdi/Cargo.toml",
-      "crates/sim-codec-mspdi/build.rs",
-      "crates/sim-codec-mspdi/recipes/01-basics/mspdi-round-trip/recipe.toml",
-      "crates/sim-codec-mspdi/recipes/book.toml",
-      "crates/sim-codec-mspdi/src/lib.rs",
-      "crates/sim-codec-mspdi/src/model.rs",
-      "crates/sim-codec-mspdi/src/read.rs",
-      "crates/sim-codec-mspdi/src/tests.rs",
-      "crates/sim-codec-mspdi/src/write.rs",
       "crates/sim-codec-odf/Cargo.toml",
       "crates/sim-codec-odf/build.rs",
       "crates/sim-codec-odf/recipes/01-basics/odp-round-trip/recipe.toml",
@@ -1473,28 +1397,8 @@
       "xtask/Cargo.toml"
     ]
   },
-  "recipe_book_count": 19,
+  "recipe_book_count": 18,
   "recipes": [
-    {
-      "book": "office/mspdi",
-      "book_toml": "crates/sim-codec-mspdi/recipes/book.toml",
-      "card_id": "cookbook/office/mspdi",
-      "group": "workspace",
-      "package": "sim-codec-mspdi",
-      "recipe_count": 1,
-      "recipes": [
-        {
-          "card_id": "office/mspdi/01-basics/mspdi-round-trip",
-          "codec": "lisp",
-          "id": "mspdi-round-trip",
-          "package": "sim-codec-mspdi",
-          "recipe_toml": "crates/sim-codec-mspdi/recipes/01-basics/mspdi-round-trip/recipe.toml",
-          "title": "MSPDI round trip"
-        }
-      ],
-      "summary": "Microsoft Project XML exchange for local Gantt documents.",
-      "title": "MSPDI Schedule Codec"
-    },
     {
       "book": "office/odf",
       "book_toml": "crates/sim-codec-odf/recipes/book.toml",

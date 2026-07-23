@@ -4,7 +4,6 @@
 
 | Package | Group | Features | Workspace feature edges |
 | --- | --- | ---: | ---: |
-| `sim-codec-mspdi` | `workspace` | 0 | 0 |
 | `sim-codec-odf` | `workspace` | 0 | 0 |
 | `sim-codec-ooxml` | `workspace` | 0 | 0 |
 | `sim-lib-deck` | `workspace` | 0 | 0 |

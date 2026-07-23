@@ -1,20 +1,7 @@
 {
   "generator": "xtask crate-catalog v1",
-  "package_count": 20,
+  "package_count": 19,
   "packages": [
-    {
-      "description": "MSPDI schedule codec for SIM office Gantt documents.",
-      "generated_readme": false,
-      "manifest": "crates/sim-codec-mspdi/Cargo.toml",
-      "name": "sim-codec-mspdi",
-      "publish": "false",
-      "readme": "crates/sim-codec-mspdi/README.md",
-      "root": "crates/sim-codec-mspdi",
-      "target_kinds": [
-        "custom-build",
-        "lib"
-      ]
-    },
     {
       "description": "ODF spreadsheet and presentation codecs for SIM office documents.",
       "generated_readme": false,

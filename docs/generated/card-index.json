@@ -1,5 +1,5 @@
 {
-  "card_count": 21,
+  "card_count": 20,
   "cards": [
     {
       "id": "browse/catalog",
@@ -78,12 +78,6 @@
       "kind": "cookbook-recipe",
       "owner": "sim-site-msgraph",
       "summary": "Modeled Microsoft Graph document site calls with explicit live gates."
-    },
-    {
-      "id": "cookbook/office/mspdi",
-      "kind": "cookbook-recipe",
-      "owner": "sim-codec-mspdi",
-      "summary": "Microsoft Project XML exchange for local Gantt documents."
     },
     {
       "id": "cookbook/office/odf",

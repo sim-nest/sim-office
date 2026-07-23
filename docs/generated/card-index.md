@@ -17,7 +17,6 @@
 | `cookbook/office/libreoffice-site` | `cookbook-recipe` | `sim-site-libreoffice` | Permissioned helper-process placement for LibreOffice office tasks. |
 | `cookbook/office/mail` | `cookbook-recipe` | `sim-lib-mail` | Privacy-aware messages, events, and attachment references. |
 | `cookbook/office/msgraph-site` | `cookbook-recipe` | `sim-site-msgraph` | Modeled Microsoft Graph document site calls with explicit live gates. |
-| `cookbook/office/mspdi` | `cookbook-recipe` | `sim-codec-mspdi` | Microsoft Project XML exchange for local Gantt documents. |
 | `cookbook/office/odf` | `cookbook-recipe` | `sim-codec-odf` | Local .ods and .odp packages for sheet and deck documents. |
 | `cookbook/office/ooxml` | `cookbook-recipe` | `sim-codec-ooxml` | Local .xlsx and .pptx packages for sheet and deck documents. |
 | `cookbook/office/pack` | `cookbook-recipe` | `sim-lib-office-pack` | Preview annual accounts exports before live mail or archive actions. |

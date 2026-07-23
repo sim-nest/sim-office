@@ -14,7 +14,7 @@ default = []
 powerproject-ole = []
 
 [dependencies]
-sim-codec-mspdi = { version = "0.1.0", path = "../sim-codec-mspdi" }
+sim-codec-mspdi = { version = "0.1.0", git = "https://github.com/sim-nest/sim-construction", rev = "391bf9a1fa1f5e4f59e7fa166182094518e3ce17" }
 sim-cookbook = { version = "0.1.0" }
 sim-kernel = { version = "0.1.0" }
 sim-lib-doc-core = { version = "0.1.0", path = "../sim-lib-doc-core" }

@@ -18,7 +18,7 @@ This generated lane consumes `docs/generated/sim-index-fragment.sx`. Global inde
 | Feature | Subject | Specimens | Summary |
 | --- | --- | ---: | --- |
 | `feature/sim-office/generated-docs` | `crate/xtask` | 0 | Publish generated package, card, recipe, and index facts for office documents, sites, and codecs. |
-| `feature/sim-office/document-codecs` | `crate/sim-lib-office-pack` | 1 | Round-trip OOXML, ODF, MSPDI, deck, sheet, and markup documents through office codec recipes. |
+| `feature/sim-office/document-codecs` | `crate/sim-lib-office-pack` | 1 | Round-trip OOXML, ODF, deck, sheet, and markup documents through office codec recipes. |
 | `feature/sim-office/document-surfaces` | `crate/sim-lib-doc-surface` | 1 | Project document, markup, and suite descriptors into view surfaces for review and editing. |
 | `feature/sim-office/office-site-workflows` | `crate/sim-lib-doc-site` | 1 | Model document stores, mail and calendar summaries, planning data, and enterprise site reads. |
 
@@ -28,7 +28,6 @@ This generated lane consumes `docs/generated/sim-index-fragment.sx`. Global inde
 | --- | --- | --- |
 | `cli/xtask` | `cli` | `crate/xtask` |
 | `docs/sim-office/generated` | `docs` | `doc-set/sim-office/generated` |
-| `syntax/mspdi` | `syntax` | `language/mspdi` |
 | `syntax/odf` | `syntax` | `language/odf` |
 | `syntax/ooxml` | `syntax` | `language/ooxml` |
 | `view/sim-lib-doc-core` | `view` | `crate/sim-lib-doc-core` |
@@ -37,11 +36,6 @@ This generated lane consumes `docs/generated/sim-index-fragment.sx`. Global inde
 
 ## Recipes
 
-- `crates/sim-codec-mspdi/recipes/01-basics/chapter.toml`
-- `crates/sim-codec-mspdi/recipes/01-basics/mspdi-round-trip/purpose.md`
-- `crates/sim-codec-mspdi/recipes/01-basics/mspdi-round-trip/recipe.toml`
-- `crates/sim-codec-mspdi/recipes/01-basics/mspdi-round-trip/setup.siml`
-- `crates/sim-codec-mspdi/recipes/book.toml`
 - `crates/sim-codec-odf/recipes/01-basics/chapter.toml`
 - `crates/sim-codec-odf/recipes/01-basics/odp-round-trip/purpose.md`
 - `crates/sim-codec-odf/recipes/01-basics/odp-round-trip/recipe.toml`

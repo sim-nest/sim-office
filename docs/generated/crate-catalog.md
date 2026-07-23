@@ -6,7 +6,6 @@ Generated from Cargo metadata by `xtask crate-catalog v1`.
 
 | Package | Publish | Targets | Description |
 | --- | --- | --- | --- |
-| `sim-codec-mspdi` | `false` | `custom-build, lib` | MSPDI schedule codec for SIM office Gantt documents. |
 | `sim-codec-odf` | `false` | `custom-build, lib` | ODF spreadsheet and presentation codecs for SIM office documents. |
 | `sim-codec-ooxml` | `false` | `custom-build, lib` | OOXML spreadsheet and presentation codecs for SIM office documents. |
 | `sim-lib-deck` | `false` | `custom-build, lib` | Presentation deck domain model for SIM office documents. |

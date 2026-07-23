@@ -1,5 +1,0 @@
-book = "office/mspdi"
-title = "MSPDI Schedule Codec"
-summary = "Microsoft Project XML exchange for local Gantt documents."
-order = 419
-chapters = ["01-basics"]
