@@ -18,7 +18,7 @@ sim-lib-doc-core = { version = "0.1.0", path = "../sim-lib-doc-core" }
 sim-lib-doc-site = { version = "0.1.0", path = "../sim-lib-doc-site" }
 sim-lib-mail = { version = "0.1.0", path = "../sim-lib-mail" }
 sim-lib-sheet = { version = "0.1.0", path = "../sim-lib-sheet" }
-ureq = "2"
+ureq = "3"
 
 [build-dependencies]
 sim-cookbook = { version = "0.1.0" }
