@@ -20,7 +20,7 @@ This generated lane consumes `docs/generated/sim-index-fragment.sx`. Global inde
 | `feature/sim-office/generated-docs` | `crate/xtask` | 0 | Publish generated package, card, recipe, and index facts for office documents, sites, and codecs. |
 | `feature/sim-office/document-codecs` | `crate/sim-lib-office-pack` | 1 | Round-trip OOXML, ODF, deck, sheet, and markup documents through office codec recipes. |
 | `feature/sim-office/document-surfaces` | `crate/sim-lib-doc-surface` | 1 | Project document, markup, and suite descriptors into view surfaces for review and editing. |
-| `feature/sim-office/office-site-workflows` | `crate/sim-lib-doc-site` | 1 | Model document stores, mail and calendar summaries, planning data, and enterprise site reads. |
+| `feature/sim-office/office-site-workflows` | `crate/sim-lib-doc-site` | 1 | Model document stores, mail and calendar summaries, and enterprise site reads. |
 
 ## Surfaces
 
@@ -122,11 +122,6 @@ This generated lane consumes `docs/generated/sim-index-fragment.sx`. Global inde
 - `crates/sim-site-msgraph/recipes/01-basics/msgraph-modeled-read/recipe.toml`
 - `crates/sim-site-msgraph/recipes/01-basics/msgraph-modeled-read/setup.siml`
 - `crates/sim-site-msgraph/recipes/book.toml`
-- `crates/sim-site-powerproject/recipes/01-basics/chapter.toml`
-- `crates/sim-site-powerproject/recipes/01-basics/powerproject-placement/purpose.md`
-- `crates/sim-site-powerproject/recipes/01-basics/powerproject-placement/recipe.toml`
-- `crates/sim-site-powerproject/recipes/01-basics/powerproject-placement/setup.siml`
-- `crates/sim-site-powerproject/recipes/book.toml`
 - `crates/sim-site-sharepoint/recipes/01-basics/chapter.toml`
 - `crates/sim-site-sharepoint/recipes/01-basics/sharepoint-graph-read/purpose.md`
 - `crates/sim-site-sharepoint/recipes/01-basics/sharepoint-graph-read/recipe.toml`

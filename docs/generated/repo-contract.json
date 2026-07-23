@@ -1,5 +1,5 @@
 {
-  "card_count": 20,
+  "card_count": 19,
   "cards": [
     {
       "id": "browse/catalog",
@@ -98,12 +98,6 @@
       "summary": "Preview annual accounts exports before live mail or archive actions."
     },
     {
-      "id": "cookbook/office/powerproject-site",
-      "kind": "cookbook-recipe",
-      "owner": "sim-site-powerproject",
-      "summary": "Powerproject and Project for the web placements for Gantt plans."
-    },
-    {
       "id": "cookbook/office/sharepoint-site",
       "kind": "cookbook-recipe",
       "owner": "sim-site-sharepoint",
@@ -147,14 +141,13 @@
       "sim-site-dalux",
       "sim-site-libreoffice",
       "sim-site-msgraph",
-      "sim-site-powerproject",
       "sim-site-sharepoint",
       "xtask"
     ]
   },
   "non_citizen_exemption_count": 0,
   "non_citizen_exemptions": [],
-  "package_count": 19,
+  "package_count": 18,
   "packages": [
     {
       "crate_name": "sim_codec_odf",
@@ -1031,77 +1024,6 @@
       ]
     },
     {
-      "crate_name": "sim_site_powerproject",
-      "dependencies": [
-        {
-          "kind": "normal",
-          "optional": false,
-          "package": "sim-lib-doc-core",
-          "rename": null,
-          "target": null
-        },
-        {
-          "kind": "normal",
-          "optional": false,
-          "package": "sim-lib-doc-site",
-          "rename": null,
-          "target": null
-        },
-        {
-          "kind": "normal",
-          "optional": false,
-          "package": "sim-lib-gantt",
-          "rename": null,
-          "target": null
-        }
-      ],
-      "description": "Powerproject and Project for the web site placement for SIM Gantt documents.",
-      "features": [
-        {
-          "edges": [],
-          "name": "default",
-          "workspace_edges": []
-        },
-        {
-          "edges": [],
-          "name": "powerproject-ole",
-          "workspace_edges": []
-        }
-      ],
-      "group": "workspace",
-      "manifest": "crates/sim-site-powerproject/Cargo.toml",
-      "name": "sim-site-powerproject",
-      "publish": "false",
-      "root": "crates/sim-site-powerproject",
-      "rustdoc_summary": "Powerproject and Project for the web placement for SIM Gantt documents.",
-      "target_kinds": [
-        "custom-build",
-        "lib"
-      ],
-      "targets": [
-        {
-          "crate_types": [
-            "lib"
-          ],
-          "kind": [
-            "lib"
-          ],
-          "name": "sim_site_powerproject",
-          "src": "crates/sim-site-powerproject/src/lib.rs"
-        },
-        {
-          "crate_types": [
-            "bin"
-          ],
-          "kind": [
-            "custom-build"
-          ],
-          "name": "build-script-build",
-          "src": "crates/sim-site-powerproject/build.rs"
-        }
-      ]
-    },
-    {
       "crate_name": "sim_site_sharepoint",
       "dependencies": [
         {
@@ -1201,10 +1123,10 @@
     "generated_by": "cargo run -p xtask -- simdoc",
     "generation_timestamp": "2026-07-14T22:53:58+02:00",
     "generator": "xtask repo-contract v1",
-    "git_commit": "0a740e577565c0a40e00d90e96f7c461dab77222",
+    "git_commit": "ae25d36fb5d09ca919faf31430a1fbc6837111f0",
     "repo": "sim-office",
     "schema": "sim.provenance.v1",
-    "source_commit": "0a740e577565c0a40e00d90e96f7c461dab77222",
+    "source_commit": "ae25d36fb5d09ca919faf31430a1fbc6837111f0",
     "source_remote": "https://github.com/sim-nest/sim-office",
     "validation_commands": [
       "cargo fmt --all --check",
@@ -1217,9 +1139,9 @@
       "cargo run -p xtask -- validation-matrix --check --repo .",
       "cargo run -p xtask -- crate-catalog --check --repo ."
     ],
-    "workspace_hash": "4909d190b24923b2",
+    "workspace_hash": "23a78ada0c96a9e0",
     "workspace_hash_algorithm": "fnv1a64",
-    "workspace_hash_input_count": 174,
+    "workspace_hash_input_count": 165,
     "workspace_hash_inputs": [
       "Cargo.toml",
       "crates/sim-codec-odf/Cargo.toml",
@@ -1372,15 +1294,6 @@
       "crates/sim-site-msgraph/src/lib.rs",
       "crates/sim-site-msgraph/src/modeled.rs",
       "crates/sim-site-msgraph/src/site.rs",
-      "crates/sim-site-powerproject/Cargo.toml",
-      "crates/sim-site-powerproject/build.rs",
-      "crates/sim-site-powerproject/recipes/01-basics/powerproject-placement/recipe.toml",
-      "crates/sim-site-powerproject/recipes/book.toml",
-      "crates/sim-site-powerproject/src/dataverse.rs",
-      "crates/sim-site-powerproject/src/lib.rs",
-      "crates/sim-site-powerproject/src/modeled.rs",
-      "crates/sim-site-powerproject/src/ole.rs",
-      "crates/sim-site-powerproject/src/tests.rs",
       "crates/sim-site-sharepoint/Cargo.toml",
       "crates/sim-site-sharepoint/build.rs",
       "crates/sim-site-sharepoint/recipes/01-basics/sharepoint-graph-read/recipe.toml",
@@ -1397,7 +1310,7 @@
       "xtask/Cargo.toml"
     ]
   },
-  "recipe_book_count": 18,
+  "recipe_book_count": 17,
   "recipes": [
     {
       "book": "office/odf",
@@ -1733,26 +1646,6 @@
       ],
       "summary": "Modeled Microsoft Graph document site calls with explicit live gates.",
       "title": "Microsoft Graph Site"
-    },
-    {
-      "book": "office/powerproject-site",
-      "book_toml": "crates/sim-site-powerproject/recipes/book.toml",
-      "card_id": "cookbook/office/powerproject-site",
-      "group": "workspace",
-      "package": "sim-site-powerproject",
-      "recipe_count": 1,
-      "recipes": [
-        {
-          "card_id": "office/powerproject-site/01-basics/powerproject-placement",
-          "codec": "lisp",
-          "id": "powerproject-placement",
-          "package": "sim-site-powerproject",
-          "recipe_toml": "crates/sim-site-powerproject/recipes/01-basics/powerproject-placement/recipe.toml",
-          "title": "Powerproject placement"
-        }
-      ],
-      "summary": "Powerproject and Project for the web placements for Gantt plans.",
-      "title": "Powerproject Site"
     },
     {
       "book": "office/sharepoint-site",

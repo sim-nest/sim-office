@@ -97,10 +97,10 @@ claims_specimens = [
 [[feature]]
 id = "feature/sim-office/office-site-workflows"
 title = "Office site workflows"
-summary = "Model document stores, mail and calendar summaries, planning data, and enterprise site reads."
+summary = "Model document stores, mail and calendar summaries, and enterprise site reads."
 owner = "crate/sim-lib-doc-site"
 audiences = ["user", "code"]
-guidance = "Use this row when connecting office documents to modeled project, mail, Graph, or SharePoint sites."
+guidance = "Use this row when connecting office documents to modeled mail, Graph, SharePoint, or file-backed sites."
 claims_anchors = [
   "anchor/crate/sim-lib-doc-site",
   "anchor/crate/sim-lib-doc-store",
@@ -109,13 +109,11 @@ claims_anchors = [
   "anchor/crate/sim-site-dalux",
   "anchor/crate/sim-site-libreoffice",
   "anchor/crate/sim-site-msgraph",
-  "anchor/crate/sim-site-powerproject",
   "anchor/crate/sim-site-sharepoint",
   "anchor/export/sim-lib-mail/site/msgraph",
   "anchor/export/sim-site-dalux/site/dalux",
   "anchor/export/sim-site-libreoffice/site/libreoffice",
   "anchor/export/sim-site-msgraph/site/msgraph",
-  "anchor/export/sim-site-powerproject/site/powerproject",
   "anchor/export/sim-site-sharepoint/site/sharepoint",
 ]
 claims_specimens = [

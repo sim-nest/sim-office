@@ -114,13 +114,6 @@
       "summary": "Microsoft Graph site adapter for SIM office documents."
     },
     {
-      "crate_name": "sim_site_powerproject",
-      "group": "workspace",
-      "manifest": "crates/sim-site-powerproject/Cargo.toml",
-      "package": "sim-site-powerproject",
-      "summary": "Powerproject and Project for the web placement for SIM Gantt documents."
-    },
-    {
       "crate_name": "sim_site_sharepoint",
       "group": "workspace",
       "manifest": "crates/sim-site-sharepoint/Cargo.toml",

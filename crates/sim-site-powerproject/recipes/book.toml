@@ -1,5 +1,0 @@
-book = "office/powerproject-site"
-title = "Powerproject Site"
-summary = "Powerproject and Project for the web placements for Gantt plans."
-order = 420
-chapters = ["01-basics"]
