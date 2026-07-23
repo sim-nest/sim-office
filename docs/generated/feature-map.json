@@ -69,11 +69,6 @@
     {
       "features": [],
       "group": "workspace",
-      "package": "sim-site-dalux"
-    },
-    {
-      "features": [],
-      "group": "workspace",
       "package": "sim-site-libreoffice"
     },
     {

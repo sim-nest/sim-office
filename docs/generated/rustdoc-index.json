@@ -93,13 +93,6 @@
       "summary": "Exact spreadsheet domain for SIM office documents."
     },
     {
-      "crate_name": "sim_site_dalux",
-      "group": "workspace",
-      "manifest": "crates/sim-site-dalux/Cargo.toml",
-      "package": "sim-site-dalux",
-      "summary": "Dalux API-identity site adapter for SIM office documents."
-    },
-    {
       "crate_name": "sim_site_libreoffice",
       "group": "workspace",
       "manifest": "crates/sim-site-libreoffice/Cargo.toml",

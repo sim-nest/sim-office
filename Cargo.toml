@@ -14,7 +14,6 @@ members = [
   "crates/sim-lib-mail",
   "crates/sim-lib-office-pack",
   "crates/sim-lib-sheet",
-  "crates/sim-site-dalux",
   "crates/sim-site-libreoffice",
   "crates/sim-site-msgraph",
   "crates/sim-site-sharepoint",

@@ -19,9 +19,7 @@ Generated from Cargo metadata by `xtask crate-catalog v1`.
 | `sim-lib-mail` | `false` | `custom-build, lib` | Mail and calendar domain model for SIM office documents. |
 | `sim-lib-office-pack` | `false` | `custom-build, lib` | Annual accounts pack planner for SIM office documents. |
 | `sim-lib-sheet` | `false` | `custom-build, lib` | Exact spreadsheet domain model for SIM office documents. |
-| `sim-site-dalux` | `false` | `custom-build, lib` | Dalux API-identity site placement for SIM office documents. |
 | `sim-site-libreoffice` | `false` | `custom-build, lib` | LibreOffice helper-process site for SIM office documents. |
 | `sim-site-msgraph` | `false` | `custom-build, lib` | Microsoft Graph site adapter for SIM office documents. |
-| `sim-site-powerproject` | `false` | `custom-build, lib` | Powerproject and Project for the web site placement for SIM Gantt documents. |
 | `sim-site-sharepoint` | `false` | `custom-build, lib` | SharePoint Graph site placement for SIM office documents. |
 | `xtask` | `false` | `bin` | SIM workspace package for xtask. |

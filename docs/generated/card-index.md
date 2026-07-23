@@ -5,7 +5,6 @@
 | Card | Kind | Owner | Summary |
 | --- | --- | --- | --- |
 | `browse/catalog` | `browse-root` | `workspace` | root browse catalog |
-| `cookbook/office/dalux-site` | `cookbook-recipe` | `sim-site-dalux` | Modeled Dalux project item reads with API identity live gates. |
 | `cookbook/office/deck` | `cookbook-recipe` | `sim-lib-deck` | Local decks with slides, bullets, tables, and image references. |
 | `cookbook/office/doc-core` | `cookbook-recipe` | `sim-lib-doc-core` | Office document model and kind-shape descriptors. |
 | `cookbook/office/doc-ledger` | `cookbook-recipe` | `sim-lib-doc-ledger` | Preview ledger draft posting from office evidence. |
@@ -20,7 +19,6 @@
 | `cookbook/office/odf` | `cookbook-recipe` | `sim-codec-odf` | Local .ods and .odp packages for sheet and deck documents. |
 | `cookbook/office/ooxml` | `cookbook-recipe` | `sim-codec-ooxml` | Local .xlsx and .pptx packages for sheet and deck documents. |
 | `cookbook/office/pack` | `cookbook-recipe` | `sim-lib-office-pack` | Preview annual accounts exports before live mail or archive actions. |
-| `cookbook/office/powerproject-site` | `cookbook-recipe` | `sim-site-powerproject` | Powerproject and Project for the web placements for Gantt plans. |
 | `cookbook/office/sharepoint-site` | `cookbook-recipe` | `sim-site-sharepoint` | Modeled SharePoint list, drive, and REST fallback operations. |
 | `cookbook/office/sheet` | `cookbook-recipe` | `sim-lib-sheet` | Exact local sheets and open cell edits. |
 | `registry/catalog` | `browse-registry` | `workspace` | registry catalog browse card |

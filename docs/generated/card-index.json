@@ -1,17 +1,11 @@
 {
-  "card_count": 19,
+  "card_count": 18,
   "cards": [
     {
       "id": "browse/catalog",
       "kind": "browse-root",
       "owner": "workspace",
       "summary": "root browse catalog"
-    },
-    {
-      "id": "cookbook/office/dalux-site",
-      "kind": "cookbook-recipe",
-      "owner": "sim-site-dalux",
-      "summary": "Modeled Dalux project item reads with API identity live gates."
     },
     {
       "id": "cookbook/office/deck",

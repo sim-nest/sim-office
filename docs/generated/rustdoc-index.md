@@ -17,9 +17,7 @@
 | `sim-lib-mail` | `workspace` | Mail and calendar domain for SIM office documents. |
 | `sim-lib-office-pack` | `workspace` | Annual accounts pack planner for SIM office documents. |
 | `sim-lib-sheet` | `workspace` | Exact spreadsheet domain for SIM office documents. |
-| `sim-site-dalux` | `workspace` | Dalux API-identity site adapter for SIM office documents. |
 | `sim-site-libreoffice` | `workspace` | LibreOffice helper-process site for office documents. |
 | `sim-site-msgraph` | `workspace` | Microsoft Graph site adapter for SIM office documents. |
-| `sim-site-powerproject` | `workspace` | Powerproject and Project for the web placement for SIM Gantt documents. |
 | `sim-site-sharepoint` | `workspace` | SharePoint placement through Microsoft Graph. |
 | `xtask` | `workspace` | SIM workspace package for xtask. |
