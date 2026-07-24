@@ -21,7 +21,6 @@ without learning office-file enums.
 | `sim-lib-office-pack` | Annual accounts pack previews for spreadsheets, decks, mail drafts, and archives. |
 | `sim-lib-sheet` | Exact local spreadsheet records, formulas, document projection, and cell edits. |
 | `sim-site-msgraph` | Microsoft Graph site adapter with modeled cassettes and gated live reads. |
-| `sim-site-powerproject` | Powerproject and Project for the web placements for Gantt documents. |
 | `sim-site-sharepoint` | SharePoint Graph list and drive placement for office documents. |
 
 ## Documentation

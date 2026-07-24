@@ -1,6 +1,6 @@
 {
   "generator": "xtask crate-catalog v1",
-  "package_count": 19,
+  "package_count": 17,
   "packages": [
     {
       "description": "ODF spreadsheet and presentation codecs for SIM office documents.",
@@ -172,19 +172,6 @@
       ]
     },
     {
-      "description": "Dalux API-identity site placement for SIM office documents.",
-      "generated_readme": false,
-      "manifest": "crates/sim-site-dalux/Cargo.toml",
-      "name": "sim-site-dalux",
-      "publish": "false",
-      "readme": "crates/sim-site-dalux/README.md",
-      "root": "crates/sim-site-dalux",
-      "target_kinds": [
-        "custom-build",
-        "lib"
-      ]
-    },
-    {
       "description": "LibreOffice helper-process site for SIM office documents.",
       "generated_readme": false,
       "manifest": "crates/sim-site-libreoffice/Cargo.toml",
@@ -205,19 +192,6 @@
       "publish": "false",
       "readme": "crates/sim-site-msgraph/README.md",
       "root": "crates/sim-site-msgraph",
-      "target_kinds": [
-        "custom-build",
-        "lib"
-      ]
-    },
-    {
-      "description": "Powerproject and Project for the web site placement for SIM Gantt documents.",
-      "generated_readme": false,
-      "manifest": "crates/sim-site-powerproject/Cargo.toml",
-      "name": "sim-site-powerproject",
-      "publish": "false",
-      "readme": "crates/sim-site-powerproject/README.md",
-      "root": "crates/sim-site-powerproject",
       "target_kinds": [
         "custom-build",
         "lib"

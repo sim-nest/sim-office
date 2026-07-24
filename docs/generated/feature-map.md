@@ -17,9 +17,7 @@
 | `sim-lib-mail` | `workspace` | 0 | 0 |
 | `sim-lib-office-pack` | `workspace` | 0 | 0 |
 | `sim-lib-sheet` | `workspace` | 0 | 0 |
-| `sim-site-dalux` | `workspace` | 0 | 0 |
 | `sim-site-libreoffice` | `workspace` | 0 | 0 |
 | `sim-site-msgraph` | `workspace` | 0 | 0 |
-| `sim-site-powerproject` | `workspace` | 2 | 0 |
 | `sim-site-sharepoint` | `workspace` | 0 | 0 |
 | `xtask` | `workspace` | 0 | 0 |

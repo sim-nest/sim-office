@@ -93,13 +93,6 @@
       "summary": "Exact spreadsheet domain for SIM office documents."
     },
     {
-      "crate_name": "sim_site_dalux",
-      "group": "workspace",
-      "manifest": "crates/sim-site-dalux/Cargo.toml",
-      "package": "sim-site-dalux",
-      "summary": "Dalux API-identity site adapter for SIM office documents."
-    },
-    {
       "crate_name": "sim_site_libreoffice",
       "group": "workspace",
       "manifest": "crates/sim-site-libreoffice/Cargo.toml",
@@ -112,13 +105,6 @@
       "manifest": "crates/sim-site-msgraph/Cargo.toml",
       "package": "sim-site-msgraph",
       "summary": "Microsoft Graph site adapter for SIM office documents."
-    },
-    {
-      "crate_name": "sim_site_powerproject",
-      "group": "workspace",
-      "manifest": "crates/sim-site-powerproject/Cargo.toml",
-      "package": "sim-site-powerproject",
-      "summary": "Powerproject and Project for the web placement for SIM Gantt documents."
     },
     {
       "crate_name": "sim_site_sharepoint",

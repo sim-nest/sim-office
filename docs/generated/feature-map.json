@@ -69,33 +69,12 @@
     {
       "features": [],
       "group": "workspace",
-      "package": "sim-site-dalux"
-    },
-    {
-      "features": [],
-      "group": "workspace",
       "package": "sim-site-libreoffice"
     },
     {
       "features": [],
       "group": "workspace",
       "package": "sim-site-msgraph"
-    },
-    {
-      "features": [
-        {
-          "edges": [],
-          "name": "default",
-          "workspace_edges": []
-        },
-        {
-          "edges": [],
-          "name": "powerproject-ole",
-          "workspace_edges": []
-        }
-      ],
-      "group": "workspace",
-      "package": "sim-site-powerproject"
     },
     {
       "features": [],

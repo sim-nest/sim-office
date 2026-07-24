@@ -20,7 +20,8 @@ This generated lane consumes `docs/generated/sim-index-fragment.sx`. Global inde
 | `feature/sim-office/generated-docs` | `crate/xtask` | 0 | Publish generated package, card, recipe, and index facts for office documents, sites, and codecs. |
 | `feature/sim-office/document-codecs` | `crate/sim-lib-office-pack` | 1 | Round-trip OOXML, ODF, deck, sheet, and markup documents through office codec recipes. |
 | `feature/sim-office/document-surfaces` | `crate/sim-lib-doc-surface` | 1 | Project document, markup, and suite descriptors into view surfaces for review and editing. |
-| `feature/sim-office/office-site-workflows` | `crate/sim-lib-doc-site` | 1 | Model document stores, mail and calendar summaries, planning data, and enterprise site reads. |
+| `feature/sim-office/sheet-calculation` | `crate/sim-lib-sheet` | 1 | Evaluate local sheet formulas over exact rational cells with incremental dependency tracking and cutoff. |
+| `feature/sim-office/office-site-workflows` | `crate/sim-lib-doc-site` | 0 | Model document stores, mail and calendar summaries, and enterprise office site reads. |
 
 ## Surfaces
 
@@ -107,11 +108,6 @@ This generated lane consumes `docs/generated/sim-index-fragment.sx`. Global inde
 - `crates/sim-lib-sheet/recipes/01-basics/exact-sheet-formula/recipe.toml`
 - `crates/sim-lib-sheet/recipes/01-basics/exact-sheet-formula/setup.siml`
 - `crates/sim-lib-sheet/recipes/book.toml`
-- `crates/sim-site-dalux/recipes/01-basics/chapter.toml`
-- `crates/sim-site-dalux/recipes/01-basics/dalux-modeled-items/purpose.md`
-- `crates/sim-site-dalux/recipes/01-basics/dalux-modeled-items/recipe.toml`
-- `crates/sim-site-dalux/recipes/01-basics/dalux-modeled-items/setup.siml`
-- `crates/sim-site-dalux/recipes/book.toml`
 - `crates/sim-site-libreoffice/recipes/01-basics/chapter.toml`
 - `crates/sim-site-libreoffice/recipes/01-basics/libreoffice-helper-modeled/purpose.md`
 - `crates/sim-site-libreoffice/recipes/01-basics/libreoffice-helper-modeled/recipe.toml`
@@ -122,11 +118,6 @@ This generated lane consumes `docs/generated/sim-index-fragment.sx`. Global inde
 - `crates/sim-site-msgraph/recipes/01-basics/msgraph-modeled-read/recipe.toml`
 - `crates/sim-site-msgraph/recipes/01-basics/msgraph-modeled-read/setup.siml`
 - `crates/sim-site-msgraph/recipes/book.toml`
-- `crates/sim-site-powerproject/recipes/01-basics/chapter.toml`
-- `crates/sim-site-powerproject/recipes/01-basics/powerproject-placement/purpose.md`
-- `crates/sim-site-powerproject/recipes/01-basics/powerproject-placement/recipe.toml`
-- `crates/sim-site-powerproject/recipes/01-basics/powerproject-placement/setup.siml`
-- `crates/sim-site-powerproject/recipes/book.toml`
 - `crates/sim-site-sharepoint/recipes/01-basics/chapter.toml`
 - `crates/sim-site-sharepoint/recipes/01-basics/sharepoint-graph-read/purpose.md`
 - `crates/sim-site-sharepoint/recipes/01-basics/sharepoint-graph-read/recipe.toml`
@@ -556,170 +547,143 @@ mod tests {
 }
 ```
 
-### `feature/sim-office/office-site-workflows`
+### `feature/sim-office/sheet-calculation`
 
-Specimen `spec-test/sim-office/crates/sim-site-dalux/src/tests` is checked by `cargo test`.
+Specimen `spec-test/sim-office/crates/sim-lib-sheet/src/tests` is checked by `cargo test`.
 
-Source `crates/sim-site-dalux/src/tests.rs`:
+Source `crates/sim-lib-sheet/src/tests.rs`:
 
 ```rust
-use std::sync::Arc;
+// conformance: sheet formulas reuse incremental dependency tracking and exact recomputation parity.
 
-use serde_json::json;
-use sim_kernel::{Cx, DefaultFactory, ExportKind, ExportState, NoopEvalPolicy, RuntimeId};
-use sim_lib_doc_core::{CREDENTIALS_CAPABILITY, NET_CONNECT_CAPABILITY};
-use sim_lib_doc_site::site_symbol;
+use sim_kernel::testing::bare_cx as cx;
 
-use crate::*;
+use crate::{
+    CellRef, CellValue, Sheet, SheetError, SheetFormulaEngine, eval_formula, rational_from_str,
+    rational_to_canonical,
+};
 
-// conformance: office site workflows model site placement and document exchange.
-
-fn test_context() -> Cx {
-    Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
+fn cell(text: &str) -> CellRef {
+    CellRef::parse(text).unwrap()
 }
 
-fn text_at(sheet: &sim_lib_sheet::Sheet, cell: &str) -> String {
-    match sheet.cell(&sim_lib_sheet::CellRef::parse(cell).unwrap()) {
-        sim_lib_sheet::CellValue::Text(value) => value,
-        other => panic!("expected text at {cell}, got {other:?}"),
+fn number(cx: &mut sim_kernel::Cx, text: &str) -> CellValue {
+    CellValue::Number(rational_from_str(cx, text).unwrap())
+}
+
+fn canonical(cx: &mut sim_kernel::Cx, value: CellValue) -> String {
+    let CellValue::Number(value) = value else {
+        panic!("expected number");
+    };
+    rational_to_canonical(cx, &value).unwrap()
+}
+
+#[test]
+fn formula_addition_keeps_exact_rationals() {
+    let mut cx = cx();
+    let mut sheet = Sheet::new("Sheet1");
+    sheet.set_cell(cell("A1"), number(&mut cx, "1"));
+    sheet.set_cell(cell("B1"), number(&mut cx, "5/2"));
+
+    let value = eval_formula(&mut cx, &sheet, "=A1+B1").unwrap();
+
+    assert_eq!(canonical(&mut cx, value), "7/2");
+}
+
+#[test]
+fn incremental_engine_invalidates_formula_dependencies() {
+    let mut cx = cx();
+    let mut sheet = Sheet::new("Sheet1");
+    sheet.set_cell(cell("A1"), number(&mut cx, "1"));
+    sheet.set_cell(cell("B1"), CellValue::Formula("=A1*2".to_owned()));
+    let mut engine = SheetFormulaEngine::from_sheet(&mut cx, &sheet).unwrap();
+
+    let value = engine.eval_formula(&mut cx, "=B1+1").unwrap();
+    assert_eq!(canonical(&mut cx, value), "3/1");
+
+    let next = number(&mut cx, "4");
+    sheet.set_cell(cell("A1"), next.clone());
+    engine.set_cell(&mut cx, cell("A1"), next).unwrap();
+
+    let value = engine.eval_formula(&mut cx, "=B1+1").unwrap();
+    assert_eq!(canonical(&mut cx, value), "9/1");
+}
+
+#[test]
+fn cycle_error_names_repeated_cell() {
+    let mut cx = cx();
+    let mut sheet = Sheet::new("Sheet1");
+    sheet.set_cell(cell("A1"), CellValue::Formula("=B1+1".to_owned()));
+    sheet.set_cell(cell("B1"), CellValue::Formula("=A1+1".to_owned()));
+    let mut engine = SheetFormulaEngine::from_sheet(&mut cx, &sheet).unwrap();
+
+    let err = engine.eval_formula(&mut cx, "=A1").unwrap_err();
+
+    let SheetError::FormulaCycle(cycle_cell) = err else {
+        panic!("expected formula cycle");
+    };
+    assert_eq!(cycle_cell, cell("A1"));
+}
+
+#[test]
+fn value_cutoff_preserves_downstream_revision() {
+    let mut cx = cx();
+    let mut sheet = Sheet::new("Sheet1");
+    sheet.set_cell(cell("B1"), number(&mut cx, "1"));
+    sheet.set_cell(cell("A1"), CellValue::Formula("=B1-B1".to_owned()));
+    sheet.set_cell(cell("C1"), CellValue::Formula("=A1+1".to_owned()));
+    let mut engine = SheetFormulaEngine::from_sheet(&mut cx, &sheet).unwrap();
+
+    let value = engine.eval_formula(&mut cx, "=C1").unwrap();
+    assert_eq!(canonical(&mut cx, value), "1/1");
+    let c1_revision = engine.cell_memo_revision(&cell("C1")).unwrap();
+
+    let next = number(&mut cx, "2");
+    sheet.set_cell(cell("B1"), next.clone());
+    engine.set_cell(&mut cx, cell("B1"), next).unwrap();
+
+    let value = engine.eval_formula(&mut cx, "=C1").unwrap();
+    assert_eq!(canonical(&mut cx, value), "1/1");
+    assert_eq!(engine.cell_memo_revision(&cell("C1")), Some(c1_revision));
+}
+
+#[test]
+fn missing_cell_errors_recheck_after_cell_is_added() {
+    let mut cx = cx();
+    let mut engine = SheetFormulaEngine::new();
+
+    let err = engine.eval_formula(&mut cx, "=A1").unwrap_err();
+    let SheetError::NonNumericCell(missing_cell) = err else {
+        panic!("expected nonnumeric cell");
+    };
+    assert_eq!(missing_cell, cell("A1"));
+
+    let value = number(&mut cx, "7");
+    engine.set_cell(&mut cx, cell("A1"), value).unwrap();
+    let value = engine.eval_formula(&mut cx, "=A1").unwrap();
+
+    assert_eq!(canonical(&mut cx, value), "7/1");
+}
+
+#[test]
+fn repeated_edits_match_full_recomputation() {
+    let mut cx = cx();
+    let mut sheet = Sheet::new("Sheet1");
+    sheet.set_cell(cell("A1"), number(&mut cx, "1"));
+    sheet.set_cell(cell("B1"), CellValue::Formula("=A1*2".to_owned()));
+    sheet.set_cell(cell("C1"), CellValue::Formula("=B1+3".to_owned()));
+    let mut engine = SheetFormulaEngine::from_sheet(&mut cx, &sheet).unwrap();
+
+    for literal in ["2", "5", "13"] {
+        let next = number(&mut cx, literal);
+        sheet.set_cell(cell("A1"), next.clone());
+        engine.set_cell(&mut cx, cell("A1"), next).unwrap();
+
+        let incremental_value = engine.eval_formula(&mut cx, "=C1").unwrap();
+        let incremental = canonical(&mut cx, incremental_value);
+        let full_value = eval_formula(&mut cx, &sheet, "=C1").unwrap();
+        let full = canonical(&mut cx, full_value);
+        assert_eq!(incremental, full);
     }
-}
-
-#[test]
-fn live_site_carries_dalux_capabilities() {
-    let site = live_dalux_site();
-    let caps: Vec<_> = site
-        .required_caps
-        .iter()
-        .map(|capability| capability.as_str().to_owned())
-        .collect();
-
-    assert_eq!(site.site_id, DALUX_SITE_ID);
-    assert!(!site.default_modeled);
-    assert_eq!(caps, vec![NET_CONNECT_CAPABILITY, CREDENTIALS_CAPABILITY]);
-}
-
-#[test]
-fn site_registers_as_export_site() {
-    let mut cx = test_context();
-
-    let record = register_dalux_site(&mut cx, true).unwrap();
-
-    assert_eq!(record.kind, ExportKind::named(ExportKind::SITE));
-    assert_eq!(record.symbol, site_symbol(DALUX_SITE_ID));
-    assert!(matches!(
-        record.state,
-        ExportState::Resolved {
-            id: RuntimeId::Site(_)
-        }
-    ));
-    assert!(
-        cx.registry()
-            .site_by_symbol(&site_symbol(DALUX_SITE_ID))
-            .is_some()
-    );
-}
-
-#[test]
-fn recipes_are_embedded() {
-    let cards = sim_cookbook::recipes_from_embedded(RECIPES).unwrap();
-
-    assert!(
-        cards
-            .iter()
-            .any(|card| card.id.ends_with("dalux-modeled-items"))
-    );
-}
-
-#[test]
-fn company_api_key_provider_is_rejected() {
-    let provider = StaticDaluxCredentialProvider::company_api_key("old-key");
-
-    assert!(matches!(
-        provider.access_token(),
-        Err(DaluxError::CompanyApiKeyUnsupported)
-    ));
-}
-
-#[test]
-fn modeled_project_items_become_dalux_doc() {
-    let mut cx = test_context();
-    let client = DaluxClient::modeled(
-        ModeledDalux::with_json(
-            "/projects/project-1/items",
-            json!({
-                "items": [
-                    {
-                        "id": "item-1",
-                        "title": "Door review",
-                        "status": "open",
-                        "location": "Level 2",
-                        "note": "Check frame",
-                        "updatedAt": "2026-07-13T10:00:00Z",
-                        "webUrl": "https://example.com/dalux/items/item-1"
-                    }
-                ]
-            }),
-        ),
-        StaticDaluxCredentialProvider::new("token-1"),
-    );
-
-    let doc = get_project_items(&mut cx, &client, "project-1").unwrap();
-    let sheet = sim_lib_sheet::doc_to_sheet(&mut cx, &doc).unwrap();
-
-    assert_eq!(doc.id.as_str(), "site/dalux/projects/project-1/items");
-    assert_eq!(text_at(&sheet, "A2"), "item-1");
-    assert_eq!(text_at(&sheet, "B2"), "Door review");
-}
-
-#[test]
-fn modeled_patch_sends_only_note_field() {
-    let mut cx = test_context();
-    let client = DaluxClient::modeled(
-        ModeledDalux::new().with_patch(
-            "/items/item-1",
-            json!({ "note": "Reviewed in SIM" }),
-            ModeledResponse::ok(json!({
-                "id": "item-1",
-                "updatedAt": "2026-07-13T11:00:00Z",
-                "webUrl": "https://example.com/dalux/items/item-1"
-            })),
-        ),
-        StaticDaluxCredentialProvider::new("token-1"),
-    );
-
-    let external = patch_item_note(&mut cx, &client, "item-1", "Reviewed in SIM").unwrap();
-
-    assert_eq!(external.backend, DALUX_SITE_ID);
-    assert_eq!(external.external_id, "items/item-1");
-    assert_eq!(external.version.as_deref(), Some("2026-07-13T11:00:00Z"));
-}
-
-#[test]
-fn errors_redact_tokens_and_long_project_names() {
-    let mut cx = test_context();
-    let token = "redacted-value";
-    let long_name = format!("project-{}", "x".repeat(140));
-    let client = DaluxClient::modeled(
-        ModeledDalux::with_status(
-            "/projects/project-1/items",
-            403,
-            json!({
-                "token": token,
-                "projectName": long_name,
-                "message": "denied"
-            }),
-        ),
-        StaticDaluxCredentialProvider::new(token),
-    );
-
-    let error = get_project_items(&mut cx, &client, "project-1")
-        .unwrap_err()
-        .to_string();
-
-    assert!(!error.contains(token));
-    assert!(!error.contains(&long_name));
-    assert!(error.contains("[redacted-token]"));
-    assert!(error.contains("[redacted-long-field]"));
 }
 ```
