@@ -95,6 +95,23 @@ claims_specimens = [
 ]
 
 [[feature]]
+id = "feature/sim-office/sheet-calculation"
+title = "Sheet calculation"
+summary = "Evaluate local sheet formulas over exact rational cells with incremental dependency tracking and cutoff."
+owner = "crate/sim-lib-sheet"
+audiences = ["user", "code", "framework"]
+guidance = "Use this row when calculating local sheet formulas or reusing exact sheet dependencies across repeated edits."
+claims_anchors = [
+  "anchor/crate/sim-lib-sheet",
+  "anchor/card/cookbook/office/sheet",
+  "anchor/rustdoc/sim-lib-sheet/eval_formula",
+  "anchor/rustdoc/sim-lib-sheet/sheet-formula-engine",
+]
+claims_specimens = [
+  "spec-test/sim-office/crates/sim-lib-sheet/src/tests",
+]
+
+[[feature]]
 id = "feature/sim-office/office-site-workflows"
 title = "Office site workflows"
 summary = "Model document stores, mail and calendar summaries, and enterprise office site reads."
@@ -124,4 +141,14 @@ steps = [
   { feature = "feature/sim-office/document-surfaces", why = "The surface row renders the document into a reviewable view." },
   { feature = "feature/sim-office/office-site-workflows", why = "The site row connects the document to modeled workplace sources." },
   { specimen = "recipe/sim-office/crates/sim-lib-doc-surface/01-basics/suite-surface-descriptor", why = "The suite-surface recipe is the shortest surface example." },
+]
+
+[[route]]
+id = "route/calculate-sheet"
+task = "Calculate a sheet"
+audiences = ["user", "code", "framework"]
+steps = [
+  { feature = "feature/sim-office/sheet-calculation", why = "The sheet row binds sparse cells and exact formula syntax to the incremental core." },
+  { specimen = "recipe/sim-office/crates/sim-lib-sheet/01-basics/exact-sheet-formula", why = "The recipe shows exact rational formula input and output." },
+  { specimen = "spec-test/sim-office/crates/sim-lib-sheet/src/tests", why = "The checked tests exercise invalidation, cycle paths, cutoff, and repeated-edit parity." },
 ]
