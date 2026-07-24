@@ -16,7 +16,7 @@ sim-kernel = { version = "0.1.0" }
 sim-lib-deck = { version = "0.1.0", path = "../sim-lib-deck" }
 sim-lib-doc-core = { version = "0.1.0", path = "../sim-lib-doc-core" }
 sim-lib-sheet = { version = "0.1.0", path = "../sim-lib-sheet" }
-zip = { version = "=2.4.2", default-features = false, features = ["deflate"] }
+zip = { version = "=8.6.0", default-features = false, features = ["deflate"] }
 
 [build-dependencies]
 sim-cookbook = { version = "0.1.0" }

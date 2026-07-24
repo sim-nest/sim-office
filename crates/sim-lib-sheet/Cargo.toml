@@ -10,7 +10,7 @@ repository = "https://github.com/sim-nest/sim-office"
 homepage = "https://github.com/sim-nest/sim-office"
 
 [dependencies]
-num-bigint = "0.4"
+num-bigint = "0.5"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sim-cookbook = { version = "0.1.0" }
