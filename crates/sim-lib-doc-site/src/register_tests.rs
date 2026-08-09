@@ -7,6 +7,8 @@ use sim_value::build::entry;
 
 use crate::{DOC_SITE_DOMAIN, SiteOp, SiteReply, realize_site_op, register_site, site_symbol};
 
+// conformance: office sites register and realize modeled operations through EvalFabric.
+
 fn modeled_site() -> DocSite {
     DocSite::new(
         "site/msgraph",

@@ -82,7 +82,6 @@ claims_anchors = [
   "anchor/crate/sim-lib-doc-core",
   "anchor/crate/sim-lib-doc-ledger",
   "anchor/crate/sim-lib-doc-surface",
-  "anchor/crate/sim-lib-sheet",
   "anchor/export/sim-lib-doc-surface/view-default",
 ]
 claims_surfaces = [
@@ -130,6 +129,9 @@ claims_anchors = [
   "anchor/export/sim-site-libreoffice/site/libreoffice",
   "anchor/export/sim-site-msgraph/site/msgraph",
   "anchor/export/sim-site-sharepoint/site/sharepoint",
+]
+claims_specimens = [
+  "spec-test/sim-office/crates/sim-lib-doc-site/src/register_tests",
 ]
 
 [[route]]
