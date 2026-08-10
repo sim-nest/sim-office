@@ -330,26 +330,14 @@ mod tests {
 
     #[test]
     fn helper_errors_redact_non_temp_paths() {
-        let mut cx = cx_with_process_spawn();
-        let helper = fake_helper(
-            "error",
-            r#"{"error":"could not open /home/bo/private/file.ods"}"#,
-        );
-        let site = LibreOfficeSite::new(helper.path());
-
-        let err = run_uno_inner(
-            &mut cx,
-            &site,
-            UnoCommand::Open {
-                path: PathBuf::from("/home/bo/private/file.ods"),
-            },
-            true,
-        )
-        .unwrap_err();
+        let path = PathBuf::from("/home/bo/private/file.ods");
+        let site = LibreOfficeSite::new(temp_path("helper"));
+        let cmd = UnoCommand::Open { path: path.clone() };
+        let err = helper_error(&site, &cmd, format!("could not open {}", path.display()));
         let rendered = err.to_string();
 
         assert!(rendered.contains("<redacted-path>"));
-        assert!(!rendered.contains("/home/bo/private/file.ods"));
+        assert!(!rendered.contains(&path.display().to_string()));
     }
 
     #[test]
