@@ -259,13 +259,16 @@ fn path_is_in_temp(path: &Path) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use std::fs;
+    use std::fs::{self, OpenOptions};
     use std::sync::Arc;
+    use std::sync::atomic::{AtomicU64, Ordering};
     use std::time::{SystemTime, UNIX_EPOCH};
 
     use sim_kernel::{DefaultFactory, NoopEvalPolicy};
 
     use super::*;
+
+    static TEMP_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
     fn cx_with_process_spawn() -> Cx {
         let (mut cx, seat) = Cx::new_seated(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory));
@@ -284,7 +287,7 @@ mod tests {
             "receipt",
             r#"{"backend":"site/libreoffice","external_id":"pdf:out","version":"1","web_url":null}"#,
         );
-        let site = LibreOfficeSite::new(&helper);
+        let site = LibreOfficeSite::new(helper.path());
         let doc = ExternalRef::new("codec/odf", "opened:1", None, None);
 
         let receipt = run_uno_inner(
@@ -332,7 +335,7 @@ mod tests {
             "error",
             r#"{"error":"could not open /home/bo/private/file.ods"}"#,
         );
-        let site = LibreOfficeSite::new(&helper);
+        let site = LibreOfficeSite::new(helper.path());
 
         let err = run_uno_inner(
             &mut cx,
@@ -363,12 +366,35 @@ mod tests {
         assert!(!redacted.contains(&arbitrary_temp.display().to_string()));
     }
 
-    fn fake_helper(name: &str, reply: &str) -> PathBuf {
+    struct FakeHelper {
+        path: PathBuf,
+    }
+
+    impl FakeHelper {
+        fn path(&self) -> &Path {
+            &self.path
+        }
+    }
+
+    impl Drop for FakeHelper {
+        fn drop(&mut self) {
+            let _ = fs::remove_file(&self.path);
+        }
+    }
+
+    fn fake_helper(name: &str, reply: &str) -> FakeHelper {
         let path = temp_path(&format!("{name}-helper.sh"));
         let script = format!("#!/bin/sh\nread _line\nprintf '%s\\n' '{reply}'\n");
-        fs::write(&path, script).unwrap();
+        let mut file = OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&path)
+            .unwrap();
+        file.write_all(script.as_bytes()).unwrap();
+        file.sync_all().unwrap();
+        drop(file);
         make_executable(&path);
-        path
+        FakeHelper { path }
     }
 
     fn temp_path(name: &str) -> PathBuf {
@@ -376,7 +402,11 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        std::env::temp_dir().join(format!("{OWNED_TEMP_PREFIX}{stamp}-{name}"))
+        let sequence = TEMP_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+        std::env::temp_dir().join(format!(
+            "{OWNED_TEMP_PREFIX}{}-{stamp}-{sequence}-{name}",
+            std::process::id()
+        ))
     }
 
     #[cfg(unix)]
