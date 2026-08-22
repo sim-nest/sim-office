@@ -16,7 +16,7 @@ sim-kernel = { version = "0.2.0" }
 zip = { version = "=2.4.2", default-features = false, features = ["deflate"] }
 
 [build-dependencies]
-sim-cookbook = { version = "0.2.0" }
+sim-cookbook-build = { version = "0.1.0" }
 
 [dev-dependencies]
 serde_json = "1"

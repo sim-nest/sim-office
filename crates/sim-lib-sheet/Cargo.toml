@@ -20,7 +20,7 @@ sim-lib-doc-core = { version = "0.1.0", path = "../sim-lib-doc-core" }
 sim-lib-numbers-rational = { version = "0.3.1" }
 
 [build-dependencies]
-sim-cookbook = { version = "0.2.0" }
+sim-cookbook-build = { version = "0.1.0" }
 
 [lints]
 workspace = true

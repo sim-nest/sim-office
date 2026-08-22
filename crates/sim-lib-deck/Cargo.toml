@@ -16,7 +16,7 @@ sim-lib-doc-core = { version = "0.1.0", path = "../sim-lib-doc-core" }
 zip = { version = "=2.4.2", default-features = false }
 
 [build-dependencies]
-sim-cookbook = { version = "0.2.0" }
+sim-cookbook-build = { version = "0.1.0" }
 
 [lints]
 workspace = true

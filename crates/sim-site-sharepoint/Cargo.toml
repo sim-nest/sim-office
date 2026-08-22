@@ -19,7 +19,7 @@ sim-lib-sheet = { version = "0.1.0", path = "../sim-lib-sheet" }
 sim-site-msgraph = { version = "0.1.0", path = "../sim-site-msgraph" }
 
 [build-dependencies]
-sim-cookbook = { version = "0.2.0" }
+sim-cookbook-build = { version = "0.1.0" }
 
 [lints]
 workspace = true

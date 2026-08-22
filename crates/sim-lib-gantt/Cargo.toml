@@ -18,7 +18,7 @@ thiserror = "1"
 time = "0.3"
 
 [build-dependencies]
-sim-cookbook = { version = "0.2.0" }
+sim-cookbook-build = { version = "0.1.0" }
 
 [dev-dependencies]
 tempfile = "3"
