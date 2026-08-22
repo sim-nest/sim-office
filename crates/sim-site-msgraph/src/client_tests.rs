@@ -5,9 +5,16 @@ use sim_kernel::{Cx, DefaultFactory, NoopEvalPolicy};
 use sim_lib_doc_core::NET_CONNECT_CAPABILITY;
 
 use crate::{
-    Cassette, GraphError, GraphMode, StaticTokenProvider,
+    Cassette, GraphError, GraphMode, GraphPort, GraphRequest, GraphResponse, StaticTokenProvider,
     client::{graph_get, graph_get_bytes, graph_post, redacted_body},
 };
+
+struct UnusedTransport;
+impl GraphPort for UnusedTransport {
+    fn send(&self, _: &GraphRequest) -> Result<GraphResponse, GraphError> {
+        panic!("capability denial must precede transport")
+    }
+}
 
 fn test_context() -> Cx {
     Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
@@ -86,6 +93,7 @@ fn live_mode_is_denied_without_network_capability() {
     let mode = GraphMode::Live {
         base_url: "https://graph.microsoft.com/v1.0".to_owned(),
         token_provider: StaticTokenProvider::new("secret-token"),
+        transport: Arc::new(UnusedTransport),
     };
 
     let error = graph_get(&mut cx, &mode, "/me/drive/root").unwrap_err();

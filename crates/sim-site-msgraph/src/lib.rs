@@ -13,8 +13,8 @@ mod client_tests;
 
 pub use auth::{StaticTokenProvider, TokenProvider};
 pub use client::{
-    GRAPH_DEFAULT_SCOPE, GRAPH_LIVE_ENV, GraphError, GraphMode, graph_get, graph_get_bytes,
-    graph_post,
+    GRAPH_DEFAULT_SCOPE, GraphError, GraphMethod, GraphMode, GraphPort, GraphRequest,
+    GraphResponse, graph_get, graph_get_bytes, graph_post,
 };
 pub use modeled::{Cassette, CassetteBytesResponse, CassetteResponse};
 pub use site::{

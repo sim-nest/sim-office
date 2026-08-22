@@ -21,7 +21,7 @@ This generated lane consumes `docs/generated/sim-index-fragment.sx`. Global inde
 | `feature/sim-office/document-codecs` | `crate/sim-lib-office-pack` | 1 | Round-trip OOXML, ODF, deck, sheet, and markup documents through office codec recipes. |
 | `feature/sim-office/document-surfaces` | `crate/sim-lib-doc-surface` | 1 | Project document, markup, and suite descriptors into view surfaces for review and editing. |
 | `feature/sim-office/sheet-calculation` | `crate/sim-lib-sheet` | 1 | Evaluate local sheet formulas over exact rational cells with incremental dependency tracking and cutoff. |
-| `feature/sim-office/office-site-workflows` | `crate/sim-lib-doc-site` | 1 | Model document stores, mail and calendar summaries, and enterprise office site reads. |
+| `feature/sim-office/office-site-workflows` | `crate/sim-lib-doc-site` | 1 | Run portable document, mail, Graph, SharePoint, and LibreOffice workflows over modeled or explicitly supplied platform ports. |
 
 ## Surfaces
 

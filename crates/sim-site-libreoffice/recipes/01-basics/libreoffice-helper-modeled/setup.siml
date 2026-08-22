@@ -3,5 +3,8 @@
   [operation register-helper]
   [site site/libreoffice]
   [requires process-spawn]
+  [mounts (mount/helper mount/input mount/output)]
+  [process-port platform/process]
+  [ipc-port nil]
   [default modeled]
   [mode modeled])

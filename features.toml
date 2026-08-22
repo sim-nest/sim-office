@@ -113,10 +113,10 @@ claims_specimens = [
 [[feature]]
 id = "feature/sim-office/office-site-workflows"
 title = "Office site workflows"
-summary = "Model document stores, mail and calendar summaries, and enterprise office site reads."
+summary = "Run portable document, mail, Graph, SharePoint, and LibreOffice workflows over modeled or explicitly supplied platform ports."
 owner = "crate/sim-lib-doc-site"
 audiences = ["user", "code"]
-guidance = "Use this row when connecting office documents to modeled mail, Graph, SharePoint, LibreOffice, or file-backed sites."
+guidance = "Keep ODF, Doc, Sheet, Deck, surface, and site policy here. Compose LibreOffice with supplied mounts plus ProcessPort or IpcPort, and Graph with a supplied GraphPort; use modeled services in portable tests and platform capsule evidence for physical helpers, sockets, TLS, and local IPC."
 claims_anchors = [
   "anchor/crate/sim-lib-doc-site",
   "anchor/crate/sim-lib-doc-store",

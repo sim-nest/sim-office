@@ -1,149 +1,233 @@
-//! Line-delimited JSON bridge to a LibreOffice UNO helper process.
+//! Portable request boundary for a LibreOffice UNO helper.
 
-use std::io::{BufRead, BufReader, Write};
-use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
-
+use crate::site::LIBREOFFICE_SITE_ID;
 use serde::{Deserialize, Serialize};
 use sim_kernel::{CapabilityName, Cx};
 use sim_lib_doc_core::{ExternalRef, OfficeError, PROCESS_SPAWN_CAPABILITY};
+use sim_lib_exec::{ProcessCancellation, ProcessError, ProcessPort, ProcessRequest};
+use sim_transport_ports::{IpcAddress, IpcPort, TransportErrorKind};
+use std::{
+    collections::BTreeMap,
+    io::{BufRead, BufReader, Write},
+    path::PathBuf,
+};
 
-use crate::site::LIBREOFFICE_SITE_ID;
-
-/// Environment gate required before a live LibreOffice helper may spawn.
-pub const LIBREOFFICE_BRIDGE_ENV: &str = "SIM_OFFICE_LIBREOFFICE_BRIDGE";
-const OWNED_TEMP_PREFIX: &str = "sim-site-libreoffice-";
-
-#[cfg(test)]
-trait GrantOutcome {
-    fn expect_granted(self);
-}
-
-#[cfg(test)]
-impl GrantOutcome for () {
-    fn expect_granted(self) {}
-}
-
-#[cfg(test)]
-impl GrantOutcome for sim_kernel::Result<()> {
-    fn expect_granted(self) {
-        self.unwrap();
-    }
-}
-
-#[cfg(test)]
-macro_rules! expect_granted {
-    ($grant:expr) => {{
-        #[allow(clippy::let_unit_value)]
-        let grant_result = $grant;
-        #[allow(clippy::unit_arg)]
-        grant_result.expect_granted();
-    }};
-}
-
-/// LibreOffice helper process placement.
+/// Explicit, preopened filesystem roots supplied to the helper.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct LibreOfficeSite {
-    /// Executable helper path.
-    pub helper: PathBuf,
+pub struct LibreOfficeMounts {
+    /// Root containing the helper and its immutable support files.
+    pub helper_root: PathBuf,
+    /// Root containing admitted input documents.
+    pub input_root: PathBuf,
+    /// Root receiving helper output.
+    pub output_root: PathBuf,
 }
-
-impl LibreOfficeSite {
-    /// Builds a helper-process site from an executable path.
-    #[must_use]
-    pub fn new(helper: impl Into<PathBuf>) -> Self {
-        Self {
-            helper: helper.into(),
+/// Bounded helper configuration supplied by the site assembler.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct LibreOfficeConfig {
+    /// Exact helper path beneath the helper root.
+    pub helper: PathBuf,
+    /// Exact diminished environment; nothing is inherited.
+    pub environment: BTreeMap<String, String>,
+    /// Monotonic request deadline.
+    pub timeout_ms: u64,
+    /// Combined output and diagnostic byte budget.
+    pub max_output_bytes: usize,
+}
+/// Realization selected explicitly by the platform/site composition layer.
+pub enum LibreOfficeTransport<'a> {
+    /// Confined process realization.
+    Process(&'a dyn ProcessPort),
+    /// Already activated helper reached over capsule-owned IPC.
+    Ipc {
+        /// Platform IPC realization.
+        port: &'a dyn IpcPort,
+        /// Exact platform-specific address.
+        address: IpcAddress,
+    },
+}
+/// Privacy-safe receipt for a completed helper exchange.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct LibreOfficeReceipt {
+    /// Privacy-safe platform provider id.
+    pub provider: String,
+    /// Platform-reported elapsed monotonic time, when available.
+    pub elapsed_mono_ns: Option<u64>,
+    /// Office-domain result.
+    pub external: ExternalRef,
+}
+/// Typed office-domain refusal from the helper boundary.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum LibreOfficeError {
+    /// Required capability was absent.
+    Denied(CapabilityName),
+    /// Configured helper could not be realized.
+    MissingHelper,
+    /// Bounded request deadline expired.
+    Timeout,
+    /// Local IPC was absent or refused the address.
+    IpcUnavailable,
+    /// Helper protocol or policy refused the request.
+    HelperRefused(String),
+}
+impl std::fmt::Display for LibreOfficeError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Denied(c) => write!(f, "capability denied: {c}"),
+            Self::MissingHelper => f.write_str("LibreOffice helper is unavailable"),
+            Self::Timeout => f.write_str("LibreOffice helper timed out"),
+            Self::IpcUnavailable => f.write_str("LibreOffice local IPC is unavailable"),
+            Self::HelperRefused(d) => write!(f, "LibreOffice helper refused request: {d}"),
         }
     }
 }
-
+impl std::error::Error for LibreOfficeError {}
+/// LibreOffice site policy and explicit platform resources.
+pub struct LibreOfficeSite<'a> {
+    /// Bounded helper configuration.
+    pub config: LibreOfficeConfig,
+    /// Preopened roots admitted to office policy.
+    pub mounts: LibreOfficeMounts,
+    /// Explicit platform realization.
+    pub transport: LibreOfficeTransport<'a>,
+}
 /// Command sent to the LibreOffice helper.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum UnoCommand {
-    /// Open a document through LibreOffice.
+    /// Open an admitted input document.
     Open {
-        /// Local document path.
+        /// Path beneath the supplied input mount.
         path: PathBuf,
     },
-    /// Export an opened document reference to PDF.
+    /// Export an opened document into the output mount.
     ExportPdf {
-        /// Source document reference.
+        /// Previously opened office document reference.
         doc: ExternalRef,
-        /// Output PDF path.
+        /// Destination beneath the supplied output mount.
         out: PathBuf,
     },
 }
 
-/// Runs one live UNO helper command.
+/// Runs one bounded helper exchange and returns its ledger-ready receipt.
 pub fn run_uno(
     cx: &mut Cx,
-    site: &LibreOfficeSite,
+    site: &LibreOfficeSite<'_>,
     cmd: UnoCommand,
-) -> Result<ExternalRef, OfficeError> {
-    let live_enabled = std::env::var(LIBREOFFICE_BRIDGE_ENV).as_deref() == Ok("1");
-    run_uno_inner(cx, site, cmd, live_enabled)
+) -> Result<LibreOfficeReceipt, LibreOfficeError> {
+    validate_site(site, &cmd)?;
+    let mut framed = serde_json::to_vec(&HelperRequest::from_command(&cmd))
+        .map_err(|e| LibreOfficeError::HelperRefused(e.to_string()))?;
+    framed.push(b'\n');
+    let (provider, elapsed_mono_ns, reply) = match &site.transport {
+        LibreOfficeTransport::Process(port) => {
+            cx.require(&CapabilityName::new(PROCESS_SPAWN_CAPABILITY))
+                .map_err(|e| match e {
+                    sim_kernel::Error::CapabilityDenied { capability } => {
+                        LibreOfficeError::Denied(capability)
+                    }
+                    other => LibreOfficeError::HelperRefused(other.to_string()),
+                })?;
+            let receipt = port
+                .run(
+                    &ProcessRequest {
+                        argv: vec![site.config.helper.display().to_string()],
+                        cwd: site.mounts.helper_root.clone(),
+                        root: site.mounts.helper_root.clone(),
+                        timeout_ms: site.config.timeout_ms,
+                        max_output_bytes: site.config.max_output_bytes,
+                        stdin: Some(framed),
+                        environment: site.config.environment.clone(),
+                    },
+                    &ProcessCancellation::default(),
+                )
+                .map_err(map_process_error)?;
+            if receipt.result.exit_code != 0 {
+                return Err(LibreOfficeError::HelperRefused(redact(
+                    &receipt.result.stderr,
+                )));
+            }
+            (
+                receipt.provider,
+                Some(receipt.elapsed_mono_ns),
+                receipt.result.stdout,
+            )
+        }
+        LibreOfficeTransport::Ipc { port, address } => {
+            let mut stream = port.connect(address).map_err(|e| match e.kind {
+                TransportErrorKind::NotFound
+                | TransportErrorKind::ConnectionRefused
+                | TransportErrorKind::Unsupported => LibreOfficeError::IpcUnavailable,
+                TransportErrorKind::TimedOut => LibreOfficeError::Timeout,
+                _ => LibreOfficeError::HelperRefused(redact(&e.detail)),
+            })?;
+            stream
+                .set_read_timeout(Some(std::time::Duration::from_millis(
+                    site.config.timeout_ms,
+                )))
+                .map_err(|_| LibreOfficeError::IpcUnavailable)?;
+            stream
+                .write_all(&framed)
+                .map_err(|_| LibreOfficeError::IpcUnavailable)?;
+            stream
+                .flush()
+                .map_err(|_| LibreOfficeError::IpcUnavailable)?;
+            let mut line = String::new();
+            BufReader::new(stream).read_line(&mut line).map_err(|e| {
+                if e.kind() == std::io::ErrorKind::TimedOut {
+                    LibreOfficeError::Timeout
+                } else {
+                    LibreOfficeError::IpcUnavailable
+                }
+            })?;
+            ("platform/ipc".to_owned(), None, line)
+        }
+    };
+    let external = serde_json::from_str::<HelperReply>(&reply)
+        .map_err(|e| LibreOfficeError::HelperRefused(e.to_string()))?
+        .into_result()
+        .map_err(LibreOfficeError::HelperRefused)?;
+    Ok(LibreOfficeReceipt {
+        provider,
+        elapsed_mono_ns,
+        external,
+    })
 }
-
-fn run_uno_inner(
-    cx: &mut Cx,
-    site: &LibreOfficeSite,
-    cmd: UnoCommand,
-    live_enabled: bool,
-) -> Result<ExternalRef, OfficeError> {
-    cx.require(&CapabilityName::new(PROCESS_SPAWN_CAPABILITY))
-        .map_err(OfficeError::from)?;
-    if !live_enabled {
-        return Err(OfficeError::Site(format!(
-            "LibreOffice helper is disabled; set {LIBREOFFICE_BRIDGE_ENV}=1"
-        )));
+fn validate_site(site: &LibreOfficeSite<'_>, cmd: &UnoCommand) -> Result<(), LibreOfficeError> {
+    if site.config.timeout_ms == 0 || site.config.max_output_bytes == 0 {
+        return Err(LibreOfficeError::HelperRefused("zero helper budget".into()));
     }
-
-    let request = HelperRequest::from_command(&cmd);
-    let mut child = Command::new(&site.helper)
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .map_err(|err| helper_error(site, &cmd, format!("could not spawn helper: {err}")))?;
-
-    {
-        let mut stdin = child
-            .stdin
-            .take()
-            .ok_or_else(|| helper_error(site, &cmd, "helper stdin was not captured"))?;
-        serde_json::to_writer(&mut stdin, &request)
-            .map_err(|err| helper_error(site, &cmd, format!("could not encode request: {err}")))?;
-        stdin
-            .write_all(b"\n")
-            .map_err(|err| helper_error(site, &cmd, format!("could not write request: {err}")))?;
+    if !site.config.helper.starts_with(&site.mounts.helper_root) {
+        return Err(LibreOfficeError::MissingHelper);
     }
-
-    let stdout = child
-        .stdout
-        .take()
-        .ok_or_else(|| helper_error(site, &cmd, "helper stdout was not captured"))?;
-    let mut line = String::new();
-    BufReader::new(stdout)
-        .read_line(&mut line)
-        .map_err(|err| helper_error(site, &cmd, format!("could not read helper reply: {err}")))?;
-    let output = child
-        .wait_with_output()
-        .map_err(|err| helper_error(site, &cmd, format!("could not wait for helper: {err}")))?;
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(helper_error(
-            site,
-            &cmd,
-            format!("helper exited with {}: {stderr}", output.status),
+    let admitted = match cmd {
+        UnoCommand::Open { path } => path.starts_with(&site.mounts.input_root),
+        UnoCommand::ExportPdf { out, .. } => out.starts_with(&site.mounts.output_root),
+    };
+    if !admitted {
+        return Err(LibreOfficeError::HelperRefused(
+            "document path is outside supplied mounts".into(),
         ));
     }
-
-    let reply: HelperReply = serde_json::from_str(&line)
-        .map_err(|err| helper_error(site, &cmd, format!("could not decode helper reply: {err}")))?;
-    reply
-        .into_result()
-        .map_err(|message| helper_error(site, &cmd, message))
+    Ok(())
+}
+fn map_process_error(e: ProcessError) -> LibreOfficeError {
+    match e {
+        ProcessError::Spawn(_) => LibreOfficeError::MissingHelper,
+        ProcessError::Timeout { .. } => LibreOfficeError::Timeout,
+        ProcessError::Cancelled { .. } => {
+            LibreOfficeError::HelperRefused("request cancelled".into())
+        }
+        ProcessError::Io(d) | ProcessError::Confinement(d) => {
+            LibreOfficeError::HelperRefused(redact(&d))
+        }
+    }
+}
+fn redact(detail: &str) -> String {
+    if detail.is_empty() {
+        "provider failure".into()
+    } else {
+        "provider failure (details redacted)".into()
+    }
 }
 
 #[derive(Serialize)]
@@ -152,7 +236,6 @@ enum HelperRequest {
     Open { path: String },
     ExportPdf { doc: HelperExternalRef, out: String },
 }
-
 impl HelperRequest {
     fn from_command(cmd: &UnoCommand) -> Self {
         match cmd {
@@ -166,7 +249,6 @@ impl HelperRequest {
         }
     }
 }
-
 #[derive(Deserialize)]
 struct HelperReply {
     backend: Option<String>,
@@ -175,11 +257,10 @@ struct HelperReply {
     web_url: Option<String>,
     error: Option<String>,
 }
-
 impl HelperReply {
     fn into_result(self) -> Result<ExternalRef, String> {
-        if let Some(error) = self.error {
-            return Err(error);
+        if let Some(e) = self.error {
+            return Err(redact(&e));
         }
         Ok(ExternalRef::new(
             self.backend
@@ -191,7 +272,6 @@ impl HelperReply {
         ))
     }
 }
-
 #[derive(Deserialize, Serialize)]
 struct HelperExternalRef {
     backend: String,
@@ -199,213 +279,164 @@ struct HelperExternalRef {
     version: Option<String>,
     web_url: Option<String>,
 }
-
 impl From<&ExternalRef> for HelperExternalRef {
-    fn from(value: &ExternalRef) -> Self {
+    fn from(v: &ExternalRef) -> Self {
         Self {
-            backend: value.backend.clone(),
-            external_id: value.external_id.clone(),
-            version: value.version.clone(),
-            web_url: value.web_url.clone(),
+            backend: v.backend.clone(),
+            external_id: v.external_id.clone(),
+            version: v.version.clone(),
+            web_url: v.web_url.clone(),
         }
     }
 }
-
-fn helper_error(
-    site: &LibreOfficeSite,
-    cmd: &UnoCommand,
-    message: impl Into<String>,
-) -> OfficeError {
-    let mut message = message.into();
-    message = redact_path(&message, &site.helper);
-    for path in command_paths(cmd) {
-        message = redact_path(&message, path);
+impl From<LibreOfficeError> for OfficeError {
+    fn from(e: LibreOfficeError) -> Self {
+        match e {
+            LibreOfficeError::Denied(c) => Self::CapabilityDenied(c),
+            other => Self::Site(other.to_string()),
+        }
     }
-    OfficeError::Site(message)
-}
-
-fn command_paths(cmd: &UnoCommand) -> Vec<&Path> {
-    match cmd {
-        UnoCommand::Open { path } => vec![path.as_path()],
-        UnoCommand::ExportPdf { out, .. } => vec![out.as_path()],
-    }
-}
-
-fn redact_path(message: &str, path: &Path) -> String {
-    if path_is_in_temp(path) {
-        return message.to_owned();
-    }
-    let rendered = path.display().to_string();
-    if rendered.is_empty() {
-        message.to_owned()
-    } else {
-        message.replace(&rendered, "<redacted-path>")
-    }
-}
-
-fn path_is_in_temp(path: &Path) -> bool {
-    let temp = std::env::temp_dir();
-    let Ok(relative) = path.strip_prefix(&temp) else {
-        return false;
-    };
-    relative.components().next().is_some_and(|component| {
-        matches!(
-            component,
-            std::path::Component::Normal(name)
-                if name.to_string_lossy().starts_with(OWNED_TEMP_PREFIX)
-        )
-    })
 }
 
 #[cfg(test)]
 mod tests {
-    use std::fs::{self, OpenOptions};
-    use std::sync::Arc;
-    use std::sync::atomic::{AtomicU64, Ordering};
-    use std::time::{SystemTime, UNIX_EPOCH};
-
-    use sim_kernel::{DefaultFactory, NoopEvalPolicy};
-
     use super::*;
-
-    static TEMP_SEQUENCE: AtomicU64 = AtomicU64::new(0);
-
-    fn cx_with_process_spawn() -> Cx {
-        let (mut cx, seat) = Cx::new_seated(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory));
-        expect_granted!(seat.grant(&mut cx, CapabilityName::new(PROCESS_SPAWN_CAPABILITY)));
+    use sim_lib_exec::{ProcResult, ProcessReceipt};
+    use sim_transport_ports::{IpcListener, Stream, TransportError};
+    struct ModelProcess(Result<ProcessReceipt, ProcessError>);
+    impl ProcessPort for ModelProcess {
+        fn run(
+            &self,
+            _: &ProcessRequest,
+            _: &ProcessCancellation,
+        ) -> Result<ProcessReceipt, ProcessError> {
+            self.0.clone()
+        }
+    }
+    struct MissingIpc;
+    impl IpcPort for MissingIpc {
+        fn listen(&self, _: &IpcAddress) -> sim_transport_ports::Result<Box<dyn IpcListener>> {
+            Err(TransportError::new(
+                TransportErrorKind::Unsupported,
+                "model has no local helper",
+            ))
+        }
+        fn connect(&self, _: &IpcAddress) -> sim_transport_ports::Result<Box<dyn Stream>> {
+            Err(TransportError::new(
+                TransportErrorKind::ConnectionRefused,
+                "model has no local helper",
+            ))
+        }
+    }
+    fn site(port: &dyn ProcessPort) -> LibreOfficeSite<'_> {
+        LibreOfficeSite {
+            config: LibreOfficeConfig {
+                helper: "/capsule/bin/uno-helper".into(),
+                environment: BTreeMap::new(),
+                timeout_ms: 50,
+                max_output_bytes: 4096,
+            },
+            mounts: LibreOfficeMounts {
+                helper_root: "/capsule".into(),
+                input_root: "/inputs".into(),
+                output_root: "/outputs".into(),
+            },
+            transport: LibreOfficeTransport::Process(port),
+        }
+    }
+    fn allowed() -> Cx {
+        let (mut cx, seat) = Cx::new_seated(
+            std::sync::Arc::new(sim_kernel::NoopEvalPolicy),
+            std::sync::Arc::new(sim_kernel::DefaultFactory),
+        );
+        let _ = seat.grant(&mut cx, CapabilityName::new(PROCESS_SPAWN_CAPABILITY));
         cx
     }
-
-    fn cx_without_process_spawn() -> Cx {
-        Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
-    }
-
     #[test]
-    fn fake_helper_returns_export_receipt() {
-        let mut cx = cx_with_process_spawn();
-        let helper = fake_helper(
-            "receipt",
-            r#"{"backend":"site/libreoffice","external_id":"pdf:out","version":"1","web_url":null}"#,
-        );
-        let site = LibreOfficeSite::new(helper.path());
-        let doc = ExternalRef::new("codec/odf", "opened:1", None, None);
-
-        let receipt = run_uno_inner(
-            &mut cx,
-            &site,
-            UnoCommand::ExportPdf {
-                doc,
-                out: temp_path("export.pdf"),
+    fn modeled_process_returns_receipt_without_host_mechanics() {
+        let port = ModelProcess(Ok(ProcessReceipt {
+            provider: "platform/site/model".into(),
+            elapsed_mono_ns: 7,
+            result: ProcResult {
+                stdout: r#"{"external_id":"doc:1"}"#.into(),
+                stderr: String::new(),
+                exit_code: 0,
+                truncated: false,
             },
-            true,
+        }));
+        let receipt = run_uno(
+            &mut allowed(),
+            &site(&port),
+            UnoCommand::Open {
+                path: "/inputs/doc.ods".into(),
+            },
         )
         .unwrap();
-
-        assert_eq!(receipt.backend, LIBREOFFICE_SITE_ID);
-        assert_eq!(receipt.external_id, "pdf:out");
-        assert_eq!(receipt.version, Some("1".to_owned()));
+        assert_eq!(receipt.provider, "platform/site/model");
+        assert_eq!(receipt.external.external_id, "doc:1");
     }
-
     #[test]
-    fn live_helper_is_denied_without_process_spawn_capability() {
-        let mut cx = cx_without_process_spawn();
-        let site = LibreOfficeSite::new(temp_path("helper"));
-
-        let denied = run_uno_inner(
-            &mut cx,
-            &site,
-            UnoCommand::Open {
-                path: temp_path("input.ods"),
-            },
-            true,
-        )
-        .unwrap_err();
-
+    fn missing_timeout_and_denial_are_typed() {
+        let missing = ModelProcess(Err(ProcessError::Spawn("native path".into())));
+        let timeout = ModelProcess(Err(ProcessError::Timeout {
+            kill_failure: None,
+            leaked_descendants: false,
+        }));
+        let mut denied = Cx::new(
+            std::sync::Arc::new(sim_kernel::NoopEvalPolicy),
+            std::sync::Arc::new(sim_kernel::DefaultFactory),
+        );
         assert!(matches!(
-            denied,
-            OfficeError::CapabilityDenied(capability)
-                if capability.as_str() == PROCESS_SPAWN_CAPABILITY
+            run_uno(
+                &mut denied,
+                &site(&missing),
+                UnoCommand::Open {
+                    path: "/inputs/a".into()
+                }
+            ),
+            Err(LibreOfficeError::Denied(_))
         ));
+        assert_eq!(
+            run_uno(
+                &mut allowed(),
+                &site(&missing),
+                UnoCommand::Open {
+                    path: "/inputs/a".into()
+                }
+            )
+            .unwrap_err(),
+            LibreOfficeError::MissingHelper
+        );
+        assert_eq!(
+            run_uno(
+                &mut allowed(),
+                &site(&timeout),
+                UnoCommand::Open {
+                    path: "/inputs/a".into()
+                }
+            )
+            .unwrap_err(),
+            LibreOfficeError::Timeout
+        );
     }
-
     #[test]
-    fn helper_errors_redact_non_temp_paths() {
-        let path = PathBuf::from("/home/bo/private/file.ods");
-        let site = LibreOfficeSite::new(temp_path("helper"));
-        let cmd = UnoCommand::Open { path: path.clone() };
-        let err = helper_error(&site, &cmd, format!("could not open {}", path.display()));
-        let rendered = err.to_string();
-
-        assert!(rendered.contains("<redacted-path>"));
-        assert!(!rendered.contains(&path.display().to_string()));
+    fn unavailable_local_ipc_is_typed() {
+        let process = ModelProcess(Err(ProcessError::Spawn("unused".into())));
+        let mut site = site(&process);
+        site.transport = LibreOfficeTransport::Ipc {
+            port: &MissingIpc,
+            address: IpcAddress::UnixPath("/capsule/run/uno".into()),
+        };
+        assert_eq!(
+            run_uno(
+                &mut allowed(),
+                &site,
+                UnoCommand::Open {
+                    path: "/inputs/a".into()
+                }
+            )
+            .unwrap_err(),
+            LibreOfficeError::IpcUnavailable
+        );
     }
-
-    #[test]
-    fn redaction_leaves_only_owned_temp_paths_visible() {
-        let owned = temp_path("input.ods");
-        let owned_message = format!("could not open {}", owned.display());
-        assert_eq!(redact_path(&owned_message, &owned), owned_message);
-
-        let arbitrary_temp = std::env::temp_dir().join("private-file.ods");
-        let arbitrary_message = format!("could not open {}", arbitrary_temp.display());
-        let redacted = redact_path(&arbitrary_message, &arbitrary_temp);
-
-        assert!(redacted.contains("<redacted-path>"));
-        assert!(!redacted.contains(&arbitrary_temp.display().to_string()));
-    }
-
-    struct FakeHelper {
-        path: PathBuf,
-    }
-
-    impl FakeHelper {
-        fn path(&self) -> &Path {
-            &self.path
-        }
-    }
-
-    impl Drop for FakeHelper {
-        fn drop(&mut self) {
-            let _ = fs::remove_file(&self.path);
-        }
-    }
-
-    fn fake_helper(name: &str, reply: &str) -> FakeHelper {
-        let path = temp_path(&format!("{name}-helper.sh"));
-        let script = format!("#!/bin/sh\nread _line\nprintf '%s\\n' '{reply}'\n");
-        let mut file = OpenOptions::new()
-            .write(true)
-            .create_new(true)
-            .open(&path)
-            .unwrap();
-        file.write_all(script.as_bytes()).unwrap();
-        file.sync_all().unwrap();
-        drop(file);
-        make_executable(&path);
-        FakeHelper { path }
-    }
-
-    fn temp_path(name: &str) -> PathBuf {
-        let stamp = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        let sequence = TEMP_SEQUENCE.fetch_add(1, Ordering::Relaxed);
-        std::env::temp_dir().join(format!(
-            "{OWNED_TEMP_PREFIX}{}-{stamp}-{sequence}-{name}",
-            std::process::id()
-        ))
-    }
-
-    #[cfg(unix)]
-    fn make_executable(path: &Path) {
-        use std::os::unix::fs::PermissionsExt;
-
-        let mut permissions = fs::metadata(path).unwrap().permissions();
-        permissions.set_mode(0o700);
-        fs::set_permissions(path, permissions).unwrap();
-    }
-
-    #[cfg(not(unix))]
-    fn make_executable(_path: &Path) {}
 }
