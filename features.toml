@@ -146,7 +146,7 @@ title = "Office site workflows"
 summary = "Run portable document, mail, Graph, SharePoint, and LibreOffice workflows over modeled or explicitly supplied platform ports."
 owner = "crate/sim-lib-doc-site"
 audiences = ["user", "code"]
-guidance = "Keep ODF, Doc, Sheet, Deck, surface, and site policy here. Compose LibreOffice with supplied mounts plus ProcessPort or IpcPort, and Graph with a supplied GraphPort; use modeled services in portable tests and platform capsule evidence for physical helpers, sockets, TLS, and local IPC."
+guidance = "Keep ODF, Doc, Sheet, Deck, Gantt, surface, and site policy here. The document and Gantt stores independently compose checked relation schemas, plans, opaque preopened placement, and closure-managed transactions; product crates retain ordering, conversion, and error semantics while the SQLite capsule alone owns SQL. Compose LibreOffice with supplied mounts plus ProcessPort or IpcPort, and Graph with a supplied GraphPort; use modeled services in portable tests and platform capsule evidence for physical helpers, sockets, TLS, and local IPC."
 claims_anchors = [
   "anchor/crate/sim-lib-doc-site",
   "anchor/crate/sim-lib-doc-store",
