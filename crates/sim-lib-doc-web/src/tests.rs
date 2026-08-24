@@ -109,24 +109,17 @@ fn one_code_point_tamper_and_changed_representation_id_fail_closed() {
         save_anchor(&mut store, &anchor).unwrap();
     }
     {
-        let db = rusqlite::Connection::open(&path).unwrap();
-        db.execute("UPDATE web_representations SET text='Hello cafe 🦀'", [])
-            .unwrap();
+        tamper(&path, "UPDATE web_representations SET text='Hello cafe 🦀'");
     }
     assert!(load_anchor(&DocStore::create(&path).unwrap(), "anchor-1").is_err());
     {
-        let db = rusqlite::Connection::open(&path).unwrap();
-        db.execute_batch("PRAGMA foreign_keys=OFF;").unwrap();
-        db.execute(
-            "UPDATE web_representations SET text=?1, representation_id='wrong'",
-            [&rep.text],
-        )
-        .unwrap();
-        db.execute(
-            "UPDATE web_evidence_anchors SET representation_id='wrong'",
-            [],
-        )
-        .unwrap();
+        tamper(
+            &path,
+            &format!(
+                "PRAGMA foreign_keys=OFF; UPDATE web_representations SET text='{}', representation_id='wrong'; UPDATE web_evidence_anchors SET representation_id='wrong'",
+                rep.text.replace('\'', "''")
+            ),
+        );
     }
     assert!(load_anchor(&DocStore::create(&path).unwrap(), "anchor-1").is_err());
 }
@@ -142,10 +135,7 @@ fn raw_capture_tamper_fails_anchor_load_closed() {
     save_representation(&mut store, &rep).unwrap();
     save_anchor(&mut store, &anchor).unwrap();
     drop(store);
-    let db = rusqlite::Connection::open(&path).unwrap();
-    db.execute("UPDATE web_captures SET body=X'00'", [])
-        .unwrap();
-    drop(db);
+    tamper(&path, "UPDATE web_captures SET body=X'00'");
     assert!(load_anchor(&DocStore::create(&path).unwrap(), "anchor-1").is_err());
 }
 
@@ -171,9 +161,10 @@ fn unicode_normalization_codec_upgrade_deleted_index_and_duplicate_source_are_sa
     let anchor = quote_anchor(&capture, &rep);
     save_anchor(&mut store, &anchor).unwrap();
     drop(store);
-    let db = rusqlite::Connection::open(&path).unwrap();
-    db.execute("UPDATE web_representations SET metadata_json=replace(metadata_json,'\"codec_version\":\"1\"','\"codec_version\":\"2\"')",[]).unwrap();
-    drop(db);
+    tamper(
+        &path,
+        "UPDATE web_representations SET metadata_json=replace(metadata_json,'\"codec_version\":\"1\"','\"codec_version\":\"2\"')",
+    );
     assert!(load_anchor(&DocStore::create(&path).unwrap(), "anchor-1").is_err());
     let deleted = tempdir().unwrap();
     let deleted_path = deleted.path().join("e.sqlite");
@@ -182,11 +173,20 @@ fn unicode_normalization_codec_upgrade_deleted_index_and_duplicate_source_are_sa
     save_representation(&mut store, &rep).unwrap();
     save_anchor(&mut store, &anchor).unwrap();
     drop(store);
-    let db = rusqlite::Connection::open(&deleted_path).unwrap();
-    db.execute_batch("PRAGMA foreign_keys=OFF; DELETE FROM web_representations;")
-        .unwrap();
-    drop(db);
+    tamper(
+        &deleted_path,
+        "PRAGMA foreign_keys=OFF; DELETE FROM web_representations",
+    );
     assert!(load_anchor(&DocStore::create(&deleted_path).unwrap(), "anchor-1").is_err());
+}
+
+fn tamper(path: &std::path::Path, statement: &str) {
+    let status = std::process::Command::new("sqlite3")
+        .arg(path)
+        .arg(statement)
+        .status()
+        .expect("sqlite3 fixture tamper tool");
+    assert!(status.success());
 }
 
 #[test]

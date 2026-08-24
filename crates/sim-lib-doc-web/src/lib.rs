@@ -73,8 +73,8 @@ impl fmt::Display for WebEvidenceError {
     }
 }
 impl Error for WebEvidenceError {}
-impl From<rusqlite::Error> for WebEvidenceError {
-    fn from(e: rusqlite::Error) -> Self {
+impl From<sim_lib_doc_store::StoreError> for WebEvidenceError {
+    fn from(e: sim_lib_doc_store::StoreError) -> Self {
         Self(e.to_string())
     }
 }

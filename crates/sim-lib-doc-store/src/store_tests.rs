@@ -4,6 +4,8 @@ use tempfile::TempDir;
 
 use crate::{DocStore, evidence};
 
+const LEGACY_FIXTURE: &[u8] = include_bytes!("../fixtures/legacy-doc-store-v1.sqlite");
+
 fn store() -> (TempDir, DocStore) {
     let dir = tempfile::tempdir().unwrap();
     let store = DocStore::create(&dir.path().join("docs.sqlite")).unwrap();
@@ -189,4 +191,56 @@ fn evidence_links_reopen_ordered_without_payload_data() {
 
 fn value_expr(cx: &mut Cx, value: &Value) -> Expr {
     value.object().as_expr(cx).unwrap()
+}
+
+#[test]
+fn legacy_fixture_is_a_complete_behavior_oracle() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("legacy.sqlite");
+    std::fs::write(&path, LEGACY_FIXTURE).unwrap();
+    let store = DocStore::create(&path).unwrap();
+    let mut cx = cx();
+
+    let doc = store.load_doc(&DocId::new("doc-legacy")).unwrap().unwrap();
+    assert_eq!(doc.kind.as_str(), "report");
+    assert_eq!(
+        value_expr(&mut cx, &doc.body),
+        Expr::String("legacy body".into())
+    );
+
+    let undo = store.undo_last(&doc.id).unwrap().unwrap();
+    assert_eq!(undo.domain, "office/body");
+    assert_eq!(
+        value_expr(&mut cx, &undo.op),
+        Expr::String("old body".into())
+    );
+    assert_eq!(
+        value_expr(&mut cx, &undo.inverse),
+        Expr::String("new body".into())
+    );
+
+    let evidence = evidence::evidence_for(&store, &doc.id).unwrap();
+    assert_eq!(evidence.len(), 1);
+    assert_eq!(evidence[0].predicate(), "office/source-document");
+    assert_eq!(evidence[0].evidence.backend, "legacy");
+    assert_eq!(evidence[0].captured_at_seq, 41);
+}
+
+#[test]
+fn read_only_legacy_adoption_is_byte_exact_and_unstamped() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("legacy.sqlite");
+    std::fs::write(&path, LEGACY_FIXTURE).unwrap();
+    let before = std::fs::read(&path).unwrap();
+    let store = DocStore::open_read_only(&path).unwrap();
+    assert!(store.load_doc(&DocId::new("doc-legacy")).unwrap().is_some());
+    drop(store);
+    assert_eq!(std::fs::read(&path).unwrap(), before);
+    assert!(
+        !before
+            .windows("__sim_relation_attestation".len())
+            .any(|w| w == b"__sim_relation_attestation")
+    );
+    let manifest = crate::store::legacy_adoption_manifest().unwrap();
+    assert_ne!(manifest.logical_schema, manifest.physical_schema);
 }

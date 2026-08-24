@@ -1,10 +1,9 @@
 //! Typed persistence rows for web captures and evidence anchors.
-
-use rusqlite::{OptionalExtension, params};
-
-use crate::DocStore;
-
-/// Serialized immutable capture row. Content identity is verified by the caller.
+use crate::{
+    DocStore,
+    store::{StoreError, StoreResult, bytes, cell_bytes, cell_text, text},
+};
+/// Serialized immutable capture row.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct WebCaptureRow {
     /// Stable raw capture id.
@@ -16,7 +15,6 @@ pub struct WebCaptureRow {
     /// Versioned exchange metadata.
     pub exchange_json: String,
 }
-
 /// Serialized normalized representation row.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct WebRepresentationRow {
@@ -29,7 +27,6 @@ pub struct WebRepresentationRow {
     /// Versioned codec and fidelity metadata.
     pub metadata_json: String,
 }
-
 /// Serialized evidence anchor row.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct WebAnchorRow {
@@ -42,78 +39,115 @@ pub struct WebAnchorRow {
     /// Complete versioned anchor record.
     pub record_json: String,
 }
-
 impl DocStore {
-    /// Atomically saves a capture after verifying that an existing id is byte-identical.
-    pub fn save_web_capture(&mut self, row: &WebCaptureRow) -> rusqlite::Result<()> {
-        let tx = self.connection_mut().transaction()?;
-        let prior: Option<Vec<u8>> = tx
-            .query_row(
-                "SELECT body FROM web_captures WHERE capture_id=?1",
-                params![row.capture_id],
-                |r| r.get(0),
-            )
-            .optional()?;
-        if prior.as_ref().is_some_and(|body| body != &row.body) {
-            return Err(invalid("capture id already names different bytes"));
+    /// Saves a capture, rejecting an id already bound to different bytes.
+    pub fn save_web_capture(&mut self, row: &WebCaptureRow) -> StoreResult<()> {
+        if let Some(old) = self.load_web_capture(&row.capture_id)? {
+            if old.body != row.body {
+                return Err(StoreError::Invalid(
+                    "capture id already names different bytes".into(),
+                ));
+            }
+            return Ok(());
         }
-        tx.execute("INSERT OR IGNORE INTO web_captures(capture_id,source_uri,body,exchange_json) VALUES(?1,?2,?3,?4)",
-            params![row.capture_id, row.source_uri, row.body, row.exchange_json])?;
-        tx.commit()
+        self.insert(
+            "web_captures",
+            &["capture_id", "source_uri", "body", "exchange_json"],
+            vec![
+                text(&row.capture_id),
+                text(&row.source_uri),
+                bytes(row.body.clone()),
+                text(&row.exchange_json),
+            ],
+        )
     }
-
-    /// Saves a representation only when its raw capture exists.
-    pub fn save_web_representation(&mut self, row: &WebRepresentationRow) -> rusqlite::Result<()> {
-        self.connection_mut().execute("INSERT INTO web_representations(representation_id,capture_id,text,metadata_json) VALUES(?1,?2,?3,?4)
-            ON CONFLICT(representation_id) DO UPDATE SET capture_id=excluded.capture_id,text=excluded.text,metadata_json=excluded.metadata_json",
-            params![row.representation_id,row.capture_id,row.text,row.metadata_json])?;
-        Ok(())
+    /// Saves a representation whose capture must already exist.
+    pub fn save_web_representation(&mut self, row: &WebRepresentationRow) -> StoreResult<()> {
+        self.upsert(
+            "web_representations",
+            &["representation_id", "capture_id", "text", "metadata_json"],
+            vec![
+                text(&row.representation_id),
+                text(&row.capture_id),
+                text(&row.text),
+                text(&row.metadata_json),
+            ],
+        )
     }
-
-    /// Loads the immutable representation fields used to revalidate an anchor.
-    pub fn load_web_representation(
-        &self,
-        id: &str,
-    ) -> rusqlite::Result<Option<WebRepresentationRow>> {
-        self.connection().query_row("SELECT capture_id,text,metadata_json FROM web_representations WHERE representation_id=?1", params![id], |r| Ok(WebRepresentationRow {
-            representation_id: id.to_owned(), capture_id: r.get(0)?, text: r.get(1)?, metadata_json: r.get(2)?
-        })).optional()
+    /// Loads representation fields used to revalidate an anchor.
+    pub fn load_web_representation(&self, id: &str) -> StoreResult<Option<WebRepresentationRow>> {
+        self.select(
+            "web_representations",
+            &["capture_id", "text", "metadata_json"],
+            &[("representation_id", text(id))],
+            &[],
+            Some(1),
+        )?
+        .into_iter()
+        .next()
+        .map(|r| {
+            Ok(WebRepresentationRow {
+                representation_id: id.into(),
+                capture_id: cell_text(&r, 0)?.into(),
+                text: cell_text(&r, 1)?.into(),
+                metadata_json: cell_text(&r, 2)?.into(),
+            })
+        })
+        .transpose()
     }
-
-    /// Loads the immutable capture fields used to verify representation provenance.
-    pub fn load_web_capture(&self, id: &str) -> rusqlite::Result<Option<WebCaptureRow>> {
-        self.connection()
-            .query_row(
-                "SELECT source_uri,body,exchange_json FROM web_captures WHERE capture_id=?1",
-                params![id],
-                |r| {
-                    Ok(WebCaptureRow {
-                        capture_id: id.to_owned(),
-                        source_uri: r.get(0)?,
-                        body: r.get(1)?,
-                        exchange_json: r.get(2)?,
-                    })
-                },
-            )
-            .optional()
+    /// Loads capture provenance fields.
+    pub fn load_web_capture(&self, id: &str) -> StoreResult<Option<WebCaptureRow>> {
+        self.select(
+            "web_captures",
+            &["source_uri", "body", "exchange_json"],
+            &[("capture_id", text(id))],
+            &[],
+            Some(1),
+        )?
+        .into_iter()
+        .next()
+        .map(|r| {
+            Ok(WebCaptureRow {
+                capture_id: id.into(),
+                source_uri: cell_text(&r, 0)?.into(),
+                body: cell_bytes(&r, 1)?.to_vec(),
+                exchange_json: cell_text(&r, 2)?.into(),
+            })
+        })
+        .transpose()
     }
-
-    /// Makes a previously validated anchor visible.
-    pub fn save_web_anchor(&mut self, row: &WebAnchorRow) -> rusqlite::Result<()> {
-        self.connection_mut().execute("INSERT INTO web_evidence_anchors(anchor_id,subject,representation_id,record_json) VALUES(?1,?2,?3,?4)
-            ON CONFLICT(anchor_id) DO UPDATE SET subject=excluded.subject,representation_id=excluded.representation_id,record_json=excluded.record_json",
-            params![row.anchor_id,row.subject,row.representation_id,row.record_json])?;
-        Ok(())
+    /// Makes a validated anchor visible.
+    pub fn save_web_anchor(&mut self, row: &WebAnchorRow) -> StoreResult<()> {
+        self.upsert(
+            "web_evidence_anchors",
+            &["anchor_id", "subject", "representation_id", "record_json"],
+            vec![
+                text(&row.anchor_id),
+                text(&row.subject),
+                text(&row.representation_id),
+                text(&row.record_json),
+            ],
+        )
     }
-
-    /// Loads an anchor row; callers must fail closed if revalidation fails.
-    pub fn load_web_anchor(&self, id: &str) -> rusqlite::Result<Option<WebAnchorRow>> {
-        self.connection().query_row("SELECT subject,representation_id,record_json FROM web_evidence_anchors WHERE anchor_id=?1", params![id], |r| Ok(WebAnchorRow {
-            anchor_id: id.to_owned(), subject: r.get(0)?, representation_id: r.get(1)?, record_json: r.get(2)?
-        })).optional()
+    /// Loads an anchor row.
+    pub fn load_web_anchor(&self, id: &str) -> StoreResult<Option<WebAnchorRow>> {
+        self.select(
+            "web_evidence_anchors",
+            &["subject", "representation_id", "record_json"],
+            &[("anchor_id", text(id))],
+            &[],
+            Some(1),
+        )?
+        .into_iter()
+        .next()
+        .map(|r| {
+            Ok(WebAnchorRow {
+                anchor_id: id.into(),
+                subject: cell_text(&r, 0)?.into(),
+                representation_id: cell_text(&r, 1)?.into(),
+                record_json: cell_text(&r, 2)?.into(),
+            })
+        })
+        .transpose()
     }
-}
-
-fn invalid(message: &str) -> rusqlite::Error {
-    rusqlite::Error::InvalidParameterName(message.to_owned())
 }

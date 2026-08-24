@@ -94,6 +94,19 @@ claims_specimens = [
 ]
 
 [[feature]]
+id = "feature/sim-office/document-store"
+title = "Relational document store consumer"
+summary = "Persist document, edit, evidence, and web-provenance projections through checked relational plans while adopting the exact legacy file layout."
+owner = "crate/sim-lib-doc-store"
+audiences = ["code"]
+guidance = "Use this thin consumer for office projection persistence. It composes the relation schema, plan, site, and SQLite capsule contracts; do not add document-specific SQL, provider handles, query builders, migrations, or driver adapters."
+claims_anchors = ["anchor/crate/sim-lib-doc-store"]
+claims_specimens = [
+  "recipe/sim-office/crates/sim-lib-doc-store/01-basics/doc-store-projection",
+  "recipe/sim-office/crates/sim-lib-doc-store/01-basics/evidence-fact-graph",
+]
+
+[[feature]]
 id = "feature/sim-office/web-evidence"
 title = "Captured web evidence"
 summary = "Bind offline web captures, normalized representations, and Unicode selectors into durable office evidence and citations."

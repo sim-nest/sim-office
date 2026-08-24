@@ -1,4 +1,4 @@
-//! Local SQLite projections for SIM office documents.
+//! Local relational projections for SIM office documents.
 
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
@@ -11,7 +11,7 @@ pub mod web;
 #[cfg(test)]
 mod store_tests;
 
-pub use store::DocStore;
+pub use store::{DocStore, StoreError, StoreResult};
 
 /// Cookbook recipes for this lib, embedded at build time.
 pub static RECIPES: sim_cookbook::EmbeddedDir =
