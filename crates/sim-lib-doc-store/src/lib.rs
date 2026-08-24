@@ -6,6 +6,7 @@
 mod codec;
 pub mod evidence;
 pub mod store;
+pub mod web;
 
 #[cfg(test)]
 mod store_tests;

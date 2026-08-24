@@ -97,6 +97,10 @@ impl DocStore {
     pub(crate) fn connection(&self) -> &Connection {
         &self.conn
     }
+
+    pub(crate) fn connection_mut(&mut self) -> &mut Connection {
+        &mut self.conn
+    }
 }
 
 fn sqlite_seq(seq: u64) -> rusqlite::Result<i64> {

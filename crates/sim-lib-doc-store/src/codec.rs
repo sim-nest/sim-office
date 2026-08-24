@@ -2,7 +2,8 @@ use std::{fmt, sync::Arc};
 
 use serde::{Deserialize, Serialize};
 use sim_kernel::{
-    Cx, Datum, DefaultFactory, NoopEvalPolicy, NumberLiteral, Symbol, Value, value_from_datum,
+    Cx, Datum, DefaultFactory, HandleSeed, NoopEvalPolicy, NumberLiteral, Symbol, Value,
+    value_from_datum,
 };
 use sim_lib_doc_core::{Doc, DocId, DocKind, Edit, ExternalRef};
 
@@ -238,5 +239,9 @@ fn value_from_stored(stored: StoredDatum) -> Result<Value, CodecError> {
 }
 
 fn scratch_cx() -> Cx {
-    Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
+    Cx::new(
+        Arc::new(NoopEvalPolicy),
+        Arc::new(DefaultFactory),
+        HandleSeed::new(0x444f_4353),
+    )
 }

@@ -1,0 +1,8 @@
+id = "capture-to-citation"
+title = "Bind an offline capture to a citation"
+codec = "lisp"
+setup = "setup.siml"
+purpose = "purpose.md"
+order = 10
+tags = ["office", "web", "evidence", "citation", "offline", "sandbox-descriptor"]
+requires = ["office/doc-web", "office/doc-store", "office/doc-core", "codec/lisp"]

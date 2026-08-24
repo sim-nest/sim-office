@@ -94,6 +94,23 @@ claims_specimens = [
 ]
 
 [[feature]]
+id = "feature/sim-office/web-evidence"
+title = "Captured web evidence"
+summary = "Bind offline web captures, normalized representations, and Unicode selectors into durable office evidence and citations."
+owner = "crate/sim-lib-doc-web"
+audiences = ["user", "code", "framework"]
+guidance = "Use this adapter after neutral capture and decoding. It reuses office Evidence and DocStore identities, verifies raw and representation content ids, and keeps policy receipts and fidelity warnings visible without fetching or trusting provider snippets."
+claims_anchors = [
+  "anchor/crate/sim-lib-doc-core",
+  "anchor/crate/sim-lib-doc-store",
+  "anchor/crate/sim-lib-doc-web",
+]
+claims_specimens = [
+  "recipe/sim-office/crates/sim-lib-doc-web/01-basics/capture-to-citation",
+  "spec-test/sim-office/crates/sim-lib-doc-web/src/tests",
+]
+
+[[feature]]
 id = "feature/sim-office/sheet-calculation"
 title = "Sheet calculation"
 summary = "Evaluate local sheet formulas over exact rational cells with incremental dependency tracking and cutoff."
@@ -143,6 +160,16 @@ steps = [
   { feature = "feature/sim-office/document-surfaces", why = "The surface row renders the document into a reviewable view." },
   { feature = "feature/sim-office/office-site-workflows", why = "The site row connects the document to modeled workplace sources." },
   { specimen = "recipe/sim-office/crates/sim-lib-doc-surface/01-basics/suite-surface-descriptor", why = "The suite-surface recipe is the shortest surface example." },
+]
+
+[[route]]
+id = "route/web-capture-to-office-evidence"
+task = "Trace an office citation to its raw web capture and policy receipt"
+audiences = ["user", "code", "framework"]
+steps = [
+  { feature = "feature/sim-office/web-evidence", why = "The evidence adapter binds the citation to checked capture and representation ids while retaining the policy receipt." },
+  { specimen = "recipe/sim-office/crates/sim-lib-doc-web/01-basics/capture-to-citation", why = "The offline recipe shows the capture, representation, anchor, reload, and citation path without network access." },
+  { specimen = "spec-test/sim-office/crates/sim-lib-doc-web/src/tests", why = "The checked tests prove restart stability and fail-closed behavior for tampered capture, representation, selector, index, and codec metadata." },
 ]
 
 [[route]]
