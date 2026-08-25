@@ -109,10 +109,10 @@ claims_specimens = [
 [[feature]]
 id = "feature/sim-office/web-evidence"
 title = "Captured web evidence"
-summary = "Bind offline web captures, normalized representations, and Unicode selectors into durable office evidence and citations."
+summary = "Bind offline captures and legally supplied editions to normalized representations and verified Unicode spans for durable citations and parallel reading."
 owner = "crate/sim-lib-doc-web"
 audiences = ["user", "code", "framework"]
-guidance = "Use this adapter after neutral capture and decoding. It reuses office Evidence and DocStore identities, verifies raw and representation content ids, and keeps policy receipts and fidelity warnings visible without fetching or trusting provider snippets."
+guidance = "Use this adapter after neutral capture/decoding or offline legal supply. It reuses office Evidence, DocStore, immutable WebRepresentation, and EvidenceSelector identities; edition admission adds licence ceilings, expiry, layered annotations, removal, and rebuildable indexes without fetching, rematching quotes, or trusting provider snippets."
 claims_anchors = [
   "anchor/crate/sim-lib-doc-core",
   "anchor/crate/sim-lib-doc-store",
@@ -120,6 +120,7 @@ claims_anchors = [
 ]
 claims_specimens = [
   "recipe/sim-office/crates/sim-lib-doc-web/01-basics/capture-to-citation",
+  "recipe/sim-office/crates/sim-lib-doc-web/01-basics/parallel-reading",
   "spec-test/sim-office/crates/sim-lib-doc-web/src/tests",
 ]
 

@@ -1,0 +1,14 @@
+(expr:map
+  [kind office/source-aware-parallel-reading]
+  [operation import-legally-supplied-edition]
+  [edition-id "edition:synthetic-parallel-1"]
+  [locator [public-id catalogue "synthetic-1"]]
+  [representation-id "sha256:<normalized-representation-content-id>"]
+  [span [id "span:calm" selector [start 4 end 16 exact "sea was calm"]]]
+  [licence [name synthetic-public-domain max-quote-chars 32 max-export-chars 64 permits-export true]]
+  [checked-at "2026-08-25T00:00:00Z"]
+  [expires-at "2027-01-01T00:00:00Z"]
+  [layers [witness context interpretation reflection response]]
+  [conflict ["calm signals safety" "calm conceals danger"]]
+  [removal-behavior orphan-exact-span-annotations]
+  [mode modeled])

@@ -16,6 +16,9 @@ use sim_lib_web_core::{
 };
 use std::{collections::BTreeMap, error::Error, fmt};
 
+mod reading;
+pub use reading::*;
+
 /// Cookbook recipes embedded at build time.
 pub static RECIPES: sim_cookbook::EmbeddedDir =
     include!(concat!(env!("OUT_DIR"), "/cookbook_recipes.rs"));
@@ -623,5 +626,7 @@ impl<'a> From<&'a EvidenceAnchor> for CitationRecord<'a> {
     }
 }
 
+#[cfg(test)]
+mod reading_tests;
 #[cfg(test)]
 mod tests;

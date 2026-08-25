@@ -1,0 +1,8 @@
+id = "parallel-reading"
+title = "Read supplied editions without losing source identity"
+codec = "lisp"
+setup = "setup.siml"
+purpose = "purpose.md"
+order = 20
+tags = ["office", "reading", "edition", "licence", "offline", "sandbox-descriptor"]
+requires = ["office/doc-web", "web/representation", "web/evidence-selector", "codec/lisp"]
