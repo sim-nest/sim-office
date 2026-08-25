@@ -94,6 +94,18 @@ claims_specimens = [
 ]
 
 [[feature]]
+id = "feature/sim-office/reconciliation-review"
+title = "Exact reconciliation review documents"
+summary = "Project frozen statement and ledger evidence, human decisions, uncovered items, corrections, and bridge arithmetic into an exportable review document whose explicit edits decode only to checked ledger command intents."
+owner = "crate/sim-lib-doc-ledger"
+audiences = ["user", "code", "framework"]
+guidance = "Use this non-authoritative projection to review exact reconciliation evidence. Displayed amounts and lifecycle states are bound to a trusted frozen projection; import accepts edits only through the explicit decision lane, while verification, journaling, correction approval, posting, and closure remain ledger responsibilities."
+claims_anchors = ["anchor/crate/sim-lib-doc-ledger"]
+claims_specimens = [
+  "recipe/sim-office/crates/sim-lib-doc-ledger/01-basics/reconciliation-review",
+]
+
+[[feature]]
 id = "feature/sim-office/document-store"
 title = "Relational document store consumer"
 summary = "Persist document, edit, evidence, and web-provenance projections through checked relational plans while adopting the exact legacy file layout."

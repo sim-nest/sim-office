@@ -147,7 +147,7 @@ fn ledger_error(error: sim_lib_ledger_books::BooksError) -> OfficeError {
 #[cfg(test)]
 mod tests {
     use sim_kernel::{Cx, Expr, testing::bare_cx as cx};
-    use sim_ledger::{Amount, LedgerSet, Posting};
+    use sim_ledger::{Amount, Posting};
     use sim_lib_doc_core::ExternalRef;
     use sim_lib_ledger_books::LedgerEvidenceRef;
     use time::{Date, Month};
@@ -196,13 +196,12 @@ mod tests {
     #[test]
     fn preview_does_not_write_year_file() {
         let dir = tempfile::tempdir().unwrap();
-        let set = LedgerSet::create(dir.path(), "Office bridge").unwrap();
         let mut cx = cx();
         let draft = draft(vec![posting(100), posting(-100)]);
 
         preview_post(&mut cx, &draft).unwrap();
 
-        assert!(!set.year_path(2026).exists());
+        assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 0);
     }
 
     #[test]

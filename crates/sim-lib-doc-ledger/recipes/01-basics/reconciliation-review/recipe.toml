@@ -1,0 +1,8 @@
+id = "reconciliation-review"
+title = "Exact reconciliation review"
+codec = "lisp"
+setup = "setup.siml"
+purpose = "purpose.md"
+order = 20
+tags = ["office", "ledger", "reconciliation", "review", "evidence"]
+requires = ["office/doc-ledger", "ledger/reconciliation", "codec/lisp"]

@@ -15,6 +15,8 @@ sim-kernel = { version = "0.2.0" }
 sim-lib-deck = { version = "0.1.0", path = "../sim-lib-deck" }
 sim-lib-doc-core = { version = "0.1.0", path = "../sim-lib-doc-core" }
 sim-lib-sheet = { version = "0.1.0", path = "../sim-lib-sheet" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 
 [build-dependencies]
 sim-cookbook-build = { version = "0.1.0" }
@@ -29,14 +31,14 @@ workspace = true
 [dependencies.sim-ledger]
 version = "0.1.0"
 git = "https://github.com/sim-nest/sim-ledger"
-rev = "a58f8890739dee30ee9baf73ea6b38cc1803ea01"
+rev = "f12f62031cfec740f3b6b166e78bbdd20249f9af"
 
 [dependencies.sim-lib-ledger-close]
 version = "0.1.0"
 git = "https://github.com/sim-nest/sim-ledger"
-rev = "a58f8890739dee30ee9baf73ea6b38cc1803ea01"
+rev = "f12f62031cfec740f3b6b166e78bbdd20249f9af"
 
 [dependencies.sim-lib-ledger-books]
 version = "0.1.0"
 git = "https://github.com/sim-nest/sim-ledger"
-rev = "a58f8890739dee30ee9baf73ea6b38cc1803ea01"
+rev = "f12f62031cfec740f3b6b166e78bbdd20249f9af"
