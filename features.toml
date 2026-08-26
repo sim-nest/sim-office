@@ -80,7 +80,6 @@ guidance = "Use this row when rendering an office document or suite preview."
 claims_anchors = [
   "anchor/crate/sim-lib-deck",
   "anchor/crate/sim-lib-doc-core",
-  "anchor/crate/sim-lib-doc-ledger",
   "anchor/crate/sim-lib-doc-surface",
   "anchor/export/sim-lib-doc-surface/view-default",
 ]
@@ -125,8 +124,6 @@ owner = "crate/sim-lib-doc-web"
 audiences = ["user", "code", "framework"]
 guidance = "Use this adapter after neutral capture/decoding or offline legal supply. It reuses office Evidence, DocStore, immutable WebRepresentation, and EvidenceSelector identities; edition admission adds licence ceilings, expiry, layered annotations, removal, and rebuildable indexes without fetching, rematching quotes, or trusting provider snippets."
 claims_anchors = [
-  "anchor/crate/sim-lib-doc-core",
-  "anchor/crate/sim-lib-doc-store",
   "anchor/crate/sim-lib-doc-web",
 ]
 claims_specimens = [
@@ -159,7 +156,6 @@ audiences = ["user", "code"]
 guidance = "Keep ODF, Doc, Sheet, Deck, Gantt, surface, and site policy here. The document and Gantt stores independently compose checked relation schemas, plans, opaque preopened placement, and closure-managed transactions; product crates retain ordering, conversion, and error semantics while the SQLite capsule alone owns SQL. Compose LibreOffice with supplied mounts plus ProcessPort or IpcPort, and Graph with a supplied GraphPort; use modeled services in portable tests and platform capsule evidence for physical helpers, sockets, TLS, and local IPC."
 claims_anchors = [
   "anchor/crate/sim-lib-doc-site",
-  "anchor/crate/sim-lib-doc-store",
   "anchor/crate/sim-lib-gantt",
   "anchor/crate/sim-lib-mail",
   "anchor/crate/sim-site-libreoffice",
