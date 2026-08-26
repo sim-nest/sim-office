@@ -17,7 +17,7 @@ use sim_relation_schema::{
     AcceptAllValues, ColumnBuilder, Constraint, ForeignKey, PhysicalColumn, PhysicalSchema,
     PhysicalTable, PrimaryKey, Schema, SchemaBuilder, TableBuilder,
 };
-use sim_relation_site::{Bindings, Driver, Limits, RowSink, Session, SiteError, StorageAccess};
+use sim_relation_site::{Bindings, Driver, Limits, Session, SiteError, StorageAccess, VecRowSink};
 use std::{cell::RefCell, fmt, path::Path};
 use time::Date;
 
@@ -139,7 +139,7 @@ impl GanttStore {
             .collect::<Result<Vec<_>, _>>()?;
         let bindings = empty_bindings()?;
         self.session.borrow_mut().transaction(&mut |tx| {
-            let mut sink = VecSink::default();
+            let mut sink = VecRowSink::default();
             for op in [&plan_row, &delete_links, &delete_tasks] {
                 tx.mutate(op, &bindings, &self.limits, &mut sink)?;
             }
@@ -324,26 +324,16 @@ impl GanttStore {
             AdmissionLimits::default(),
         )
         .map_err(|e| err(e.to_string()))?;
-        let mut sink = VecSink::default();
+        let mut sink = VecRowSink::default();
         self.session
             .borrow_mut()
             .query(&plan, &empty_bindings()?, &self.limits, &mut sink)?;
-        Ok(sink.rows)
+        Ok(sink.into_rows())
     }
 }
 impl From<SiteError> for ScheduleError {
     fn from(v: SiteError) -> Self {
         err(v.to_string())
-    }
-}
-#[derive(Default)]
-struct VecSink {
-    rows: Vec<Row>,
-}
-impl RowSink for VecSink {
-    fn push(&mut self, row: Row) -> Result<(), SiteError> {
-        self.rows.push(row);
-        Ok(())
     }
 }
 fn err(v: impl Into<String>) -> ScheduleError {

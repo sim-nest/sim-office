@@ -1,3 +1,5 @@
+// conformance: document projections and evidence graphs persist through checked relational plans.
+
 use sim_kernel::{Cx, Expr, Value, testing::bare_cx as cx};
 use sim_lib_doc_core::{Doc, DocId, DocKind, Edit, Evidence, ExternalRef, LinkRole};
 use tempfile::TempDir;

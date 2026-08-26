@@ -102,7 +102,7 @@ audiences = ["user", "code", "framework"]
 guidance = "Use this non-authoritative projection to review exact reconciliation evidence. Displayed amounts and lifecycle states are bound to a trusted frozen projection; import accepts edits only through the explicit decision lane, while verification, journaling, correction approval, posting, and closure remain ledger responsibilities."
 claims_anchors = ["anchor/crate/sim-lib-doc-ledger"]
 claims_specimens = [
-  "recipe/sim-office/crates/sim-lib-doc-ledger/01-basics/reconciliation-review",
+  "spec-test/sim-office/crates/sim-lib-doc-ledger/src/reconciliation",
 ]
 
 [[feature]]
@@ -114,8 +114,7 @@ audiences = ["code"]
 guidance = "Use this thin consumer for office projection persistence. It composes the relation schema, plan, site, and SQLite capsule contracts; do not add document-specific SQL, provider handles, query builders, migrations, or driver adapters."
 claims_anchors = ["anchor/crate/sim-lib-doc-store"]
 claims_specimens = [
-  "recipe/sim-office/crates/sim-lib-doc-store/01-basics/doc-store-projection",
-  "recipe/sim-office/crates/sim-lib-doc-store/01-basics/evidence-fact-graph",
+  "spec-test/sim-office/crates/sim-lib-doc-store/src/store_tests",
 ]
 
 [[feature]]
@@ -131,8 +130,6 @@ claims_anchors = [
   "anchor/crate/sim-lib-doc-web",
 ]
 claims_specimens = [
-  "recipe/sim-office/crates/sim-lib-doc-web/01-basics/capture-to-citation",
-  "recipe/sim-office/crates/sim-lib-doc-web/01-basics/parallel-reading",
   "spec-test/sim-office/crates/sim-lib-doc-web/src/tests",
 ]
 

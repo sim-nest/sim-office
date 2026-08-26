@@ -154,7 +154,11 @@ mod tests {
 
     #[test]
     fn codec_options_select_behavior() {
-        let mut cx = Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory));
+        let mut cx = Cx::new(
+            Arc::new(NoopEvalPolicy),
+            Arc::new(DefaultFactory),
+            sim_kernel::HandleSeed::new(0x6032_f288_5915_ed19),
+        );
         let option_value = cx.factory().string("option-body".to_owned()).unwrap();
         let options = DocCodecOptions::new(option_value.clone());
         let codec = EchoCodec;
@@ -170,7 +174,11 @@ mod tests {
 
     #[test]
     fn live_site_requiring_network_is_denied_by_default() {
-        let cx = Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory));
+        let cx = Cx::new(
+            Arc::new(NoopEvalPolicy),
+            Arc::new(DefaultFactory),
+            sim_kernel::HandleSeed::new(0x90d5_087a_2e1d_712b),
+        );
         let site = DocSite::new(
             "site/msgraph",
             vec![DocKind::new("sheet")],
@@ -187,7 +195,11 @@ mod tests {
 
     #[test]
     fn modeled_site_is_allowed_without_live_capabilities() {
-        let cx = Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory));
+        let cx = Cx::new(
+            Arc::new(NoopEvalPolicy),
+            Arc::new(DefaultFactory),
+            sim_kernel::HandleSeed::new(0x4b15_b1ee_0a29_abd7),
+        );
         let site = DocSite::new(
             "site/msgraph",
             vec![DocKind::new("sheet")],

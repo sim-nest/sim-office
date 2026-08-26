@@ -1,5 +1,7 @@
 //! Exact, non-authoritative reconciliation review documents.
 
+// conformance: reconciliation review edits decode only to checked ledger command intents.
+
 use std::collections::{BTreeMap, BTreeSet};
 
 use serde::{Deserialize, Serialize};

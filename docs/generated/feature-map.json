@@ -49,6 +49,11 @@
     {
       "features": [],
       "group": "workspace",
+      "package": "sim-lib-doc-web"
+    },
+    {
+      "features": [],
+      "group": "workspace",
       "package": "sim-lib-gantt"
     },
     {

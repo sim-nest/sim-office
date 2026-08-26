@@ -7,7 +7,11 @@ use sim_lib_doc_site::site_symbol;
 use super::*;
 
 fn test_context() -> Cx {
-    Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
+    Cx::new(
+        Arc::new(NoopEvalPolicy),
+        Arc::new(DefaultFactory),
+        sim_kernel::HandleSeed::new(0x5350_5401),
+    )
 }
 
 #[test]

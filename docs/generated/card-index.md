@@ -7,11 +7,12 @@
 | `browse/catalog` | `browse-root` | `workspace` | root browse catalog |
 | `cookbook/office/deck` | `cookbook-recipe` | `sim-lib-deck` | Local decks with slides, bullets, tables, and image references. |
 | `cookbook/office/doc-core` | `cookbook-recipe` | `sim-lib-doc-core` | Office document model and kind-shape descriptors. |
-| `cookbook/office/doc-ledger` | `cookbook-recipe` | `sim-lib-doc-ledger` | Preview ledger draft posting from office evidence. |
+| `cookbook/office/doc-ledger` | `cookbook-recipe` | `sim-lib-doc-ledger` | Review exact reconciliation evidence and preview ledger drafts without granting document authority. |
 | `cookbook/office/doc-markup` | `cookbook-recipe` | `sim-lib-doc-markup` | Markup document codecs for office article documents. |
 | `cookbook/office/doc-site` | `cookbook-recipe` | `sim-lib-doc-site` | Document site registration and modeled placement calls. |
 | `cookbook/office/doc-store` | `cookbook-recipe` | `sim-lib-doc-store` | Local document snapshots, edit projections, and evidence fact links. |
 | `cookbook/office/doc-surface` | `cookbook-recipe` | `sim-lib-doc-surface` | Suite scene projection and intent-to-edit descriptors. |
+| `cookbook/office/doc-web` | `cookbook-recipe` | `sim-lib-doc-web` | Capture-to-citation evidence binding without fetching or provider trust. |
 | `cookbook/office/gantt` | `cookbook-recipe` | `sim-lib-gantt` | Local schedule plans, dependency links, and critical-path descriptors. |
 | `cookbook/office/libreoffice-site` | `cookbook-recipe` | `sim-site-libreoffice` | Permissioned helper-process placement for LibreOffice office tasks. |
 | `cookbook/office/mail` | `cookbook-recipe` | `sim-lib-mail` | Privacy-aware messages, events, and attachment references. |

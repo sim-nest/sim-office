@@ -61,7 +61,11 @@ impl MsGraphSite for ModeledPostSite {
 }
 
 fn test_context() -> Cx {
-    Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
+    Cx::new(
+        Arc::new(NoopEvalPolicy),
+        Arc::new(DefaultFactory),
+        sim_kernel::HandleSeed::new(0x75a6_cbb4_1fbc_0c35),
+    )
 }
 
 #[test]

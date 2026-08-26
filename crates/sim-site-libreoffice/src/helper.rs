@@ -4,7 +4,10 @@ use crate::site::LIBREOFFICE_SITE_ID;
 use serde::{Deserialize, Serialize};
 use sim_kernel::{CapabilityName, Cx};
 use sim_lib_doc_core::{ExternalRef, OfficeError, PROCESS_SPAWN_CAPABILITY};
-use sim_lib_exec::{ProcessCancellation, ProcessError, ProcessPort, ProcessRequest};
+use sim_lib_exec::{
+    ProcessAttempt, ProcessBudget, ProcessCancellation, ProcessPort, ProcessRefusal,
+    ProcessRequest, ProgramRef, ProjectRootRef, SealedBindings,
+};
 use sim_transport_ports::{IpcAddress, IpcPort, TransportErrorKind};
 use std::{
     collections::BTreeMap,
@@ -127,20 +130,22 @@ pub fn run_uno(
                     }
                     other => LibreOfficeError::HelperRefused(other.to_string()),
                 })?;
-            let receipt = port
-                .run(
-                    &ProcessRequest {
-                        argv: vec![site.config.helper.display().to_string()],
-                        cwd: site.mounts.helper_root.clone(),
-                        root: site.mounts.helper_root.clone(),
-                        timeout_ms: site.config.timeout_ms,
-                        max_output_bytes: site.config.max_output_bytes,
-                        stdin: Some(framed),
-                        environment: site.config.environment.clone(),
-                    },
-                    &ProcessCancellation::default(),
-                )
-                .map_err(map_process_error)?;
+            let request = ProcessRequest {
+                program: ProgramRef::new(site.config.helper.display().to_string())
+                    .map_err(|error| LibreOfficeError::HelperRefused(error.to_string()))?,
+                argv: Vec::new(),
+                root: ProjectRootRef::new(site.mounts.helper_root.display().to_string())
+                    .map_err(|error| LibreOfficeError::HelperRefused(error.to_string()))?,
+                environment: SealedBindings::literals(site.config.environment.clone())
+                    .map_err(|error| LibreOfficeError::HelperRefused(error.to_string()))?,
+                private_artifacts: Vec::new(),
+                budget: ProcessBudget {
+                    timeout_ms: site.config.timeout_ms,
+                    max_output_bytes: site.config.max_output_bytes,
+                    stdin: Some(framed),
+                },
+            };
+            let receipt = process_receipt(port.run(&request, &ProcessCancellation::default()))?;
             if receipt.result.exit_code != 0 {
                 return Err(LibreOfficeError::HelperRefused(redact(
                     &receipt.result.stderr,
@@ -210,16 +215,24 @@ fn validate_site(site: &LibreOfficeSite<'_>, cmd: &UnoCommand) -> Result<(), Lib
     }
     Ok(())
 }
-fn map_process_error(e: ProcessError) -> LibreOfficeError {
-    match e {
-        ProcessError::Spawn(_) => LibreOfficeError::MissingHelper,
-        ProcessError::Timeout { .. } => LibreOfficeError::Timeout,
-        ProcessError::Cancelled { .. } => {
-            LibreOfficeError::HelperRefused("request cancelled".into())
-        }
-        ProcessError::Io(d) | ProcessError::Confinement(d) => {
-            LibreOfficeError::HelperRefused(redact(&d))
-        }
+fn process_receipt(
+    attempt: ProcessAttempt,
+) -> Result<sim_lib_exec::ProcessReceipt, LibreOfficeError> {
+    match attempt {
+        ProcessAttempt::Completed { receipt } => Ok(receipt),
+        ProcessAttempt::NotDispatched {
+            refusal: ProcessRefusal::SpawnFailed(_),
+        } => Err(LibreOfficeError::MissingHelper),
+        ProcessAttempt::NotDispatched { refusal } => Err(LibreOfficeError::HelperRefused(redact(
+            &format!("{refusal:?}"),
+        ))),
+        ProcessAttempt::StoppedAfterTimeout { .. } => Err(LibreOfficeError::Timeout),
+        ProcessAttempt::StoppedAfterCancel { .. } => Err(LibreOfficeError::HelperRefused(
+            "request cancelled after proven cleanup".into(),
+        )),
+        ProcessAttempt::UnknownAfterDispatch { evidence } => Err(LibreOfficeError::HelperRefused(
+            redact(&format!("{evidence:?}")),
+        )),
     }
 }
 fn redact(detail: &str) -> String {
@@ -301,15 +314,11 @@ impl From<LibreOfficeError> for OfficeError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sim_lib_exec::{ProcResult, ProcessReceipt};
+    use sim_lib_exec::{ProcResult, ProcessReceipt, StopReceipt};
     use sim_transport_ports::{IpcListener, Stream, TransportError};
-    struct ModelProcess(Result<ProcessReceipt, ProcessError>);
+    struct ModelProcess(ProcessAttempt);
     impl ProcessPort for ModelProcess {
-        fn run(
-            &self,
-            _: &ProcessRequest,
-            _: &ProcessCancellation,
-        ) -> Result<ProcessReceipt, ProcessError> {
+        fn run(&self, _: &ProcessRequest, _: &ProcessCancellation) -> ProcessAttempt {
             self.0.clone()
         }
     }
@@ -348,22 +357,25 @@ mod tests {
         let (mut cx, seat) = Cx::new_seated(
             std::sync::Arc::new(sim_kernel::NoopEvalPolicy),
             std::sync::Arc::new(sim_kernel::DefaultFactory),
+            sim_kernel::HandleSeed::new(0x4c4f_4f41),
         );
         let _ = seat.grant(&mut cx, CapabilityName::new(PROCESS_SPAWN_CAPABILITY));
         cx
     }
     #[test]
     fn modeled_process_returns_receipt_without_host_mechanics() {
-        let port = ModelProcess(Ok(ProcessReceipt {
-            provider: "platform/site/model".into(),
-            elapsed_mono_ns: 7,
-            result: ProcResult {
-                stdout: r#"{"external_id":"doc:1"}"#.into(),
-                stderr: String::new(),
-                exit_code: 0,
-                truncated: false,
+        let port = ModelProcess(ProcessAttempt::Completed {
+            receipt: ProcessReceipt {
+                provider: "platform/site/model".into(),
+                elapsed_mono_ns: 7,
+                result: ProcResult {
+                    stdout: r#"{"external_id":"doc:1"}"#.into(),
+                    stderr: String::new(),
+                    exit_code: 0,
+                    truncated: false,
+                },
             },
-        }));
+        });
         let receipt = run_uno(
             &mut allowed(),
             &site(&port),
@@ -377,14 +389,20 @@ mod tests {
     }
     #[test]
     fn missing_timeout_and_denial_are_typed() {
-        let missing = ModelProcess(Err(ProcessError::Spawn("native path".into())));
-        let timeout = ModelProcess(Err(ProcessError::Timeout {
-            kill_failure: None,
-            leaked_descendants: false,
-        }));
+        let missing = ModelProcess(ProcessAttempt::NotDispatched {
+            refusal: ProcessRefusal::SpawnFailed("native path".into()),
+        });
+        let timeout = ModelProcess(ProcessAttempt::StoppedAfterTimeout {
+            receipt: StopReceipt {
+                provider: "platform/site/model".into(),
+                elapsed_mono_ns: 50,
+                cleanup: "process group killed and reaped".into(),
+            },
+        });
         let mut denied = Cx::new(
             std::sync::Arc::new(sim_kernel::NoopEvalPolicy),
             std::sync::Arc::new(sim_kernel::DefaultFactory),
+            sim_kernel::HandleSeed::new(0x4c4f_4f44),
         );
         assert!(matches!(
             run_uno(
@@ -421,7 +439,9 @@ mod tests {
     }
     #[test]
     fn unavailable_local_ipc_is_typed() {
-        let process = ModelProcess(Err(ProcessError::Spawn("unused".into())));
+        let process = ModelProcess(ProcessAttempt::NotDispatched {
+            refusal: ProcessRefusal::SpawnFailed("unused".into()),
+        });
         let mut site = site(&process);
         site.transport = LibreOfficeTransport::Ipc {
             port: &MissingIpc,

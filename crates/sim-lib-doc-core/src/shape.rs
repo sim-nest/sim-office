@@ -88,7 +88,11 @@ mod tests {
 
     #[test]
     fn doc_shape_matches_document_kind() {
-        let mut cx = Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory));
+        let mut cx = Cx::new(
+            Arc::new(NoopEvalPolicy),
+            Arc::new(DefaultFactory),
+            sim_kernel::HandleSeed::new(0xfae8_8f06_e204_cabf),
+        );
         let body = cx.factory().nil().unwrap();
         let doc = Doc::new(
             DocKind::new("report"),

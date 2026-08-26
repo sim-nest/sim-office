@@ -17,7 +17,7 @@ use sim_relation_schema::{
     AcceptAllValues, ColumnBuilder, Constraint, ForeignKey, Index, PhysicalColumn, PhysicalIndex,
     PhysicalSchema, PhysicalTable, PrimaryKey, Schema, SchemaBuilder, TableBuilder,
 };
-use sim_relation_site::{Bindings, Driver, Limits, RowSink, Session, SiteError, StorageAccess};
+use sim_relation_site::{Bindings, Driver, Limits, Session, SiteError, StorageAccess, VecRowSink};
 use std::{cell::RefCell, fmt, path::Path};
 
 const EMPTY_STORE: &[u8] = include_bytes!("../fixtures/empty-doc-store-v1.sqlite");
@@ -225,7 +225,7 @@ impl DocStore {
         .map_err(|e| StoreError::Invalid(e.to_string()))?;
         let bindings = Bindings::new(&RowType::new([]).unwrap(), [])?;
         self.session.borrow_mut().transaction(&mut |transaction| {
-            transaction.mutate(&plan, &bindings, &self.limits, &mut VecSink::default())?;
+            transaction.mutate(&plan, &bindings, &self.limits, &mut VecRowSink::default())?;
             Ok(())
         })?;
         Ok(())
@@ -292,21 +292,11 @@ impl DocStore {
         )
         .map_err(|e| StoreError::Invalid(e.to_string()))?;
         let bindings = Bindings::new(&RowType::new([]).unwrap(), [])?;
-        let mut sink = VecSink::default();
+        let mut sink = VecRowSink::default();
         self.session
             .borrow_mut()
             .query(&plan, &bindings, &self.limits, &mut sink)?;
-        Ok(sink.rows)
-    }
-}
-#[derive(Default)]
-struct VecSink {
-    rows: Vec<Row>,
-}
-impl RowSink for VecSink {
-    fn push(&mut self, row: Row) -> Result<(), SiteError> {
-        self.rows.push(row);
-        Ok(())
+        Ok(sink.into_rows())
     }
 }
 pub(crate) fn text(v: impl Into<String>) -> Cell {

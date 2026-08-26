@@ -10,7 +10,11 @@ use zip::ZipArchive;
 use super::*;
 
 fn test_context() -> Cx {
-    Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
+    Cx::new(
+        Arc::new(NoopEvalPolicy),
+        Arc::new(DefaultFactory),
+        sim_kernel::HandleSeed::new(0xa14e_f676_8343_9ec2),
+    )
 }
 
 fn codec_options(context: &mut Cx) -> DocCodecOptions {

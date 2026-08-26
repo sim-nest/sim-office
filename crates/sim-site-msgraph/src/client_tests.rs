@@ -17,7 +17,11 @@ impl GraphPort for UnusedTransport {
 }
 
 fn test_context() -> Cx {
-    Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
+    Cx::new(
+        Arc::new(NoopEvalPolicy),
+        Arc::new(DefaultFactory),
+        sim_kernel::HandleSeed::new(0x5532_8338_b9ec_1cdc),
+    )
 }
 
 #[test]

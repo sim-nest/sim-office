@@ -28,6 +28,9 @@
 {"kind":"recipe","path":"crates/sim-lib-doc-ledger/recipes/01-basics/ledger-draft-preview/purpose.md"}
 {"kind":"recipe","path":"crates/sim-lib-doc-ledger/recipes/01-basics/ledger-draft-preview/recipe.toml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-ledger/recipes/01-basics/ledger-draft-preview/setup.siml"}
+{"kind":"recipe","path":"crates/sim-lib-doc-ledger/recipes/01-basics/reconciliation-review/purpose.md"}
+{"kind":"recipe","path":"crates/sim-lib-doc-ledger/recipes/01-basics/reconciliation-review/recipe.toml"}
+{"kind":"recipe","path":"crates/sim-lib-doc-ledger/recipes/01-basics/reconciliation-review/setup.siml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-ledger/recipes/book.toml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-markup/recipes/01-basics/chapter.toml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-markup/recipes/01-basics/markup-doc-codec/purpose.md"}
@@ -52,6 +55,14 @@
 {"kind":"recipe","path":"crates/sim-lib-doc-surface/recipes/01-basics/suite-surface-descriptor/recipe.toml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-surface/recipes/01-basics/suite-surface-descriptor/setup.siml"}
 {"kind":"recipe","path":"crates/sim-lib-doc-surface/recipes/book.toml"}
+{"kind":"recipe","path":"crates/sim-lib-doc-web/recipes/01-basics/capture-to-citation/purpose.md"}
+{"kind":"recipe","path":"crates/sim-lib-doc-web/recipes/01-basics/capture-to-citation/recipe.toml"}
+{"kind":"recipe","path":"crates/sim-lib-doc-web/recipes/01-basics/capture-to-citation/setup.siml"}
+{"kind":"recipe","path":"crates/sim-lib-doc-web/recipes/01-basics/chapter.toml"}
+{"kind":"recipe","path":"crates/sim-lib-doc-web/recipes/01-basics/parallel-reading/purpose.md"}
+{"kind":"recipe","path":"crates/sim-lib-doc-web/recipes/01-basics/parallel-reading/recipe.toml"}
+{"kind":"recipe","path":"crates/sim-lib-doc-web/recipes/01-basics/parallel-reading/setup.siml"}
+{"kind":"recipe","path":"crates/sim-lib-doc-web/recipes/book.toml"}
 {"kind":"recipe","path":"crates/sim-lib-gantt/recipes/01-basics/chapter.toml"}
 {"kind":"recipe","path":"crates/sim-lib-gantt/recipes/01-basics/local-gantt-plan/purpose.md"}
 {"kind":"recipe","path":"crates/sim-lib-gantt/recipes/01-basics/local-gantt-plan/recipe.toml"}

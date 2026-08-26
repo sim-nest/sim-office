@@ -55,7 +55,7 @@
       "group": "workspace",
       "manifest": "crates/sim-lib-doc-store/Cargo.toml",
       "package": "sim-lib-doc-store",
-      "summary": "Local SQLite projections for SIM office documents."
+      "summary": "Local relational projections for SIM office documents."
     },
     {
       "crate_name": "sim_lib_doc_surface",
@@ -63,6 +63,13 @@
       "manifest": "crates/sim-lib-doc-surface/Cargo.toml",
       "package": "sim-lib-doc-surface",
       "summary": "Scene and intent surface for office document panes."
+    },
+    {
+      "crate_name": "sim_lib_doc_web",
+      "group": "workspace",
+      "manifest": "crates/sim-lib-doc-web/Cargo.toml",
+      "package": "sim-lib-doc-web",
+      "summary": "Durable, network-free web evidence in the ordinary office model."
     },
     {
       "crate_name": "sim_lib_gantt",

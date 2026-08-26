@@ -14,9 +14,19 @@ pub struct EditionId(pub String);
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum SourceLocator {
     /// A public identifier such as an ISBN, DOI, or archive catalogue key.
-    PublicId { scheme: String, value: String },
+    PublicId {
+        /// Identifier scheme, such as `isbn` or `doi`.
+        scheme: String,
+        /// Identifier value within the named scheme.
+        value: String,
+    },
     /// A user-controlled private collection and opaque item key.
-    PrivateCollection { collection: String, item: String },
+    PrivateCollection {
+        /// Stable name of the user-controlled collection.
+        collection: String,
+        /// Opaque item key within that collection.
+        item: String,
+    },
 }
 
 /// Legal admission and quotation/export ceilings for one edition.

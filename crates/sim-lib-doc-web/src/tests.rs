@@ -1,3 +1,5 @@
+// conformance: persisted web evidence remains stable and rejects tampered metadata.
+
 use super::*;
 use sim_kernel::{Datum, DefaultFactory, HandleSeed, NoopEvalPolicy};
 use sim_lib_net_core::normalize_retrieval_uri;

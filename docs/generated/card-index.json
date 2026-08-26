@@ -1,5 +1,5 @@
 {
-  "card_count": 18,
+  "card_count": 19,
   "cards": [
     {
       "id": "browse/catalog",
@@ -23,7 +23,7 @@
       "id": "cookbook/office/doc-ledger",
       "kind": "cookbook-recipe",
       "owner": "sim-lib-doc-ledger",
-      "summary": "Preview ledger draft posting from office evidence."
+      "summary": "Review exact reconciliation evidence and preview ledger drafts without granting document authority."
     },
     {
       "id": "cookbook/office/doc-markup",
@@ -48,6 +48,12 @@
       "kind": "cookbook-recipe",
       "owner": "sim-lib-doc-surface",
       "summary": "Suite scene projection and intent-to-edit descriptors."
+    },
+    {
+      "id": "cookbook/office/doc-web",
+      "kind": "cookbook-recipe",
+      "owner": "sim-lib-doc-web",
+      "summary": "Capture-to-citation evidence binding without fetching or provider trust."
     },
     {
       "id": "cookbook/office/gantt",

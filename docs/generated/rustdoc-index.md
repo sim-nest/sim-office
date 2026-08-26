@@ -11,8 +11,9 @@
 | `sim-lib-doc-ledger` | `workspace` | Ring-3 office bridge for ledger draft previews. |
 | `sim-lib-doc-markup` | `workspace` | Markup document codecs for office article documents. |
 | `sim-lib-doc-site` | `workspace` | Document site registration and modeled realize spine. |
-| `sim-lib-doc-store` | `workspace` | Local SQLite projections for SIM office documents. |
+| `sim-lib-doc-store` | `workspace` | Local relational projections for SIM office documents. |
 | `sim-lib-doc-surface` | `workspace` | Scene and intent surface for office document panes. |
+| `sim-lib-doc-web` | `workspace` | Durable, network-free web evidence in the ordinary office model. |
 | `sim-lib-gantt` | `workspace` | Local Gantt schedule plans for the SIM office suite. |
 | `sim-lib-mail` | `workspace` | Mail and calendar domain for SIM office documents. |
 | `sim-lib-office-pack` | `workspace` | Annual accounts pack planner for SIM office documents. |
