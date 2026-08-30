@@ -12,8 +12,8 @@ homepage = "https://github.com/sim-nest/sim-office"
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-sim-cookbook = { version = "0.2.0" }
-sim-kernel = { version = "0.2.0" }
+sim-cookbook = { version = "0.3.0" }
+sim-kernel = { version = "0.3.0" }
 sim-lib-deck = { version = "0.1.0", path = "../sim-lib-deck" }
 sim-lib-doc-core = { version = "0.1.0", path = "../sim-lib-doc-core" }
 sim-lib-doc-site = { version = "0.1.0", path = "../sim-lib-doc-site" }
