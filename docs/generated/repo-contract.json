@@ -1,5 +1,5 @@
 {
-  "card_count": 18,
+  "card_count": 19,
   "cards": [
     {
       "id": "browse/catalog",
@@ -23,7 +23,7 @@
       "id": "cookbook/office/doc-ledger",
       "kind": "cookbook-recipe",
       "owner": "sim-lib-doc-ledger",
-      "summary": "Preview ledger draft posting from office evidence."
+      "summary": "Review exact reconciliation evidence and preview ledger drafts without granting document authority."
     },
     {
       "id": "cookbook/office/doc-markup",
@@ -48,6 +48,12 @@
       "kind": "cookbook-recipe",
       "owner": "sim-lib-doc-surface",
       "summary": "Suite scene projection and intent-to-edit descriptors."
+    },
+    {
+      "id": "cookbook/office/doc-web",
+      "kind": "cookbook-recipe",
+      "owner": "sim-lib-doc-web",
+      "summary": "Capture-to-citation evidence binding without fetching or provider trust."
     },
     {
       "id": "cookbook/office/gantt",
@@ -128,6 +134,7 @@
       "sim-lib-doc-site",
       "sim-lib-doc-store",
       "sim-lib-doc-surface",
+      "sim-lib-doc-web",
       "sim-lib-gantt",
       "sim-lib-mail",
       "sim-lib-office-pack",
@@ -140,7 +147,7 @@
   },
   "non_citizen_exemption_count": 0,
   "non_citizen_exemptions": [],
-  "package_count": 17,
+  "package_count": 18,
   "packages": [
     {
       "crate_name": "sim_codec_odf",
@@ -523,14 +530,14 @@
           "target": null
         }
       ],
-      "description": "SQLite document store projections for SIM office documents.",
+      "description": "Relational document store projections for SIM office documents.",
       "features": [],
       "group": "workspace",
       "manifest": "crates/sim-lib-doc-store/Cargo.toml",
       "name": "sim-lib-doc-store",
       "publish": "false",
       "root": "crates/sim-lib-doc-store",
-      "rustdoc_summary": "Local SQLite projections for SIM office documents.",
+      "rustdoc_summary": "Local relational projections for SIM office documents.",
       "target_kinds": [
         "custom-build",
         "lib"
@@ -601,6 +608,59 @@
           ],
           "name": "build-script-build",
           "src": "crates/sim-lib-doc-surface/build.rs"
+        }
+      ]
+    },
+    {
+      "crate_name": "sim_lib_doc_web",
+      "dependencies": [
+        {
+          "kind": "normal",
+          "optional": false,
+          "package": "sim-lib-doc-core",
+          "rename": null,
+          "target": null
+        },
+        {
+          "kind": "normal",
+          "optional": false,
+          "package": "sim-lib-doc-store",
+          "rename": null,
+          "target": null
+        }
+      ],
+      "description": "Durable web-capture evidence adapters for SIM office documents.",
+      "features": [],
+      "group": "workspace",
+      "manifest": "crates/sim-lib-doc-web/Cargo.toml",
+      "name": "sim-lib-doc-web",
+      "publish": "true",
+      "root": "crates/sim-lib-doc-web",
+      "rustdoc_summary": "Durable, network-free web evidence in the ordinary office model.",
+      "target_kinds": [
+        "custom-build",
+        "lib"
+      ],
+      "targets": [
+        {
+          "crate_types": [
+            "lib"
+          ],
+          "kind": [
+            "lib"
+          ],
+          "name": "sim_lib_doc_web",
+          "src": "crates/sim-lib-doc-web/src/lib.rs"
+        },
+        {
+          "crate_types": [
+            "bin"
+          ],
+          "kind": [
+            "custom-build"
+          ],
+          "name": "build-script-build",
+          "src": "crates/sim-lib-doc-web/build.rs"
         }
       ]
     },
@@ -1056,10 +1116,10 @@
     "generated_by": "cargo run -p xtask -- simdoc",
     "generation_timestamp": "2026-07-14T22:53:58+02:00",
     "generator": "xtask repo-contract v1",
-    "git_commit": "df2c3a2a4e794523a3f9dbb9a632d5b315848708",
+    "git_commit": "507b62abc489344fc1e64c7d216771ce2ad5c98e",
     "repo": "sim-office",
     "schema": "sim.provenance.v1",
-    "source_commit": "df2c3a2a4e794523a3f9dbb9a632d5b315848708",
+    "source_commit": "507b62abc489344fc1e64c7d216771ce2ad5c98e",
     "source_remote": "https://github.com/sim-nest/sim-office",
     "validation_commands": [
       "cargo fmt --all --check",
@@ -1072,9 +1132,9 @@
       "cargo run -p xtask -- validation-matrix --check --repo .",
       "cargo run -p xtask -- crate-catalog --check --repo ."
     ],
-    "workspace_hash": "e85d1b2bcf8516c9",
+    "workspace_hash": "aa97f7c4c09ccc17",
     "workspace_hash_algorithm": "fnv1a64",
-    "workspace_hash_input_count": 157,
+    "workspace_hash_input_count": 174,
     "workspace_hash_inputs": [
       "Cargo.toml",
       "crates/sim-codec-odf/Cargo.toml",
@@ -1127,11 +1187,13 @@
       "crates/sim-lib-doc-ledger/Cargo.toml",
       "crates/sim-lib-doc-ledger/build.rs",
       "crates/sim-lib-doc-ledger/recipes/01-basics/ledger-draft-preview/recipe.toml",
+      "crates/sim-lib-doc-ledger/recipes/01-basics/reconciliation-review/recipe.toml",
       "crates/sim-lib-doc-ledger/recipes/book.toml",
       "crates/sim-lib-doc-ledger/src/bridge.rs",
       "crates/sim-lib-doc-ledger/src/draft.rs",
       "crates/sim-lib-doc-ledger/src/lib.rs",
       "crates/sim-lib-doc-ledger/src/projection.rs",
+      "crates/sim-lib-doc-ledger/src/reconciliation.rs",
       "crates/sim-lib-doc-markup/Cargo.toml",
       "crates/sim-lib-doc-markup/build.rs",
       "crates/sim-lib-doc-markup/recipes/01-basics/markup-doc-codec/recipe.toml",
@@ -1158,6 +1220,7 @@
       "crates/sim-lib-doc-store/src/lib.rs",
       "crates/sim-lib-doc-store/src/store.rs",
       "crates/sim-lib-doc-store/src/store_tests.rs",
+      "crates/sim-lib-doc-store/src/web.rs",
       "crates/sim-lib-doc-surface/Cargo.toml",
       "crates/sim-lib-doc-surface/build.rs",
       "crates/sim-lib-doc-surface/recipes/01-basics/suite-surface-descriptor/recipe.toml",
@@ -1165,6 +1228,20 @@
       "crates/sim-lib-doc-surface/src/intent.rs",
       "crates/sim-lib-doc-surface/src/lib.rs",
       "crates/sim-lib-doc-surface/src/scene.rs",
+      "crates/sim-lib-doc-web/Cargo.toml",
+      "crates/sim-lib-doc-web/build.rs",
+      "crates/sim-lib-doc-web/recipes/01-basics/capture-to-citation/recipe.toml",
+      "crates/sim-lib-doc-web/recipes/01-basics/parallel-reading/recipe.toml",
+      "crates/sim-lib-doc-web/recipes/book.toml",
+      "crates/sim-lib-doc-web/src/anchor.rs",
+      "crates/sim-lib-doc-web/src/citation.rs",
+      "crates/sim-lib-doc-web/src/lib.rs",
+      "crates/sim-lib-doc-web/src/persistence.rs",
+      "crates/sim-lib-doc-web/src/projection.rs",
+      "crates/sim-lib-doc-web/src/reading.rs",
+      "crates/sim-lib-doc-web/src/reading_tests.rs",
+      "crates/sim-lib-doc-web/src/records.rs",
+      "crates/sim-lib-doc-web/src/tests.rs",
       "crates/sim-lib-gantt/Cargo.toml",
       "crates/sim-lib-gantt/build.rs",
       "crates/sim-lib-gantt/recipes/01-basics/local-gantt-plan/recipe.toml",
@@ -1235,7 +1312,7 @@
       "xtask/Cargo.toml"
     ]
   },
-  "recipe_book_count": 16,
+  "recipe_book_count": 17,
   "recipes": [
     {
       "book": "office/odf",
@@ -1339,7 +1416,7 @@
       "card_id": "cookbook/office/doc-ledger",
       "group": "workspace",
       "package": "sim-lib-doc-ledger",
-      "recipe_count": 1,
+      "recipe_count": 2,
       "recipes": [
         {
           "card_id": "office/doc-ledger/01-basics/ledger-draft-preview",
@@ -1348,9 +1425,17 @@
           "package": "sim-lib-doc-ledger",
           "recipe_toml": "crates/sim-lib-doc-ledger/recipes/01-basics/ledger-draft-preview/recipe.toml",
           "title": "Ledger draft preview"
+        },
+        {
+          "card_id": "office/doc-ledger/01-basics/reconciliation-review",
+          "codec": "lisp",
+          "id": "reconciliation-review",
+          "package": "sim-lib-doc-ledger",
+          "recipe_toml": "crates/sim-lib-doc-ledger/recipes/01-basics/reconciliation-review/recipe.toml",
+          "title": "Exact reconciliation review"
         }
       ],
-      "summary": "Preview ledger draft posting from office evidence.",
+      "summary": "Review exact reconciliation evidence and preview ledger drafts without granting document authority.",
       "title": "Document Ledger Bridge"
     },
     {
@@ -1440,6 +1525,34 @@
       ],
       "summary": "Suite scene projection and intent-to-edit descriptors.",
       "title": "Document Surface"
+    },
+    {
+      "book": "office/doc-web",
+      "book_toml": "crates/sim-lib-doc-web/recipes/book.toml",
+      "card_id": "cookbook/office/doc-web",
+      "group": "workspace",
+      "package": "sim-lib-doc-web",
+      "recipe_count": 2,
+      "recipes": [
+        {
+          "card_id": "office/doc-web/01-basics/capture-to-citation",
+          "codec": "lisp",
+          "id": "capture-to-citation",
+          "package": "sim-lib-doc-web",
+          "recipe_toml": "crates/sim-lib-doc-web/recipes/01-basics/capture-to-citation/recipe.toml",
+          "title": "Bind an offline capture to a citation"
+        },
+        {
+          "card_id": "office/doc-web/01-basics/parallel-reading",
+          "codec": "lisp",
+          "id": "parallel-reading",
+          "package": "sim-lib-doc-web",
+          "recipe_toml": "crates/sim-lib-doc-web/recipes/01-basics/parallel-reading/recipe.toml",
+          "title": "Read supplied editions without losing source identity"
+        }
+      ],
+      "summary": "Capture-to-citation evidence binding without fetching or provider trust.",
+      "title": "Offline Web Evidence"
     },
     {
       "book": "office/gantt",

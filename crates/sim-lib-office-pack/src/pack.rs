@@ -191,5 +191,9 @@ pub(crate) fn validate_pack(pack: &AnnualAccountsPack) -> Result<(), PackError> 
 }
 
 pub(crate) fn default_context() -> Cx {
-    Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
+    Cx::new(
+        Arc::new(NoopEvalPolicy),
+        Arc::new(DefaultFactory),
+        sim_kernel::HandleSeed::new(0x4f46_4643),
+    )
 }

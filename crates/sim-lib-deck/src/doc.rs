@@ -38,7 +38,11 @@ mod tests {
     use crate::{Slide, SlideBlock};
 
     fn test_context() -> Cx {
-        Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
+        Cx::new(
+            Arc::new(NoopEvalPolicy),
+            Arc::new(DefaultFactory),
+            sim_kernel::HandleSeed::new(0xf5cb_323e_1bb8_0309),
+        )
     }
 
     #[test]

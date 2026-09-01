@@ -80,7 +80,6 @@ guidance = "Use this row when rendering an office document or suite preview."
 claims_anchors = [
   "anchor/crate/sim-lib-deck",
   "anchor/crate/sim-lib-doc-core",
-  "anchor/crate/sim-lib-doc-ledger",
   "anchor/crate/sim-lib-doc-surface",
   "anchor/export/sim-lib-doc-surface/view-default",
 ]
@@ -91,6 +90,44 @@ claims_surfaces = [
 ]
 claims_specimens = [
   "spec-test/sim-office/crates/sim-lib-doc-surface/src/scene",
+]
+
+[[feature]]
+id = "feature/sim-office/reconciliation-review"
+title = "Exact reconciliation review documents"
+summary = "Project frozen statement and ledger evidence, human decisions, uncovered items, corrections, and bridge arithmetic into an exportable review document whose explicit edits decode only to checked ledger command intents."
+owner = "crate/sim-lib-doc-ledger"
+audiences = ["user", "code", "framework"]
+guidance = "Use this non-authoritative projection to review exact reconciliation evidence. Displayed amounts and lifecycle states are bound to a trusted frozen projection; import accepts edits only through the explicit decision lane, while verification, journaling, correction approval, posting, and closure remain ledger responsibilities."
+claims_anchors = ["anchor/crate/sim-lib-doc-ledger"]
+claims_specimens = [
+  "spec-test/sim-office/crates/sim-lib-doc-ledger/src/reconciliation",
+]
+
+[[feature]]
+id = "feature/sim-office/document-store"
+title = "Relational document store consumer"
+summary = "Persist document, edit, evidence, and web-provenance projections through checked relational plans while adopting the exact legacy file layout."
+owner = "crate/sim-lib-doc-store"
+audiences = ["code"]
+guidance = "Use this thin consumer for office projection persistence. It composes the relation schema, plan, site, and SQLite capsule contracts; do not add document-specific SQL, provider handles, query builders, migrations, or driver adapters."
+claims_anchors = ["anchor/crate/sim-lib-doc-store"]
+claims_specimens = [
+  "spec-test/sim-office/crates/sim-lib-doc-store/src/store_tests",
+]
+
+[[feature]]
+id = "feature/sim-office/web-evidence"
+title = "Captured web evidence"
+summary = "Bind offline captures and legally supplied editions to normalized representations and verified Unicode spans for durable citations and parallel reading."
+owner = "crate/sim-lib-doc-web"
+audiences = ["user", "code", "framework"]
+guidance = "Use this adapter after neutral capture/decoding or offline legal supply. It reuses office Evidence, DocStore, immutable WebRepresentation, and EvidenceSelector identities; edition admission adds licence ceilings, expiry, layered annotations, removal, and rebuildable indexes without fetching, rematching quotes, or trusting provider snippets."
+claims_anchors = [
+  "anchor/crate/sim-lib-doc-web",
+]
+claims_specimens = [
+  "spec-test/sim-office/crates/sim-lib-doc-web/src/tests",
 ]
 
 [[feature]]
@@ -113,13 +150,12 @@ claims_specimens = [
 [[feature]]
 id = "feature/sim-office/office-site-workflows"
 title = "Office site workflows"
-summary = "Model document stores, mail and calendar summaries, and enterprise office site reads."
+summary = "Run portable document, mail, Graph, SharePoint, and LibreOffice workflows over modeled or explicitly supplied platform ports."
 owner = "crate/sim-lib-doc-site"
 audiences = ["user", "code"]
-guidance = "Use this row when connecting office documents to modeled mail, Graph, SharePoint, LibreOffice, or file-backed sites."
+guidance = "Keep ODF, Doc, Sheet, Deck, Gantt, surface, and site policy here. The document and Gantt stores independently compose checked relation schemas, plans, opaque preopened placement, and closure-managed transactions; product crates retain ordering, conversion, and error semantics while the SQLite capsule alone owns SQL. Compose LibreOffice with supplied mounts plus ProcessPort or IpcPort, and Graph with a supplied GraphPort; use modeled services in portable tests and platform capsule evidence for physical helpers, sockets, TLS, and local IPC."
 claims_anchors = [
   "anchor/crate/sim-lib-doc-site",
-  "anchor/crate/sim-lib-doc-store",
   "anchor/crate/sim-lib-gantt",
   "anchor/crate/sim-lib-mail",
   "anchor/crate/sim-site-libreoffice",
@@ -143,6 +179,16 @@ steps = [
   { feature = "feature/sim-office/document-surfaces", why = "The surface row renders the document into a reviewable view." },
   { feature = "feature/sim-office/office-site-workflows", why = "The site row connects the document to modeled workplace sources." },
   { specimen = "recipe/sim-office/crates/sim-lib-doc-surface/01-basics/suite-surface-descriptor", why = "The suite-surface recipe is the shortest surface example." },
+]
+
+[[route]]
+id = "route/web-capture-to-office-evidence"
+task = "Trace an office citation to its raw web capture and policy receipt"
+audiences = ["user", "code", "framework"]
+steps = [
+  { feature = "feature/sim-office/web-evidence", why = "The evidence adapter binds the citation to checked capture and representation ids while retaining the policy receipt." },
+  { specimen = "recipe/sim-office/crates/sim-lib-doc-web/01-basics/capture-to-citation", why = "The offline recipe shows the capture, representation, anchor, reload, and citation path without network access." },
+  { specimen = "spec-test/sim-office/crates/sim-lib-doc-web/src/tests", why = "The checked tests prove restart stability and fail-closed behavior for tampered capture, representation, selector, index, and codec metadata." },
 ]
 
 [[route]]

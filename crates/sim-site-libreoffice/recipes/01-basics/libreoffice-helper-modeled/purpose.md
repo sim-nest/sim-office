@@ -1,4 +1,5 @@
 # LibreOffice helper modeled site
 
-Shows the LibreOffice placement as a modeled office site whose live helper
-process stays permission-gated.
+Shows LibreOffice office policy composed over explicit mounts and a modeled
+platform process port. Physical process and IPC realizations remain capsule
+evidence rather than portable office tests.

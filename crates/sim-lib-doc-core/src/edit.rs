@@ -88,7 +88,11 @@ mod tests {
 
     #[test]
     fn edit_round_trips_through_double_invert() {
-        let cx = Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory));
+        let cx = Cx::new(
+            Arc::new(NoopEvalPolicy),
+            Arc::new(DefaultFactory),
+            sim_kernel::HandleSeed::new(0xc37b_b833_0649_c0de),
+        );
         let op = cx.factory().string("set title".to_owned()).unwrap();
         let inverse = cx.factory().string("restore title".to_owned()).unwrap();
         let edit = Edit::new(DocId::new("doc-1"), "office/body", op, inverse);
@@ -98,7 +102,11 @@ mod tests {
 
     #[test]
     fn domain_edit_round_trips_without_core_enum_variant() {
-        let mut cx = Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory));
+        let mut cx = Cx::new(
+            Arc::new(NoopEvalPolicy),
+            Arc::new(DefaultFactory),
+            sim_kernel::HandleSeed::new(0x251d_1f52_8144_2a42),
+        );
         let old_body = cx.factory().string("old".to_owned()).unwrap();
         let new_body = cx.factory().string("new".to_owned()).unwrap();
         let domain = BodySwapEdit {

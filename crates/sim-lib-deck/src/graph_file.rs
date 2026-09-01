@@ -253,7 +253,11 @@ mod tests {
     }
 
     fn test_context() -> Cx {
-        Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
+        Cx::new(
+            Arc::new(NoopEvalPolicy),
+            Arc::new(DefaultFactory),
+            sim_kernel::HandleSeed::new(0x5b93_73f0_8348_9616),
+        )
     }
 
     #[test]

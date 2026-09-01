@@ -1,0 +1,8 @@
+(expr:map
+  [kind office/web-capture-to-citation]
+  [operation bind-offline-evidence]
+  [capture-id "sha256:<raw-capture-content-id>"]
+  [representation-id "sha256:<decoded-representation-content-id>"]
+  [selector [start 6 end 11 exact "café"]]
+  [policy-receipt "policy:receipt-id"]
+  [mode modeled])

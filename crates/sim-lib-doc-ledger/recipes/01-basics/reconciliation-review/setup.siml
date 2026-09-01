@@ -1,0 +1,11 @@
+(expr:map
+  [kind office/reconciliation-review]
+  [snapshot month:synthetic-unresolved]
+  [reviewer mia]
+  [rows [bank:fee bank:rent]]
+  [vouchers [41 42]]
+  [states [imported proposed rejected deferred corrected]]
+  [bridge [statement-total less-ledger-total residual]]
+  [edit-lane ledger/reconciliation-command-intents]
+  [projection-authority none]
+  [verified-close independently-recomputed])

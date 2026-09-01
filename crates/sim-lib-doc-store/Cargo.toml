@@ -3,22 +3,27 @@ name = "sim-lib-doc-store"
 version = "0.1.0"
 edition = "2024"
 license = "MPL-2.0"
-description = "SQLite document store projections for SIM office documents."
+description = "Relational document store projections for SIM office documents."
 readme = "README.md"
 publish = false
 repository = "https://github.com/sim-nest/sim-office"
 homepage = "https://github.com/sim-nest/sim-office"
 
 [dependencies]
-rusqlite = { version = "0.31", features = ["bundled"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-sim-cookbook = { version = "0.2.0" }
-sim-kernel = { version = "0.2.0" }
+sim-cookbook = { version = "0.3.0" }
+sim-kernel = { version = "0.3.0" }
 sim-lib-doc-core = { version = "0.1.0", path = "../sim-lib-doc-core" }
+sim-platform-sqlite = { version = "0.1.0" }
+sim-relation-core = { version = "0.1.0" }
+sim-relation-migrate = { version = "0.1.0" }
+sim-relation-plan = { version = "0.1.0" }
+sim-relation-schema = { version = "0.1.0" }
+sim-relation-site = { version = "0.1.0" }
 
 [build-dependencies]
-sim-cookbook = { version = "0.2.0" }
+sim-cookbook-build = { version = "0.1.0" }
 
 [dev-dependencies]
 tempfile = "3"

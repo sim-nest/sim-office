@@ -13,6 +13,7 @@
 | `sim-lib-doc-site` | `workspace` | 0 | 0 |
 | `sim-lib-doc-store` | `workspace` | 0 | 0 |
 | `sim-lib-doc-surface` | `workspace` | 0 | 0 |
+| `sim-lib-doc-web` | `workspace` | 0 | 0 |
 | `sim-lib-gantt` | `workspace` | 0 | 0 |
 | `sim-lib-mail` | `workspace` | 0 | 0 |
 | `sim-lib-office-pack` | `workspace` | 0 | 0 |

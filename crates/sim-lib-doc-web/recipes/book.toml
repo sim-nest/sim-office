@@ -1,0 +1,5 @@
+book = "office/doc-web"
+title = "Offline Web Evidence"
+summary = "Capture-to-citation evidence binding without fetching or provider trust."
+order = 413
+chapters = ["01-basics"]

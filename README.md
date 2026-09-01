@@ -16,7 +16,7 @@ without learning office-file enums.
 | `sim-lib-gantt` | Local schedule plans, dependency analysis, and SQLite Gantt snapshots. |
 | `sim-lib-doc-markup` | Markup file codecs exposed as office `DocCodec` adapters for article documents. |
 | `sim-lib-doc-site` | Opaque site registration and modeled/live document placement calls. |
-| `sim-lib-doc-store` | Local SQLite document snapshots and ledger-sequenced edit projections. |
+| `sim-lib-doc-store` | Relational document snapshots and ledger-sequenced edit projections. |
 | `sim-lib-doc-surface` | Scene projection and intent decoding for suite document panes. |
 | `sim-lib-office-pack` | Annual accounts pack previews for spreadsheets, decks, mail drafts, and archives. |
 | `sim-lib-sheet` | Exact local spreadsheet records, formulas, document projection, and cell edits. |

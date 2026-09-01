@@ -100,8 +100,11 @@ mod tests {
 
     #[test]
     fn seating_default_profile_does_not_grant_live_network() {
-        let (mut cx, seat) =
-            sim_kernel::Cx::new_seated(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory));
+        let (mut cx, seat) = sim_kernel::Cx::new_seated(
+            Arc::new(NoopEvalPolicy),
+            Arc::new(DefaultFactory),
+            sim_kernel::HandleSeed::new(0xce27_937d_0a0a_e3ea),
+        );
 
         OfficeCapabilityProfile::seat(&seat, &mut cx).unwrap();
 

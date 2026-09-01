@@ -1,88 +1,73 @@
-//! SQLite evidence-link storage for document audit trails.
-
-use rusqlite::{params, types::Type};
+//! Evidence-link storage through the checked relational session.
+use crate::{
+    DocStore,
+    store::{
+        StoreError, StoreResult, cell_i64, cell_optional_text, cell_text, integer, nullable_text,
+        text,
+    },
+};
 use sim_lib_doc_core::{DocId, Evidence, ExternalRef, LinkRole};
-
-use crate::{DocStore, codec::CodecError};
-
-/// Attaches an evidence link as a subject/predicate/object fact row.
-pub fn attach(store: &DocStore, evidence: &Evidence) -> rusqlite::Result<()> {
-    let object = encode_ref(&evidence.evidence).map_err(sql_encode_error)?;
-    let seq = sqlite_seq(evidence.captured_at_seq)?;
-    store.connection().execute(
-        "INSERT INTO evidence_facts
-             (subject, predicate, object, captured_at_seq, immutable_hint)
-         VALUES (?1, ?2, ?3, ?4, ?5)
-         ON CONFLICT(subject, predicate, object, captured_at_seq)
-         DO UPDATE SET immutable_hint = excluded.immutable_hint",
-        params![
-            evidence.subject.as_str(),
-            evidence.predicate(),
-            object,
-            seq,
-            evidence.immutable_hint.as_deref(),
-        ],
-    )?;
-    Ok(())
-}
-
-/// Returns the evidence links for `subject`, ordered by capture sequence.
-pub fn evidence_for(store: &DocStore, subject: &DocId) -> rusqlite::Result<Vec<Evidence>> {
-    let mut stmt = store.connection().prepare(
-        "SELECT predicate, object, captured_at_seq, immutable_hint
-         FROM evidence_facts
-         WHERE subject = ?1
-         ORDER BY captured_at_seq ASC, predicate ASC, object ASC",
-    )?;
-    let rows = stmt.query_map(params![subject.as_str()], |row| {
-        let predicate: String = row.get(0)?;
-        let object: String = row.get(1)?;
-        let captured_at_seq: i64 = row.get(2)?;
-        let immutable_hint: Option<String> = row.get(3)?;
-        let role = LinkRole::from_predicate(&predicate).ok_or_else(|| {
-            sql_decode_error(
-                0,
-                CodecError::new(format!("unknown evidence predicate {predicate}")),
-            )
-        })?;
-        let evidence = decode_ref(&object).map_err(|error| sql_decode_error(1, error))?;
-        Ok(Evidence::new(
-            subject.clone(),
-            evidence,
-            role,
-            u64::try_from(captured_at_seq).map_err(|_| {
-                sql_decode_error(
-                    2,
-                    CodecError::new(format!("negative evidence sequence {captured_at_seq}")),
-                )
-            })?,
-            immutable_hint,
+use sim_relation_plan::OrderDirection;
+/// Attaches an evidence fact.
+pub fn attach(store: &DocStore, e: &Evidence) -> StoreResult<()> {
+    let object =
+        serde_json::to_string(&e.evidence).map_err(|x| StoreError::Codec(x.to_string()))?;
+    let seq = i64::try_from(e.captured_at_seq).map_err(|_| {
+        StoreError::Invalid(format!(
+            "evidence sequence {} exceeds signed relational domain",
+            e.captured_at_seq
         ))
     })?;
-
-    rows.collect()
+    store.upsert(
+        "evidence_facts",
+        &[
+            "subject",
+            "predicate",
+            "object",
+            "captured_at_seq",
+            "immutable_hint",
+        ],
+        vec![
+            text(e.subject.as_str()),
+            text(e.predicate()),
+            text(object),
+            integer(seq),
+            nullable_text(e.immutable_hint.clone()),
+        ],
+    )
 }
-
-fn encode_ref(reference: &ExternalRef) -> Result<String, CodecError> {
-    serde_json::to_string(reference).map_err(|error| CodecError::new(error.to_string()))
-}
-
-fn decode_ref(encoded: &str) -> Result<ExternalRef, CodecError> {
-    serde_json::from_str(encoded).map_err(|error| CodecError::new(error.to_string()))
-}
-
-fn sqlite_seq(seq: u64) -> rusqlite::Result<i64> {
-    i64::try_from(seq).map_err(|_| {
-        sql_encode_error(CodecError::new(format!(
-            "evidence sequence {seq} does not fit sqlite INTEGER"
-        )))
-    })
-}
-
-fn sql_encode_error(error: CodecError) -> rusqlite::Error {
-    rusqlite::Error::ToSqlConversionFailure(Box::new(error))
-}
-
-fn sql_decode_error(index: usize, error: CodecError) -> rusqlite::Error {
-    rusqlite::Error::FromSqlConversionFailure(index, Type::Text, Box::new(error))
+/// Returns evidence ordered by capture sequence and stable fact identity.
+pub fn evidence_for(store: &DocStore, subject: &DocId) -> StoreResult<Vec<Evidence>> {
+    store
+        .select(
+            "evidence_facts",
+            &["predicate", "object", "captured_at_seq", "immutable_hint"],
+            &[("subject", text(subject.as_str()))],
+            &[
+                ("captured_at_seq", OrderDirection::Asc),
+                ("predicate", OrderDirection::Asc),
+                ("object", OrderDirection::Asc),
+            ],
+            None,
+        )?
+        .into_iter()
+        .map(|r| {
+            let predicate = cell_text(&r, 0)?;
+            let role = LinkRole::from_predicate(predicate).ok_or_else(|| {
+                StoreError::Codec(format!("unknown evidence predicate {predicate}"))
+            })?;
+            let reference: ExternalRef = serde_json::from_str(cell_text(&r, 1)?)
+                .map_err(|e| StoreError::Codec(e.to_string()))?;
+            let seq = cell_i64(&r, 2)?;
+            let seq = u64::try_from(seq)
+                .map_err(|_| StoreError::Codec(format!("negative evidence sequence {seq}")))?;
+            Ok(Evidence::new(
+                subject.clone(),
+                reference,
+                role,
+                seq,
+                cell_optional_text(&r, 3)?.map(str::to_owned),
+            ))
+        })
+        .collect()
 }

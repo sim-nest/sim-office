@@ -20,8 +20,11 @@ This generated lane consumes `docs/generated/sim-index-fragment.sx`. Global inde
 | `feature/sim-office/generated-docs` | `crate/xtask` | 0 | Publish generated package, card, recipe, and index facts for office documents, sites, and codecs. |
 | `feature/sim-office/document-codecs` | `crate/sim-lib-office-pack` | 1 | Round-trip OOXML, ODF, deck, sheet, and markup documents through office codec recipes. |
 | `feature/sim-office/document-surfaces` | `crate/sim-lib-doc-surface` | 1 | Project document, markup, and suite descriptors into view surfaces for review and editing. |
+| `feature/sim-office/reconciliation-review` | `crate/sim-lib-doc-ledger` | 1 | Project frozen statement and ledger evidence, human decisions, uncovered items, corrections, and bridge arithmetic into an exportable review document whose explicit edits decode only to checked ledger command intents. |
+| `feature/sim-office/document-store` | `crate/sim-lib-doc-store` | 1 | Persist document, edit, evidence, and web-provenance projections through checked relational plans while adopting the exact legacy file layout. |
+| `feature/sim-office/web-evidence` | `crate/sim-lib-doc-web` | 1 | Bind offline captures and legally supplied editions to normalized representations and verified Unicode spans for durable citations and parallel reading. |
 | `feature/sim-office/sheet-calculation` | `crate/sim-lib-sheet` | 1 | Evaluate local sheet formulas over exact rational cells with incremental dependency tracking and cutoff. |
-| `feature/sim-office/office-site-workflows` | `crate/sim-lib-doc-site` | 1 | Model document stores, mail and calendar summaries, and enterprise office site reads. |
+| `feature/sim-office/office-site-workflows` | `crate/sim-lib-doc-site` | 1 | Run portable document, mail, Graph, SharePoint, and LibreOffice workflows over modeled or explicitly supplied platform ports. |
 
 ## Surfaces
 
@@ -67,6 +70,9 @@ This generated lane consumes `docs/generated/sim-index-fragment.sx`. Global inde
 - `crates/sim-lib-doc-ledger/recipes/01-basics/ledger-draft-preview/purpose.md`
 - `crates/sim-lib-doc-ledger/recipes/01-basics/ledger-draft-preview/recipe.toml`
 - `crates/sim-lib-doc-ledger/recipes/01-basics/ledger-draft-preview/setup.siml`
+- `crates/sim-lib-doc-ledger/recipes/01-basics/reconciliation-review/purpose.md`
+- `crates/sim-lib-doc-ledger/recipes/01-basics/reconciliation-review/recipe.toml`
+- `crates/sim-lib-doc-ledger/recipes/01-basics/reconciliation-review/setup.siml`
 - `crates/sim-lib-doc-ledger/recipes/book.toml`
 - `crates/sim-lib-doc-markup/recipes/01-basics/chapter.toml`
 - `crates/sim-lib-doc-markup/recipes/01-basics/markup-doc-codec/purpose.md`
@@ -91,6 +97,14 @@ This generated lane consumes `docs/generated/sim-index-fragment.sx`. Global inde
 - `crates/sim-lib-doc-surface/recipes/01-basics/suite-surface-descriptor/recipe.toml`
 - `crates/sim-lib-doc-surface/recipes/01-basics/suite-surface-descriptor/setup.siml`
 - `crates/sim-lib-doc-surface/recipes/book.toml`
+- `crates/sim-lib-doc-web/recipes/01-basics/capture-to-citation/purpose.md`
+- `crates/sim-lib-doc-web/recipes/01-basics/capture-to-citation/recipe.toml`
+- `crates/sim-lib-doc-web/recipes/01-basics/capture-to-citation/setup.siml`
+- `crates/sim-lib-doc-web/recipes/01-basics/chapter.toml`
+- `crates/sim-lib-doc-web/recipes/01-basics/parallel-reading/purpose.md`
+- `crates/sim-lib-doc-web/recipes/01-basics/parallel-reading/recipe.toml`
+- `crates/sim-lib-doc-web/recipes/01-basics/parallel-reading/setup.siml`
+- `crates/sim-lib-doc-web/recipes/book.toml`
 - `crates/sim-lib-gantt/recipes/01-basics/chapter.toml`
 - `crates/sim-lib-gantt/recipes/01-basics/local-gantt-plan/purpose.md`
 - `crates/sim-lib-gantt/recipes/01-basics/local-gantt-plan/recipe.toml`
@@ -544,6 +558,1198 @@ mod tests {
 
         sim_lib_scene::validate_scene(&formatted).unwrap();
     }
+}
+```
+
+### `feature/sim-office/reconciliation-review`
+
+Specimen `spec-test/sim-office/crates/sim-lib-doc-ledger/src/reconciliation` is checked by `cargo test`.
+
+Source `crates/sim-lib-doc-ledger/src/reconciliation.rs`:
+
+```rust
+//! Exact, non-authoritative reconciliation review documents.
+
+// conformance: reconciliation review edits decode only to checked ledger command intents.
+
+use std::collections::{BTreeMap, BTreeSet};
+
+use serde::{Deserialize, Serialize};
+use sim_ledger::{
+    Candidate, CandidateKind, CorrectionDraft, DecisionDisposition, DecisionRecord,
+    ReconciliationCertificate, ReconciliationInputs, ReconciliationRef, verify_certificate,
+};
+use sim_lib_doc_core::OfficeError;
+
+/// Structural lifecycle state rendered by a review document.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum DecisionState {
+    /// Source evidence was admitted into the frozen snapshot.
+    Imported,
+    /// An exact candidate was generated but has no human decision.
+    Proposed,
+    /// A human accepted the exact relation.
+    Accepted,
+    /// A human rejected the exact relation.
+    Rejected,
+    /// A human explicitly deferred the relation.
+    Deferred,
+    /// A balanced correction draft is displayed, but not approved or posted.
+    Corrected,
+    /// A supplied certificate was independently verified before projection.
+    Verified,
+    /// Independent verification proved complete coverage and zero residual.
+    Closed,
+}
+
+/// Exact statement-side evidence exposed to the reviewer.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct StatementRowView {
+    /// Stable imported source identity.
+    pub source_identity: String,
+    /// Opaque source/export reference for exact provenance.
+    pub source_ref: String,
+    /// Exact signed amount in minor units.
+    pub amount_minor: i64,
+    /// Currency declared by the imported row.
+    pub currency: String,
+    /// Canonical transaction date.
+    pub date: String,
+    /// Current structural state.
+    pub state: DecisionState,
+}
+
+/// Exact ledger-side evidence exposed to the reviewer.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LedgerMovementView {
+    /// Voucher identity; adjacent voucher contents are deliberately absent.
+    pub voucher_id: i64,
+    /// Exact signed movement of the reconciled account in minor units.
+    pub amount_minor: i64,
+    /// Currency declared by the frozen movement.
+    pub currency: String,
+    /// Canonical posting date.
+    pub date: String,
+    /// Current structural state.
+    pub state: DecisionState,
+}
+
+/// Human-readable, deterministic reason for proposing an exact candidate.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CandidateReason {
+    /// Candidate shape.
+    pub kind: String,
+    /// Both selected sets have this exact signed total in minor units.
+    pub exact_total_minor: i64,
+    /// Deterministic review ordering only; it has no authority.
+    pub review_rank: u64,
+}
+
+/// One exact proposed or decided relation.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ReviewCandidate {
+    /// Exact statement source identities.
+    pub row_ids: Vec<String>,
+    /// Exact ledger voucher identities.
+    pub voucher_ids: Vec<i64>,
+    /// Why this relation appears in review.
+    pub reason: CandidateReason,
+    /// Human decision identity, when one exists.
+    pub decision_ref: Option<String>,
+    /// Structural state, visually distinct when rendered by a consumer.
+    pub state: DecisionState,
+}
+
+/// One immutable human decision, including decisions outside generated candidates.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct HumanDecisionView {
+    /// Stable ledger journal identity.
+    pub decision_ref: String,
+    /// Exact statement and voucher evidence selected by the reviewer.
+    pub evidence: ReconciliationRef,
+    /// Structural outcome of the decision.
+    pub state: DecisionState,
+}
+
+/// One exact term of `statement total - ledger total = residual`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct BridgeTerm {
+    /// Stable term name.
+    pub name: String,
+    /// Signed value in minor units.
+    pub amount_minor: i64,
+    /// Source identities resolving the displayed value.
+    pub evidence_refs: Vec<String>,
+}
+
+/// A balanced correction shown for review only.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CorrectionDraftView {
+    /// Decision which authorized preparation, not posting.
+    pub decision_ref: String,
+    /// Exact signed posting amounts in minor units.
+    pub posting_amounts_minor: Vec<i64>,
+    /// Structural state.
+    pub state: DecisionState,
+}
+
+/// Complete reconciliation review projection.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ReconciliationReviewDocument {
+    /// Frozen source identity checked on re-import.
+    pub snapshot_ref: String,
+    /// Exact cutoff.
+    pub cutoff: String,
+    /// Sole reviewer identity checked on re-import.
+    pub reviewer_ref: String,
+    /// Statement evidence rows.
+    pub rows: Vec<StatementRowView>,
+    /// In-scope ledger movements only.
+    pub movements: Vec<LedgerMovementView>,
+    /// Proposed and decided exact relations.
+    pub candidates: Vec<ReviewCandidate>,
+    /// Every immutable human decision in the certificate.
+    pub decisions: Vec<HumanDecisionView>,
+    /// Statement identities not covered by accepted evidence.
+    pub uncovered_rows: Vec<String>,
+    /// Voucher identities not covered by accepted evidence.
+    pub uncovered_vouchers: Vec<i64>,
+    /// Exact arithmetic bridge.
+    pub bridge: Vec<BridgeTerm>,
+    /// Balanced proposals, never approvals.
+    pub correction_drafts: Vec<CorrectionDraftView>,
+    /// Verified/closed state only when based on an independently verified certificate.
+    pub state: DecisionState,
+    /// Human edits are an explicit, initially empty import lane.
+    pub edits: Vec<ReviewEdit>,
+}
+
+/// Explicit edit accepted by the review import lane.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ReviewEdit {
+    /// New immutable decision identity.
+    pub decision_ref: String,
+    /// Human author, which must equal the frozen reviewer.
+    pub decided_by: String,
+    /// Explicit disposition.
+    pub disposition: DecisionDisposition,
+    /// Exact evidence selected by the human.
+    pub evidence: ReconciliationRef,
+}
+
+/// Checked command intent. Executing and journaling it belongs to the ledger.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum ReconciliationCommand {
+    /// Append one immutable human decision record.
+    RecordDecision(DecisionRecord),
+}
+
+/// Parsed review export which still has no accounting authority.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ImportedReviewDocument {
+    /// Exact checked command intents decoded from the explicit edit lane.
+    pub commands: Vec<ReconciliationCommand>,
+}
+
+/// Project frozen reconciliation facts into a bounded review document.
+pub fn project_reconciliation_review(
+    inputs: &ReconciliationInputs,
+    candidates: &[Candidate],
+    certificate: &ReconciliationCertificate,
+    corrections: &[CorrectionDraft],
+    independently_verified: bool,
+) -> Result<ReconciliationReviewDocument, OfficeError> {
+    if certificate.source_inputs != *inputs || certificate.snapshot_ref != inputs.snapshot_ref {
+        return Err(error(
+            "certificate does not bind the supplied frozen inputs",
+        ));
+    }
+    if independently_verified {
+        verify_certificate(inputs, &certificate.decision_records, certificate).map_err(error)?;
+    }
+    let decisions = certificate
+        .decision_records
+        .iter()
+        .map(|decision| {
+            (
+                (&decision.evidence.row_ids, &decision.evidence.voucher_ids),
+                decision,
+            )
+        })
+        .collect::<Vec<_>>();
+    let accepted_rows = certificate
+        .accepted
+        .iter()
+        .flat_map(|d| d.evidence.row_ids.iter())
+        .collect::<BTreeSet<_>>();
+    let accepted_vouchers = certificate
+        .accepted
+        .iter()
+        .flat_map(|d| d.evidence.voucher_ids.iter())
+        .collect::<BTreeSet<_>>();
+    let rows = inputs
+        .statement
+        .rows
+        .iter()
+        .map(|row| StatementRowView {
+            source_identity: row.source_identity.clone(),
+            source_ref: row.source_ref.clone(),
+            amount_minor: row.amount.0,
+            currency: row.currency.clone(),
+            date: row.date.clone(),
+            state: if accepted_rows.contains(&row.source_identity) {
+                DecisionState::Accepted
+            } else {
+                DecisionState::Imported
+            },
+        })
+        .collect();
+    let movements = inputs
+        .movements
+        .iter()
+        .map(|movement| LedgerMovementView {
+            voucher_id: movement.voucher_id,
+            amount_minor: movement.amount.0,
+            currency: movement.currency.clone(),
+            date: movement.date.clone(),
+            state: if accepted_vouchers.contains(&movement.voucher_id) {
+                DecisionState::Accepted
+            } else {
+                DecisionState::Imported
+            },
+        })
+        .collect();
+    let row_amounts = inputs
+        .statement
+        .rows
+        .iter()
+        .map(|r| (r.source_identity.as_str(), r.amount.0))
+        .collect::<BTreeMap<_, _>>();
+    let review_candidates = candidates
+        .iter()
+        .map(|candidate| {
+            let decision = decisions
+                .iter()
+                .find(|((rows, vouchers), _)| {
+                    *rows == &candidate.row_ids && *vouchers == &candidate.voucher_ids
+                })
+                .map(|(_, decision)| *decision);
+            let state = decision.map_or(DecisionState::Proposed, |d| {
+                disposition_state(d.disposition)
+            });
+            let total = candidate.row_ids.iter().try_fold(0_i64, |sum, id| {
+                sum.checked_add(
+                    *row_amounts
+                        .get(id.as_str())
+                        .ok_or_else(|| error("candidate names an unknown row"))?,
+                )
+                .ok_or_else(|| error("candidate amount overflow"))
+            })?;
+            Ok(ReviewCandidate {
+                row_ids: candidate.row_ids.clone(),
+                voucher_ids: candidate.voucher_ids.clone(),
+                reason: CandidateReason {
+                    kind: kind_name(candidate.kind).to_owned(),
+                    exact_total_minor: total,
+                    review_rank: candidate.review_rank,
+                },
+                decision_ref: decision.map(|d| d.decision_ref.clone()),
+                state,
+            })
+        })
+        .collect::<Result<Vec<_>, OfficeError>>()?;
+    let row_refs = inputs
+        .statement
+        .rows
+        .iter()
+        .map(|r| format!("statement:{}", r.source_identity))
+        .collect();
+    let voucher_refs = inputs
+        .movements
+        .iter()
+        .map(|m| format!("voucher:{}", m.voucher_id))
+        .collect();
+    Ok(ReconciliationReviewDocument {
+        snapshot_ref: inputs.snapshot_ref.clone(),
+        cutoff: inputs.statement.cutoff.clone(),
+        reviewer_ref: inputs.reviewer_ref.clone(),
+        rows,
+        movements,
+        candidates: review_candidates,
+        decisions: certificate
+            .decision_records
+            .iter()
+            .map(|decision| HumanDecisionView {
+                decision_ref: decision.decision_ref.clone(),
+                evidence: decision.evidence.clone(),
+                state: disposition_state(decision.disposition),
+            })
+            .collect(),
+        uncovered_rows: certificate.uncovered_rows.clone(),
+        uncovered_vouchers: certificate.uncovered_vouchers.clone(),
+        bridge: vec![
+            BridgeTerm {
+                name: "statement-total".into(),
+                amount_minor: certificate.statement_total.0,
+                evidence_refs: row_refs,
+            },
+            BridgeTerm {
+                name: "less-ledger-total".into(),
+                amount_minor: -certificate.ledger_total.0,
+                evidence_refs: voucher_refs,
+            },
+            BridgeTerm {
+                name: "residual".into(),
+                amount_minor: certificate.residual.0,
+                evidence_refs: vec![format!("snapshot:{}", inputs.snapshot_ref)],
+            },
+        ],
+        correction_drafts: corrections
+            .iter()
+            .map(|draft| CorrectionDraftView {
+                decision_ref: draft.decision_ref.clone(),
+                posting_amounts_minor: draft.postings.iter().map(|p| p.amount.0).collect(),
+                state: DecisionState::Corrected,
+            })
+            .collect(),
+        state: if independently_verified && certificate.closed {
+            DecisionState::Closed
+        } else if independently_verified {
+            DecisionState::Verified
+        } else {
+            DecisionState::Imported
+        },
+        edits: Vec::new(),
+    })
+}
+
+/// Export a deterministic JSON review document.
+pub fn export_review_document(
+    document: &ReconciliationReviewDocument,
+) -> Result<Vec<u8>, OfficeError> {
+    serde_json::to_vec_pretty(document).map_err(error)
+}
+
+/// Import a review document and decode only explicit, checked command intents.
+///
+/// All projected fields are compared byte-structurally with a fresh trusted
+/// projection. Editing a displayed status, amount, provenance, or closed flag
+/// therefore fails instead of becoming authority.
+pub fn import_review_document(
+    bytes: &[u8],
+    trusted_projection: &ReconciliationReviewDocument,
+) -> Result<ImportedReviewDocument, OfficeError> {
+    let mut imported: ReconciliationReviewDocument =
+        serde_json::from_slice(bytes).map_err(error)?;
+    let edits = std::mem::take(&mut imported.edits);
+    if &imported != trusted_projection {
+        return Err(error(
+            "review projection was altered outside the explicit edit lane",
+        ));
+    }
+    Ok(ImportedReviewDocument {
+        commands: decode_review_edits(trusted_projection, edits)?,
+    })
+}
+
+/// Decode explicit review edits to ledger command intents after identity checks.
+pub fn decode_review_edits(
+    projection: &ReconciliationReviewDocument,
+    edits: Vec<ReviewEdit>,
+) -> Result<Vec<ReconciliationCommand>, OfficeError> {
+    let rows = projection
+        .rows
+        .iter()
+        .map(|r| r.source_identity.as_str())
+        .collect::<BTreeSet<_>>();
+    let vouchers = projection
+        .movements
+        .iter()
+        .map(|m| m.voucher_id)
+        .collect::<BTreeSet<_>>();
+    let mut refs = BTreeSet::new();
+    edits
+        .into_iter()
+        .map(|edit| {
+            if edit.decision_ref.is_empty() || !refs.insert(edit.decision_ref.clone()) {
+                return Err(error("empty or duplicate decision reference"));
+            }
+            if edit.decided_by != projection.reviewer_ref {
+                return Err(error("review edit has the wrong reviewer"));
+            }
+            if edit
+                .evidence
+                .row_ids
+                .iter()
+                .any(|id| !rows.contains(id.as_str()))
+                || edit
+                    .evidence
+                    .voucher_ids
+                    .iter()
+                    .any(|id| !vouchers.contains(id))
+            {
+                return Err(error(
+                    "review edit names evidence outside the frozen projection",
+                ));
+            }
+            if edit.evidence.row_ids.is_empty() || edit.evidence.voucher_ids.is_empty() {
+                return Err(error("review edit must name both sides"));
+            }
+            Ok(ReconciliationCommand::RecordDecision(DecisionRecord {
+                decision_ref: edit.decision_ref,
+                decided_by: edit.decided_by,
+                disposition: edit.disposition,
+                evidence: edit.evidence,
+            }))
+        })
+        .collect()
+}
+
+fn kind_name(kind: CandidateKind) -> &'static str {
+    match kind {
+        CandidateKind::OneToOne => "one-to-one",
+        CandidateKind::OneToMany => "one-to-many",
+        CandidateKind::ManyToOne => "many-to-one",
+    }
+}
+
+fn disposition_state(disposition: DecisionDisposition) -> DecisionState {
+    match disposition {
+        DecisionDisposition::Accept | DecisionDisposition::Split | DecisionDisposition::Merge => {
+            DecisionState::Accepted
+        }
+        DecisionDisposition::Reject => DecisionState::Rejected,
+        DecisionDisposition::Defer => DecisionState::Deferred,
+    }
+}
+fn error(message: impl std::fmt::Display) -> OfficeError {
+    OfficeError::DomainEdit(message.to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use sim_ledger::{
+        Amount, CandidateBounds, CanonicalStatementRow, LedgerMovement, Posting,
+        ReconciliationInputs, StatementSnapshot, build_certificate, generate_candidates,
+        verify_certificate,
+    };
+
+    #[test]
+    fn unresolved_month_exposes_every_exact_amount_and_state() {
+        let inputs = inputs();
+        let candidates = generate_candidates(&inputs, bounds()).unwrap();
+        let decisions = vec![
+            decision("reject-fee", DecisionDisposition::Reject, "bank:fee", 41),
+            DecisionRecord {
+                decision_ref: "defer-month".into(),
+                decided_by: "mia".into(),
+                disposition: DecisionDisposition::Defer,
+                evidence: ReconciliationRef {
+                    row_ids: vec!["bank:fee".into(), "bank:rent".into()],
+                    voucher_ids: vec![41, 42],
+                },
+            },
+        ];
+        let certificate = build_certificate(&inputs, &decisions, false).unwrap();
+        let correction = CorrectionDraft {
+            decision_ref: "accepted-correction".into(),
+            postings: vec![posting(25), posting(-25)],
+        };
+        let review =
+            project_reconciliation_review(&inputs, &candidates, &certificate, &[correction], false)
+                .unwrap();
+        assert_eq!(review.state, DecisionState::Imported);
+        assert_eq!(review.uncovered_rows, vec!["bank:fee", "bank:rent"]);
+        assert!(
+            review
+                .candidates
+                .iter()
+                .any(|c| c.state == DecisionState::Rejected)
+        );
+        assert!(
+            review
+                .candidates
+                .iter()
+                .any(|c| c.state == DecisionState::Proposed)
+        );
+        assert_eq!(
+            review.decisions.iter().map(|d| d.state).collect::<Vec<_>>(),
+            vec![DecisionState::Rejected, DecisionState::Deferred]
+        );
+        assert_eq!(review.correction_drafts[0].state, DecisionState::Corrected);
+        assert_eq!(
+            review
+                .bridge
+                .iter()
+                .map(|term| term.amount_minor)
+                .collect::<Vec<_>>(),
+            vec![-10_025, 10_025, 0]
+        );
+        assert!(
+            review
+                .bridge
+                .iter()
+                .all(|term| !term.evidence_refs.is_empty())
+        );
+        assert_eq!(
+            review
+                .movements
+                .iter()
+                .map(|m| m.voucher_id)
+                .collect::<Vec<_>>(),
+            vec![41, 42]
+        );
+    }
+
+    #[test]
+    fn independently_verified_close_is_structurally_closed() {
+        let inputs = inputs();
+        let candidates = generate_candidates(&inputs, bounds()).unwrap();
+        let decisions = vec![
+            decision("fee", DecisionDisposition::Accept, "bank:fee", 41),
+            decision("rent", DecisionDisposition::Accept, "bank:rent", 42),
+        ];
+        let certificate = build_certificate(&inputs, &decisions, true).unwrap();
+        verify_certificate(&inputs, &decisions, &certificate).unwrap();
+        let review =
+            project_reconciliation_review(&inputs, &candidates, &certificate, &[], true).unwrap();
+        assert_eq!(review.state, DecisionState::Closed);
+        assert!(review.uncovered_rows.is_empty() && review.uncovered_vouchers.is_empty());
+        assert!(
+            review
+                .rows
+                .iter()
+                .all(|row| row.state == DecisionState::Accepted)
+        );
+    }
+
+    #[test]
+    fn reimport_emits_commands_but_cannot_manufacture_approval_or_closure() {
+        let inputs = inputs();
+        let candidates = generate_candidates(&inputs, bounds()).unwrap();
+        let certificate = build_certificate(&inputs, &[], false).unwrap();
+        let trusted =
+            project_reconciliation_review(&inputs, &candidates, &certificate, &[], false).unwrap();
+        let mut edited = trusted.clone();
+        edited.edits.push(ReviewEdit {
+            decision_ref: "mia-1".into(),
+            decided_by: "mia".into(),
+            disposition: DecisionDisposition::Accept,
+            evidence: ReconciliationRef {
+                row_ids: vec!["bank:fee".into()],
+                voucher_ids: vec![41],
+            },
+        });
+        let imported =
+            import_review_document(&export_review_document(&edited).unwrap(), &trusted).unwrap();
+        assert!(
+            matches!(&imported.commands[0], ReconciliationCommand::RecordDecision(record) if record.decision_ref == "mia-1")
+        );
+        let mut forged = trusted.clone();
+        forged.state = DecisionState::Closed;
+        assert!(
+            import_review_document(&export_review_document(&forged).unwrap(), &trusted)
+                .unwrap_err()
+                .to_string()
+                .contains("outside the explicit edit lane")
+        );
+        let mut forged_amount = trusted.clone();
+        forged_amount.rows[0].amount_minor += 1;
+        assert!(
+            import_review_document(&export_review_document(&forged_amount).unwrap(), &trusted)
+                .is_err()
+        );
+    }
+
+    fn inputs() -> ReconciliationInputs {
+        ReconciliationInputs {
+            snapshot_ref: "month:2026-07".into(),
+            reviewer_ref: "mia".into(),
+            statement: StatementSnapshot {
+                profile_id: "bank-se".into(),
+                source_ref: "bank-export:sha256:statement".into(),
+                cutoff: "2026-07-31T23:59:59Z".into(),
+                total: Amount(-10_025),
+                ledger_balances: Vec::new(),
+                rows: vec![
+                    row("bank:fee", -25, "2026-07-02"),
+                    row("bank:rent", -10_000, "2026-07-25"),
+                ],
+            },
+            movements: vec![
+                movement(41, -25, "2026-07-02"),
+                movement(42, -10_000, "2026-07-25"),
+            ],
+        }
+    }
+    fn row(id: &str, amount: i64, date: &str) -> CanonicalStatementRow {
+        CanonicalStatementRow {
+            source_identity: id.into(),
+            amount: Amount(amount),
+            currency: "SEK".into(),
+            date: date.into(),
+            description: Some(id.into()),
+            version: 1,
+            source_ref: "bank-export:sha256:statement".into(),
+            ordinal: if id == "bank:fee" { 1 } else { 2 },
+            profile_id: "bank-se".into(),
+            original_bytes: format!("{id},{date},{amount}").into_bytes(),
+        }
+    }
+    fn movement(id: i64, amount: i64, date: &str) -> LedgerMovement {
+        LedgerMovement {
+            voucher_id: id,
+            amount: Amount(amount),
+            currency: "SEK".into(),
+            date: date.into(),
+            text: Some(if id == 41 { "bank:fee" } else { "bank:rent" }.into()),
+        }
+    }
+    fn decision(
+        id: &str,
+        disposition: DecisionDisposition,
+        row: &str,
+        voucher: i64,
+    ) -> DecisionRecord {
+        DecisionRecord {
+            decision_ref: id.into(),
+            decided_by: "mia".into(),
+            disposition,
+            evidence: ReconciliationRef {
+                row_ids: vec![row.into()],
+                voucher_ids: vec![voucher],
+            },
+        }
+    }
+    fn posting(amount: i64) -> Posting {
+        Posting {
+            id: 0,
+            source_id: None,
+            voucher_id: 0,
+            account: 2999,
+            amount: Amount(amount),
+            text: Some("review correction".into()),
+        }
+    }
+    fn bounds() -> CandidateBounds {
+        CandidateBounds {
+            max_work: 100,
+            max_results: 10,
+            max_cardinality: 2,
+            max_date_distance_days: 3,
+        }
+    }
+}
+```
+
+### `feature/sim-office/document-store`
+
+Specimen `spec-test/sim-office/crates/sim-lib-doc-store/src/store_tests` is checked by `cargo test`.
+
+Source `crates/sim-lib-doc-store/src/store_tests.rs`:
+
+```rust
+// conformance: document projections and evidence graphs persist through checked relational plans.
+
+use sim_kernel::{Cx, Expr, Value, testing::bare_cx as cx};
+use sim_lib_doc_core::{Doc, DocId, DocKind, Edit, Evidence, ExternalRef, LinkRole};
+use tempfile::TempDir;
+
+use crate::{DocStore, evidence};
+
+const LEGACY_FIXTURE: &[u8] = include_bytes!("../fixtures/legacy-doc-store-v1.sqlite");
+
+fn store() -> (TempDir, DocStore) {
+    let dir = tempfile::tempdir().unwrap();
+    let store = DocStore::create(&dir.path().join("docs.sqlite")).unwrap();
+    (dir, store)
+}
+
+fn doc_with_body(cx: &mut Cx, body: &str) -> Doc {
+    Doc::new(
+        DocKind::new("report"),
+        DocId::new("doc-1"),
+        cx.factory().string(body.to_owned()).unwrap(),
+        vec![ExternalRef::new(
+            "local",
+            "doc-1.md",
+            Some("rev-1".to_owned()),
+            None,
+        )],
+    )
+}
+
+#[test]
+fn save_and_load_doc_snapshot() {
+    let (_dir, store) = store();
+    let mut cx = cx();
+    let doc = doc_with_body(&mut cx, "body text");
+
+    store.save_doc(&doc).unwrap();
+    let loaded = store.load_doc(&doc.id).unwrap().unwrap();
+
+    assert_eq!(loaded.id, doc.id);
+    assert_eq!(loaded.kind, doc.kind);
+    assert_eq!(loaded.origin, doc.origin);
+    assert_eq!(
+        value_expr(&mut cx, &loaded.body),
+        Expr::String("body text".to_owned())
+    );
+}
+
+#[test]
+fn project_commit_then_undo_last_returns_inverse_edit() {
+    let (_dir, store) = store();
+    let mut cx = cx();
+    let doc_id = DocId::new("doc-1");
+    let edit = Edit::new(
+        doc_id.clone(),
+        "office/body",
+        cx.factory().string("new body".to_owned()).unwrap(),
+        cx.factory().string("old body".to_owned()).unwrap(),
+    );
+
+    let seq = store.project_commit(&doc_id, &edit, 42).unwrap();
+    let undo = store.undo_last(&doc_id).unwrap().unwrap();
+
+    assert_eq!(seq, 42);
+    assert_eq!(undo.doc, doc_id);
+    assert_eq!(undo.domain, "office/body");
+    assert_eq!(
+        value_expr(&mut cx, &undo.op),
+        Expr::String("old body".to_owned())
+    );
+    assert_eq!(
+        value_expr(&mut cx, &undo.inverse),
+        Expr::String("new body".to_owned())
+    );
+}
+
+#[test]
+fn projected_edit_does_not_replace_saved_doc_body() {
+    let (_dir, store) = store();
+    let mut cx = cx();
+    let doc = doc_with_body(&mut cx, "ledger body before edit");
+    let edit = Edit::new(
+        doc.id.clone(),
+        "office/body",
+        cx.factory()
+            .string("projected body after edit".to_owned())
+            .unwrap(),
+        cx.factory()
+            .string("ledger body before edit".to_owned())
+            .unwrap(),
+    );
+
+    store.save_doc(&doc).unwrap();
+    store.project_commit(&doc.id, &edit, 7).unwrap();
+    let loaded = store.load_doc(&doc.id).unwrap().unwrap();
+
+    assert_eq!(
+        value_expr(&mut cx, &loaded.body),
+        Expr::String("ledger body before edit".to_owned())
+    );
+}
+
+#[test]
+fn evidence_links_reopen_ordered_without_payload_data() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("docs.sqlite");
+    let subject = DocId::new("site/powerproject/projects/p-1/tasks/17");
+    let mail_body = "private mail body must not be stored";
+    let project_data = "project item payload must not be stored";
+    let rows = vec![
+        Evidence::new(
+            subject.clone(),
+            ExternalRef::new(
+                "site/msgraph",
+                "messages/msg-1",
+                Some("change-key-1".to_owned()),
+                Some("https://graph.example/messages/msg-1".to_owned()),
+            ),
+            LinkRole::SourceDocument,
+            30,
+            Some("mail-etag-1".to_owned()),
+        ),
+        Evidence::new(
+            subject.clone(),
+            ExternalRef::new(
+                "site/sharepoint",
+                "sites/site-1/drive/items/file-9",
+                Some("sharepoint-etag-9".to_owned()),
+                Some("https://sharepoint.example/file-9".to_owned()),
+            ),
+            LinkRole::AccountingSupport,
+            10,
+            None,
+        ),
+        Evidence::new(
+            subject.clone(),
+            ExternalRef::new(
+                "site/dalux",
+                "items/issue-4",
+                Some("2026-07-13T10:00:00Z".to_owned()),
+                Some("https://dalux.example/items/issue-4".to_owned()),
+            ),
+            LinkRole::ProjectIssue,
+            20,
+            Some("dalux-updated-at".to_owned()),
+        ),
+        Evidence::new(
+            subject.clone(),
+            ExternalRef::new("ledger", "voucher/2026/0007", None, None),
+            LinkRole::AccountingSupport,
+            40,
+            Some("voucher-digest".to_owned()),
+        ),
+    ];
+
+    {
+        let store = DocStore::create(&path).unwrap();
+        for row in &rows {
+            evidence::attach(&store, row).unwrap();
+        }
+    }
+
+    let store = DocStore::create(&path).unwrap();
+    let loaded = evidence::evidence_for(&store, &subject).unwrap();
+
+    assert_eq!(
+        loaded
+            .iter()
+            .map(|row| row.captured_at_seq)
+            .collect::<Vec<_>>(),
+        vec![10, 20, 30, 40]
+    );
+    assert_eq!(loaded[0].evidence.backend, "site/sharepoint");
+    assert_eq!(loaded[1].evidence.backend, "site/dalux");
+    assert_eq!(loaded[2].evidence.backend, "site/msgraph");
+    assert_eq!(loaded[3].evidence.backend, "ledger");
+    assert!(loaded.iter().all(
+        |row| row.evidence.external_id != mail_body && row.evidence.external_id != project_data
+    ));
+
+    let bytes = std::fs::read(&path).unwrap();
+    assert!(
+        !bytes
+            .windows(mail_body.len())
+            .any(|window| window == mail_body.as_bytes())
+    );
+    assert!(
+        !bytes
+            .windows(project_data.len())
+            .any(|window| window == project_data.as_bytes())
+    );
+}
+
+fn value_expr(cx: &mut Cx, value: &Value) -> Expr {
+    value.object().as_expr(cx).unwrap()
+}
+
+#[test]
+fn legacy_fixture_is_a_complete_behavior_oracle() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("legacy.sqlite");
+    std::fs::write(&path, LEGACY_FIXTURE).unwrap();
+    let store = DocStore::create(&path).unwrap();
+    let mut cx = cx();
+
+    let doc = store.load_doc(&DocId::new("doc-legacy")).unwrap().unwrap();
+    assert_eq!(doc.kind.as_str(), "report");
+    assert_eq!(
+        value_expr(&mut cx, &doc.body),
+        Expr::String("legacy body".into())
+    );
+
+    let undo = store.undo_last(&doc.id).unwrap().unwrap();
+    assert_eq!(undo.domain, "office/body");
+    assert_eq!(
+        value_expr(&mut cx, &undo.op),
+        Expr::String("old body".into())
+    );
+    assert_eq!(
+        value_expr(&mut cx, &undo.inverse),
+        Expr::String("new body".into())
+    );
+
+    let evidence = evidence::evidence_for(&store, &doc.id).unwrap();
+    assert_eq!(evidence.len(), 1);
+    assert_eq!(evidence[0].predicate(), "office/source-document");
+    assert_eq!(evidence[0].evidence.backend, "legacy");
+    assert_eq!(evidence[0].captured_at_seq, 41);
+}
+
+#[test]
+fn read_only_legacy_adoption_is_byte_exact_and_unstamped() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("legacy.sqlite");
+    std::fs::write(&path, LEGACY_FIXTURE).unwrap();
+    let before = std::fs::read(&path).unwrap();
+    let store = DocStore::open_read_only(&path).unwrap();
+    assert!(store.load_doc(&DocId::new("doc-legacy")).unwrap().is_some());
+    drop(store);
+    assert_eq!(std::fs::read(&path).unwrap(), before);
+    assert!(
+        !before
+            .windows("__sim_relation_attestation".len())
+            .any(|w| w == b"__sim_relation_attestation")
+    );
+    let manifest = crate::store::legacy_adoption_manifest().unwrap();
+    assert_ne!(manifest.logical_schema, manifest.physical_schema);
+}
+```
+
+### `feature/sim-office/web-evidence`
+
+Specimen `spec-test/sim-office/crates/sim-lib-doc-web/src/tests` is checked by `cargo test`.
+
+Source `crates/sim-lib-doc-web/src/tests.rs`:
+
+```rust
+// conformance: persisted web evidence remains stable and rejects tampered metadata.
+
+use super::*;
+use sim_kernel::{Datum, DefaultFactory, HandleSeed, NoopEvalPolicy};
+use sim_lib_net_core::normalize_retrieval_uri;
+use sim_lib_web_core::{WebExchange, WebRecordError};
+use std::sync::Arc;
+use tempfile::tempdir;
+
+fn fixture(text: &str) -> (WebCapture, WebRepresentation) {
+    let body = text.as_bytes().to_vec();
+    let raw_id = Datum::Bytes(body.clone()).content_id().unwrap();
+    let capture = WebCapture::checked(
+        normalize_retrieval_uri("https://example.test/article").unwrap(),
+        raw_id.clone(),
+        body,
+        WebExchange {
+            method: "GET".into(),
+            status: 200,
+            final_uri: "https://example.test/article".into(),
+            media_type: Some("text/html".into()),
+            received_bytes: text.len() as u64,
+        },
+        DecodeLimits::default(),
+    )
+    .unwrap();
+    let representation = WebRepresentation::checked(
+        raw_id,
+        text.into(),
+        RepresentationMetadata {
+            codec: "html5".into(),
+            codec_version: "1".into(),
+            media_type: "text/html".into(),
+            charset: Some("utf-8".into()),
+            language: Some("en".into()),
+            fidelity_warnings: vec!["script omitted".into()],
+        },
+        DecodeLimits::default(),
+    )
+    .unwrap();
+    (capture, representation)
+}
+
+fn quote_anchor<'a>(capture: &'a WebCapture, rep: &'a WebRepresentation) -> EvidenceAnchor {
+    let selector = rep.select(6, 10).unwrap().with_context(
+        Some("Hello ".into()),
+        Some(" 🦀".into()),
+        Some(vec!["html".into(), "body".into(), "p[1]".into()]),
+    );
+    EvidenceAnchor::quote(
+        AnchorInput {
+            anchor_id: "anchor-1",
+            subject: &DocId::new("source-doc"),
+            capture,
+            representation: rep,
+            source_uri: capture.retrieval_uri.as_str(),
+            source_title: "Example",
+            retrieved_at: "2026-08-24T12:00:00Z",
+            policy_receipt_id: "policy:abc",
+            provider_claim: Some("provider called this relevant"),
+            captured_at_seq: 7,
+        },
+        selector,
+    )
+    .unwrap()
+}
+
+#[test]
+fn quote_reloads_and_renders_identically_after_restart() {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("evidence.sqlite");
+    let (capture, rep) = fixture("Hello café 🦀");
+    let anchor = quote_anchor(&capture, &rep);
+    let expected = [
+        CitationFormat::Plain,
+        CitationFormat::Markdown,
+        CitationFormat::Lisp,
+        CitationFormat::Json,
+    ]
+    .map(|f| anchor.render(f).unwrap());
+    {
+        let mut store = DocStore::create(&path).unwrap();
+        save_capture(&mut store, &capture).unwrap();
+        save_representation(&mut store, &rep).unwrap();
+        save_anchor(&mut store, &anchor).unwrap();
+    }
+    let store = DocStore::create(&path).unwrap();
+    let loaded = load_anchor(&store, "anchor-1").unwrap().unwrap();
+    let actual = [
+        CitationFormat::Plain,
+        CitationFormat::Markdown,
+        CitationFormat::Lisp,
+        CitationFormat::Json,
+    ]
+    .map(|f| loaded.render(f).unwrap());
+    assert_eq!(actual, expected);
+    assert!(actual[3].contains("provider_claim"));
+    assert!(actual[0].contains("script omitted"));
+}
+
+#[test]
+fn one_code_point_tamper_and_changed_representation_id_fail_closed() {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("evidence.sqlite");
+    let (capture, rep) = fixture("Hello café 🦀");
+    let anchor = quote_anchor(&capture, &rep);
+    {
+        let mut store = DocStore::create(&path).unwrap();
+        save_capture(&mut store, &capture).unwrap();
+        save_representation(&mut store, &rep).unwrap();
+        save_anchor(&mut store, &anchor).unwrap();
+    }
+    {
+        tamper(&path, "UPDATE web_representations SET text='Hello cafe 🦀'");
+    }
+    assert!(load_anchor(&DocStore::create(&path).unwrap(), "anchor-1").is_err());
+    {
+        tamper(
+            &path,
+            &format!(
+                "PRAGMA foreign_keys=OFF; UPDATE web_representations SET text='{}', representation_id='wrong'; UPDATE web_evidence_anchors SET representation_id='wrong'",
+                rep.text.replace('\'', "''")
+            ),
+        );
+    }
+    assert!(load_anchor(&DocStore::create(&path).unwrap(), "anchor-1").is_err());
+}
+
+#[test]
+fn raw_capture_tamper_fails_anchor_load_closed() {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("capture-tamper.sqlite");
+    let (capture, rep) = fixture("Hello café 🦀");
+    let anchor = quote_anchor(&capture, &rep);
+    let mut store = DocStore::create(&path).unwrap();
+    save_capture(&mut store, &capture).unwrap();
+    save_representation(&mut store, &rep).unwrap();
+    save_anchor(&mut store, &anchor).unwrap();
+    drop(store);
+    tamper(&path, "UPDATE web_captures SET body=X'00'");
+    assert!(load_anchor(&DocStore::create(&path).unwrap(), "anchor-1").is_err());
+}
+
+#[test]
+fn unicode_normalization_codec_upgrade_deleted_index_and_duplicate_source_are_safe() {
+    let (capture, rep) = fixture("Hello café 🦀");
+    assert!(matches!(
+        EvidenceSelector::checked(
+            rep.content_id.clone(),
+            6,
+            10,
+            "cafe\u{301}".into(),
+            &rep.text
+        ),
+        Err(WebRecordError::InvalidSelector)
+    ));
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("e.sqlite");
+    let mut store = DocStore::create(&path).unwrap();
+    save_capture(&mut store, &capture).unwrap();
+    save_capture(&mut store, &capture).unwrap();
+    save_representation(&mut store, &rep).unwrap();
+    let anchor = quote_anchor(&capture, &rep);
+    save_anchor(&mut store, &anchor).unwrap();
+    drop(store);
+    tamper(
+        &path,
+        "UPDATE web_representations SET metadata_json=replace(metadata_json,'\"codec_version\":\"1\"','\"codec_version\":\"2\"')",
+    );
+    assert!(load_anchor(&DocStore::create(&path).unwrap(), "anchor-1").is_err());
+    let deleted = tempdir().unwrap();
+    let deleted_path = deleted.path().join("e.sqlite");
+    let mut store = DocStore::create(&deleted_path).unwrap();
+    save_capture(&mut store, &capture).unwrap();
+    save_representation(&mut store, &rep).unwrap();
+    save_anchor(&mut store, &anchor).unwrap();
+    drop(store);
+    tamper(
+        &deleted_path,
+        "PRAGMA foreign_keys=OFF; DELETE FROM web_representations",
+    );
+    assert!(load_anchor(&DocStore::create(&deleted_path).unwrap(), "anchor-1").is_err());
+}
+
+fn tamper(path: &std::path::Path, statement: &str) {
+    let status = std::process::Command::new("sqlite3")
+        .arg(path)
+        .arg(statement)
+        .status()
+        .expect("sqlite3 fixture tamper tool");
+    assert!(status.success());
+}
+
+#[test]
+fn projection_retains_source_identity_and_structural_path() {
+    let (capture, rep) = fixture("Hello café 🦀");
+    let anchor = quote_anchor(&capture, &rep);
+    let mut cx = Cx::new(
+        Arc::new(NoopEvalPolicy),
+        Arc::new(DefaultFactory),
+        HandleSeed::new(0x5745_4254),
+    );
+    let doc = project_document(&mut cx, &anchor, &rep).unwrap();
+    assert_eq!(doc.origin[0], anchor.evidence.evidence);
+    let expr = doc.body.object().as_expr(&mut cx).unwrap();
+    let markup = MarkupDoc::from_expr(&expr).unwrap();
+    assert_eq!(
+        markup.attrs["web/representation-id"],
+        sim_kernel::Expr::String(cid_text(&rep.content_id))
+    );
+    assert!(
+        matches!(&markup.attrs["web/structural-path"],sim_kernel::Expr::Vector(v) if v.len()==3)
+    );
+}
+
+#[test]
+fn constructors_exclude_snippets_and_distinguish_reference_kinds() {
+    let (capture, rep) = fixture("Hello café 🦀");
+    let subject = DocId::new("doc");
+    let input = || AnchorInput {
+        anchor_id: "a",
+        subject: &subject,
+        capture: &capture,
+        representation: &rep,
+        source_uri: capture.retrieval_uri.as_str(),
+        source_title: "Example",
+        retrieved_at: "2026-08-24T12:00:00Z",
+        policy_receipt_id: "p",
+        provider_claim: None,
+        captured_at_seq: 1,
+    };
+    let selector = rep.select(6, 10).unwrap();
+    assert_eq!(
+        EvidenceAnchor::paraphrase_support(input(), selector)
+            .unwrap()
+            .kind,
+        AnchorKind::ParaphraseSupport
+    );
+    assert_eq!(
+        EvidenceAnchor::whole_document(input()).unwrap().kind,
+        AnchorKind::WholeDocument
+    );
 }
 ```
 

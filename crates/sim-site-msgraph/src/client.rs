@@ -1,7 +1,7 @@
 //! Microsoft Graph client boundary.
 
 use std::fmt;
-use std::io::Read;
+use std::sync::Arc;
 
 use serde_json::Value;
 use sim_kernel::{CapabilityName, Cx};
@@ -12,16 +12,13 @@ use sim_lib_sheet::{MsGraphSite as SheetMsGraphSite, SheetError};
 
 use crate::{Cassette, TokenProvider};
 
-/// Environment variable that must be set to `1` before live Graph calls run.
-pub const GRAPH_LIVE_ENV: &str = "SIM_OFFICE_LIVE_MS_GRAPH";
-
 /// Default Microsoft Graph application scope requested from token providers.
 pub const GRAPH_DEFAULT_SCOPE: &str = "https://graph.microsoft.com/.default";
 
 const MAX_ERROR_BODY_CHARS: usize = 160;
 
 /// Execution mode for Microsoft Graph calls.
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub enum GraphMode<T> {
     /// Deterministic responses recorded in a local cassette.
     Modeled(Cassette),
@@ -31,7 +28,63 @@ pub enum GraphMode<T> {
         base_url: String,
         /// Bearer-token provider owned by the host.
         token_provider: T,
+        /// Explicit HTTP realization supplied by platform open/site composition.
+        transport: Arc<dyn GraphPort>,
     },
+}
+
+impl<T: fmt::Debug> fmt::Debug for GraphMode<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Modeled(cassette) => f.debug_tuple("Modeled").field(cassette).finish(),
+            Self::Live {
+                base_url,
+                token_provider,
+                ..
+            } => f
+                .debug_struct("Live")
+                .field("base_url", base_url)
+                .field("token_provider", token_provider)
+                .field("transport", &"<platform-port>")
+                .finish(),
+        }
+    }
+}
+
+/// Provider-neutral request opened by the Microsoft Graph site.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct GraphRequest {
+    /// Request method.
+    pub method: GraphMethod,
+    /// Fully resolved URL produced from supplied site configuration.
+    pub url: String,
+    /// Exact accepted response media type.
+    pub accept: String,
+    /// Supplied bearer token; transports must never log it.
+    pub bearer: String,
+    /// Optional encoded request body.
+    pub body: Option<Vec<u8>>,
+}
+/// Supported Graph request methods.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum GraphMethod {
+    /// Read a Graph resource.
+    Get,
+    /// Create or update a Graph resource.
+    Post,
+}
+/// Bounded response returned by an injected Graph transport.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct GraphResponse {
+    /// HTTP status code.
+    pub status: u16,
+    /// Bounded response bytes.
+    pub body: Vec<u8>,
+}
+/// HTTP realization contract; platform adapters own sockets, DNS, TLS, and host errors.
+pub trait GraphPort: Send + Sync {
+    /// Sends one fully described request through the supplied realization.
+    fn send(&self, request: &GraphRequest) -> Result<GraphResponse, GraphError>;
 }
 
 /// Error returned by the Microsoft Graph adapter.
@@ -41,11 +94,6 @@ pub enum GraphError {
     CapabilityDenied {
         /// Missing capability name.
         capability: CapabilityName,
-    },
-    /// Live calls are disabled until the environment gate is set.
-    LiveDisabled {
-        /// Name of the required environment variable.
-        env: &'static str,
     },
     /// The Graph path is not a site-local absolute path.
     InvalidPath {
@@ -86,9 +134,6 @@ impl fmt::Display for GraphError {
         match self {
             Self::CapabilityDenied { capability } => {
                 write!(f, "capability denied: {capability}")
-            }
-            Self::LiveDisabled { env } => {
-                write!(f, "live Microsoft Graph is disabled: set {env}=1")
             }
             Self::InvalidPath { path } => write!(f, "invalid Microsoft Graph path: {path}"),
             Self::MissingCassette { path } => {
@@ -133,7 +178,8 @@ pub fn graph_get<T: TokenProvider>(
         GraphMode::Live {
             base_url,
             token_provider,
-        } => live_graph_get(cx, base_url, token_provider, path),
+            transport,
+        } => live_graph_get(cx, base_url, token_provider, transport.as_ref(), path),
     }
 }
 
@@ -150,7 +196,8 @@ pub fn graph_post<T: TokenProvider>(
         GraphMode::Live {
             base_url,
             token_provider,
-        } => live_graph_post(cx, base_url, token_provider, path, body),
+            transport,
+        } => live_graph_post(cx, base_url, token_provider, transport.as_ref(), path, body),
     }
 }
 
@@ -166,7 +213,8 @@ pub fn graph_get_bytes<T: TokenProvider>(
         GraphMode::Live {
             base_url,
             token_provider,
-        } => live_graph_get_bytes(cx, base_url, token_provider, path),
+            transport,
+        } => live_graph_get_bytes(cx, base_url, token_provider, transport.as_ref(), path),
     }
 }
 
@@ -201,6 +249,7 @@ fn live_graph_get<T: TokenProvider>(
     cx: &Cx,
     base_url: &str,
     token_provider: &T,
+    transport: &dyn GraphPort,
     path: &str,
 ) -> Result<Value, GraphError> {
     require_live_gate(cx)?;
@@ -210,27 +259,21 @@ fn live_graph_get<T: TokenProvider>(
             message: error.to_string(),
         })?;
     let url = graph_url(base_url, path)?;
-    let auth = format!("Bearer {token}");
-    let response = ureq::get(&url)
-        .set("Accept", "application/json")
-        .set("Authorization", &auth)
-        .call();
-
-    match response {
-        Ok(response) => decode_response(response.status(), response.into_string(), Some(&token)),
-        Err(ureq::Error::Status(status, response)) => {
-            decode_status_error(status, response.into_string(), Some(&token))
-        }
-        Err(error) => Err(GraphError::Transport {
-            message: redacted_body(&error.to_string(), Some(&token)),
-        }),
-    }
+    let response = transport.send(&GraphRequest {
+        method: GraphMethod::Get,
+        url,
+        accept: "application/json".into(),
+        bearer: token.clone(),
+        body: None,
+    })?;
+    decode_response(response.status, response.body, Some(&token))
 }
 
 fn live_graph_post<T: TokenProvider>(
     cx: &Cx,
     base_url: &str,
     token_provider: &T,
+    transport: &dyn GraphPort,
     path: &str,
     body: &Value,
 ) -> Result<Value, GraphError> {
@@ -241,28 +284,21 @@ fn live_graph_post<T: TokenProvider>(
             message: error.to_string(),
         })?;
     let url = graph_url(base_url, path)?;
-    let auth = format!("Bearer {token}");
-    let response = ureq::post(&url)
-        .set("Accept", "application/json")
-        .set("Content-Type", "application/json")
-        .set("Authorization", &auth)
-        .send_string(&body.to_string());
-
-    match response {
-        Ok(response) => decode_response(response.status(), response.into_string(), Some(&token)),
-        Err(ureq::Error::Status(status, response)) => {
-            decode_status_error(status, response.into_string(), Some(&token))
-        }
-        Err(error) => Err(GraphError::Transport {
-            message: redacted_body(&error.to_string(), Some(&token)),
-        }),
-    }
+    let response = transport.send(&GraphRequest {
+        method: GraphMethod::Post,
+        url,
+        accept: "application/json".into(),
+        bearer: token.clone(),
+        body: Some(body.to_string().into_bytes()),
+    })?;
+    decode_response(response.status, response.body, Some(&token))
 }
 
 fn live_graph_get_bytes<T: TokenProvider>(
     cx: &Cx,
     base_url: &str,
     token_provider: &T,
+    transport: &dyn GraphPort,
     path: &str,
 ) -> Result<Vec<u8>, GraphError> {
     require_live_gate(cx)?;
@@ -272,38 +308,20 @@ fn live_graph_get_bytes<T: TokenProvider>(
             message: error.to_string(),
         })?;
     let url = graph_url(base_url, path)?;
-    let auth = format!("Bearer {token}");
-    let response = ureq::get(&url)
-        .set(
-            "Accept",
-            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        )
-        .set("Authorization", &auth)
-        .call();
-
-    match response {
-        Ok(response) => {
-            decode_byte_response(response.status(), response.into_reader(), Some(&token))
-        }
-        Err(ureq::Error::Status(status, response)) => {
-            decode_status_error_bytes(status, response.into_reader(), Some(&token))
-        }
-        Err(error) => Err(GraphError::Transport {
-            message: redacted_body(&error.to_string(), Some(&token)),
-        }),
-    }
+    let response = transport.send(&GraphRequest {
+        method: GraphMethod::Get,
+        url,
+        accept: "application/vnd.openxmlformats-officedocument.presentationml.presentation".into(),
+        bearer: token.clone(),
+        body: None,
+    })?;
+    decode_byte_response(response.status, response.body, Some(&token))
 }
 
 fn require_live_gate(cx: &Cx) -> Result<(), GraphError> {
     require_capability(cx, NET_CONNECT_CAPABILITY)?;
     require_capability(cx, CREDENTIALS_CAPABILITY)?;
-    if std::env::var(GRAPH_LIVE_ENV).ok().as_deref() == Some("1") {
-        Ok(())
-    } else {
-        Err(GraphError::LiveDisabled {
-            env: GRAPH_LIVE_ENV,
-        })
-    }
+    Ok(())
 }
 
 fn require_capability(cx: &Cx, capability: &str) -> Result<(), GraphError> {
@@ -330,14 +348,8 @@ fn validate_graph_path(path: &str) -> Result<(), GraphError> {
     }
 }
 
-fn decode_response(
-    status: u16,
-    body: Result<String, std::io::Error>,
-    token: Option<&str>,
-) -> Result<Value, GraphError> {
-    let body = body.map_err(|error| GraphError::Transport {
-        message: redacted_body(&error.to_string(), token),
-    })?;
+fn decode_response(status: u16, body: Vec<u8>, token: Option<&str>) -> Result<Value, GraphError> {
+    let body = String::from_utf8_lossy(&body).into_owned();
     if !(200..300).contains(&status) {
         return Err(GraphError::HttpStatus {
             status,
@@ -349,50 +361,18 @@ fn decode_response(
     })
 }
 
-fn decode_status_error(
-    status: u16,
-    body: Result<String, std::io::Error>,
-    token: Option<&str>,
-) -> Result<Value, GraphError> {
-    let body = body
-        .map(|body| redacted_body(&body, token))
-        .unwrap_or_else(|error| redacted_body(&error.to_string(), token));
-    Err(GraphError::HttpStatus { status, body })
-}
-
 fn decode_byte_response(
     status: u16,
-    mut body: impl Read,
+    body: Vec<u8>,
     token: Option<&str>,
 ) -> Result<Vec<u8>, GraphError> {
-    let mut bytes = Vec::new();
-    body.read_to_end(&mut bytes)
-        .map_err(|error| GraphError::Transport {
-            message: redacted_body(&error.to_string(), token),
-        })?;
     if !(200..300).contains(&status) {
         return Err(GraphError::HttpStatus {
             status,
-            body: redacted_body(&String::from_utf8_lossy(&bytes), token),
+            body: redacted_body(&String::from_utf8_lossy(&body), token),
         });
     }
-    Ok(bytes)
-}
-
-fn decode_status_error_bytes(
-    status: u16,
-    mut body: impl Read,
-    token: Option<&str>,
-) -> Result<Vec<u8>, GraphError> {
-    let mut bytes = Vec::new();
-    body.read_to_end(&mut bytes)
-        .map_err(|error| GraphError::Transport {
-            message: redacted_body(&error.to_string(), token),
-        })?;
-    Err(GraphError::HttpStatus {
-        status,
-        body: redacted_body(&String::from_utf8_lossy(&bytes), token),
-    })
+    Ok(body)
 }
 
 pub(crate) fn redacted_body(body: &str, token: Option<&str>) -> String {

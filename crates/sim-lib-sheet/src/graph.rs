@@ -324,7 +324,11 @@ mod tests {
     }
 
     fn test_context() -> Cx {
-        Cx::new(Arc::new(NoopEvalPolicy), Arc::new(DefaultFactory))
+        Cx::new(
+            Arc::new(NoopEvalPolicy),
+            Arc::new(DefaultFactory),
+            sim_kernel::HandleSeed::new(0xfc74_16d3_6ffd_2aef),
+        )
     }
 
     fn target() -> WorkbookRangeTarget {

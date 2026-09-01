@@ -1,5 +1,5 @@
 book = "office/doc-ledger"
 title = "Document Ledger Bridge"
-summary = "Preview ledger draft posting from office evidence."
+summary = "Review exact reconciliation evidence and preview ledger drafts without granting document authority."
 order = 413
 chapters = ["01-basics"]
