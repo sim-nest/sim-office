@@ -5,7 +5,7 @@ edition = "2024"
 license = "MPL-2.0"
 description = "Core document records and shape hooks for SIM office documents."
 readme = "README.md"
-publish = false
+publish = true
 repository = "https://github.com/sim-nest/sim-office"
 homepage = "https://github.com/sim-nest/sim-office"
 
