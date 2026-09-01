@@ -9,12 +9,13 @@ Generated from Cargo metadata by `xtask crate-catalog v1`.
 | `sim-codec-odf` | `false` | `custom-build, lib` | ODF spreadsheet and presentation codecs for SIM office documents. |
 | `sim-codec-ooxml` | `false` | `custom-build, lib` | OOXML spreadsheet and presentation codecs for SIM office documents. |
 | `sim-lib-deck` | `false` | `custom-build, lib` | Presentation deck domain model for SIM office documents. |
-| `sim-lib-doc-core` | `false` | `custom-build, lib` | Core document records and shape hooks for SIM office documents. |
+| `sim-lib-doc-core` | `true` | `custom-build, lib` | Core document records and shape hooks for SIM office documents. |
 | `sim-lib-doc-ledger` | `false` | `custom-build, lib` | Ring-3 office bridge for ledger draft and statement previews. |
 | `sim-lib-doc-markup` | `false` | `custom-build, lib` | Markup document codecs for SIM office documents. |
 | `sim-lib-doc-site` | `false` | `custom-build, lib` | Document site registration and modeled realize spine for SIM office documents. |
-| `sim-lib-doc-store` | `false` | `custom-build, lib` | SQLite document store projections for SIM office documents. |
+| `sim-lib-doc-store` | `true` | `custom-build, lib` | Relational document store projections for SIM office documents. |
 | `sim-lib-doc-surface` | `false` | `custom-build, lib` | Scene projection and intent decoding for SIM office document panes. |
+| `sim-lib-doc-web` | `true` | `custom-build, lib` | Durable web-capture evidence adapters for SIM office documents. |
 | `sim-lib-gantt` | `false` | `custom-build, lib` | Local Gantt schedule model and SQLite backend for SIM office plans. |
 | `sim-lib-mail` | `false` | `custom-build, lib` | Mail and calendar domain model for SIM office documents. |
 | `sim-lib-office-pack` | `false` | `custom-build, lib` | Annual accounts pack planner for SIM office documents. |
