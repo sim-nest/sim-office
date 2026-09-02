@@ -1,6 +1,6 @@
 {
   "generator": "xtask crate-catalog v1",
-  "package_count": 17,
+  "package_count": 18,
   "packages": [
     {
       "description": "ODF spreadsheet and presentation codecs for SIM office documents.",
@@ -46,7 +46,7 @@
       "generated_readme": false,
       "manifest": "crates/sim-lib-doc-core/Cargo.toml",
       "name": "sim-lib-doc-core",
-      "publish": "false",
+      "publish": "true",
       "readme": "crates/sim-lib-doc-core/README.md",
       "root": "crates/sim-lib-doc-core",
       "target_kinds": [
@@ -94,11 +94,11 @@
       ]
     },
     {
-      "description": "SQLite document store projections for SIM office documents.",
+      "description": "Relational document store projections for SIM office documents.",
       "generated_readme": false,
       "manifest": "crates/sim-lib-doc-store/Cargo.toml",
       "name": "sim-lib-doc-store",
-      "publish": "false",
+      "publish": "true",
       "readme": "crates/sim-lib-doc-store/README.md",
       "root": "crates/sim-lib-doc-store",
       "target_kinds": [
@@ -114,6 +114,19 @@
       "publish": "false",
       "readme": "crates/sim-lib-doc-surface/README.md",
       "root": "crates/sim-lib-doc-surface",
+      "target_kinds": [
+        "custom-build",
+        "lib"
+      ]
+    },
+    {
+      "description": "Durable web-capture evidence adapters for SIM office documents.",
+      "generated_readme": false,
+      "manifest": "crates/sim-lib-doc-web/Cargo.toml",
+      "name": "sim-lib-doc-web",
+      "publish": "true",
+      "readme": "crates/sim-lib-doc-web/README.md",
+      "root": "crates/sim-lib-doc-web",
       "target_kinds": [
         "custom-build",
         "lib"
