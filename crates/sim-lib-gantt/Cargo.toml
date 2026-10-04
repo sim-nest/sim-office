@@ -19,7 +19,7 @@ sim-relation-migrate = { version = "0.2.0" }
 sim-relation-plan = { version = "0.2.0" }
 sim-relation-schema = { version = "0.2.0" }
 sim-relation-site = { version = "0.2.0" }
-thiserror = "1"
+thiserror = "2"
 time = "0.3"
 
 [build-dependencies]
