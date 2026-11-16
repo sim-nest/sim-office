@@ -1,3 +1,8 @@
+// SPDX-License-Identifier: MPL-2.0
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 //! Scene projection for suite document panes.
 
 use std::collections::BTreeMap;
@@ -108,7 +113,8 @@ fn caps_summary(caps: &SurfaceCaps) -> Expr {
     let lens = caps.get(TAG_LENS).unwrap_or("formatted");
     let target = caps.get(TAG_TARGET).unwrap_or("screen");
     let fidelity = caps.get(TAG_FIDELITY).unwrap_or("standard");
-    sim_lib_scene::badge("projection", &format!("{target}/{lens}/{fidelity}"))
+    let label = [target, lens, fidelity].join("/");
+    sim_lib_scene::badge("projection", &label)
 }
 
 fn projection_scene(projected: Expr) -> Expr {
@@ -162,6 +168,29 @@ mod tests {
             .collect()
     }
 
+    fn badge_labels(scene: &Expr) -> Vec<String> {
+        let panes = field(scene, "children").and_then(|value| match value {
+            Expr::List(panes) => Some(panes),
+            _ => None,
+        });
+        panes
+            .into_iter()
+            .flatten()
+            .filter_map(|pane| {
+                let children = field(pane, "children").and_then(|value| match value {
+                    Expr::List(children) => Some(children),
+                    _ => None,
+                })?;
+                children
+                    .iter()
+                    .find_map(|child| match field(child, "label") {
+                        Some(Expr::String(label)) => Some(label.clone()),
+                        _ => None,
+                    })
+            })
+            .collect()
+    }
+
     #[test]
     fn mixed_docs_produce_stable_node_order() {
         let mut cx = cx();
@@ -196,6 +225,13 @@ mod tests {
         let scene = expr_of(&mut cx, scene_value);
 
         assert_eq!(child_ids(&scene), ["doc-b", "doc-a"]);
+        assert_eq!(
+            badge_labels(&scene),
+            [
+                "deck/formatted/standard".to_owned(),
+                "screen/formatted/standard".to_owned(),
+            ]
+        );
     }
 
     #[test]
